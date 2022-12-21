@@ -21,11 +21,24 @@
       <version>1.18.24</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/org.apache.nifi/nifi-security-utils -->
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-security-utils</artifactId>
+      <version>1.19.1</version>
+    </dependency>
+
     <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.15</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>2.0.6</version>
     </dependency>
 
     <dependency>
