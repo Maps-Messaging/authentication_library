@@ -14,14 +14,14 @@ public class IdentityEntry {
   @Getter
   private final String salt;
 
-  public IdentityEntry(String line){
+  public IdentityEntry(String line) {
     int usernamePos = line.indexOf(":");
     username = line.substring(0, usernamePos);
-    line = line.substring(usernamePos+1);
+    line = line.substring(usernamePos + 1);
 
     hashType = HashType.detect(line);
     line = line.substring(hashType.getName().length());
-    switch(hashType){
+    switch (hashType) {
       case SHA1:
         salt = "";
         passwordHash = line.toCharArray();
@@ -46,18 +46,18 @@ public class IdentityEntry {
   }
 
   @Override
-  public String toString(){
-    switch (hashType){
+  public String toString() {
+    switch (hashType) {
       case MD5:
       case BCRYPT:
-        return username+":"+hashType.getName()+salt+"$"+new String(passwordHash)+"\n";
+        return username + ":" + hashType.getName() + salt + "$" + new String(passwordHash) + "\n";
 
       case SHA1:
-        return username+":"+hashType.getName()+new String(passwordHash)+"\n";
+        return username + ":" + hashType.getName() + new String(passwordHash) + "\n";
 
       case PLAIN:
       default:
-        return username+":"+new String(passwordHash)+"\n";
+        return username + ":" + new String(passwordHash) + "\n";
     }
   }
 }

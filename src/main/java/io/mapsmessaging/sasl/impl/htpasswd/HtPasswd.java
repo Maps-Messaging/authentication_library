@@ -15,7 +15,7 @@ public class HtPasswd implements IdentityLookup {
   private final Map<String, IdentityEntry> usernamePasswordMap;
   private long lastModified;
 
-  public HtPasswd(String filepath){
+  public HtPasswd(String filepath) {
     filePath = filepath;
     lastModified = 0;
     usernamePasswordMap = new LinkedHashMap<>();
@@ -25,15 +25,15 @@ public class HtPasswd implements IdentityLookup {
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     load();
     IdentityEntry identityEntry = usernamePasswordMap.get(username);
-    if(identityEntry == null) {
-      throw new NoSuchUserFoundException("User: "+username+" not found");
+    if (identityEntry == null) {
+      throw new NoSuchUserFoundException("User: " + username + " not found");
     }
     return identityEntry.getPasswordHash();
   }
 
   private void load() {
     File file = new File(filePath);
-    if(file.exists() && lastModified != file.lastModified()) {
+    if (file.exists() && lastModified != file.lastModified()) {
       lastModified = file.lastModified();
       usernamePasswordMap.clear();
       try (BufferedReader reader = new BufferedReader(new FileReader(file))) {

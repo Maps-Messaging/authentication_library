@@ -11,19 +11,17 @@ public enum HashType {
   @Getter
   private final String name;
 
-  HashType(String name){
+  HashType(String name) {
     this.name = name;
   }
 
-  public static HashType detect(String type){
+  public static HashType detect(String type) {
     String test = type.toLowerCase();
-    if(test.startsWith("$apr1$")){
+    if (test.startsWith("$apr1$")) {
       return MD5;
-    }
-    else if(test.startsWith("{sha}")){
+    } else if (test.startsWith("{sha}")) {
       return SHA1;
-    }
-    else if(test.startsWith("$2y$")){
+    } else if (test.startsWith("$2y$")) {
       return BCRYPT;
     }
     return PLAIN;
