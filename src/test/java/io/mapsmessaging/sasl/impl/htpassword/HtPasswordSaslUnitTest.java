@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
+import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,10 +26,15 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
   private static final String AUTHORIZATION_ID = null;
   private static final String QOP_LEVEL = "auth";
 
-
   @Test
   void checkMd5Hash(){
-    System.err.println(new String(HashType.MD5.getPasswordHash().hash("This is an md5 password","po9cazbx" )));
+    Assertions.assertArrayEquals("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.".toCharArray(), HashType.MD5.getPasswordHash().hash("This is an md5 password","po9cazbx" ));
+  }
+
+  @Test
+  void checkBcryptHash(){
+    byte[] d = Base64.decodeBase64("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u");
+    Assertions.assertArrayEquals("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u".toCharArray(), HashType.BCRYPT.getPasswordHash().hash("This is an bcrypt password","y$10" ));
   }
 
   @Test

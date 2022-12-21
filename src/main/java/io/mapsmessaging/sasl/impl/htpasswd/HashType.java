@@ -1,5 +1,6 @@
 package io.mapsmessaging.sasl.impl.htpasswd;
 
+import io.mapsmessaging.sasl.impl.htpasswd.hash.BCryptPasswordHash;
 import io.mapsmessaging.sasl.impl.htpasswd.hash.MD5PasswordHash;
 import io.mapsmessaging.sasl.impl.htpasswd.hash.PasswordHash;
 import io.mapsmessaging.sasl.impl.htpasswd.hash.PlainPasswordHash;
@@ -10,7 +11,7 @@ public enum HashType {
   PLAIN("", new PlainPasswordHash()),
   MD5("$apr1$", new MD5PasswordHash()),
   SHA1("{SHA}", new Sha1PasswordHash()),
-  BCRYPT("$2y$", new Sha1PasswordHash());
+  BCRYPT("$2y$", new BCryptPasswordHash());
 
   @Getter
   private final String name;
