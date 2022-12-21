@@ -1,25 +1,46 @@
-package io.mapsmessaging.sasl.impl;
+package io.mapsmessaging.sasl.impl.htpassword;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
 import io.mapsmessaging.sasl.impl.htpasswd.HashType;
 import io.mapsmessaging.sasl.impl.htpasswd.HtPasswd;
+import java.security.Provider;
+import java.security.Provider.Service;
+import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class SaslUnitTest extends BaseSaslUnitTest {
+class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
 
   private static final String SERVER_NAME = "myServer";
   private static final String PROTOCOL = "amqp";
   private static final String AUTHORIZATION_ID = null;
-  private static final String QOP_LEVEL = "auth-conf";
+  private static final String QOP_LEVEL = "auth";
 
+
+  @Test
+  void checkMd5Hash(){
+    System.err.println(new String(HashType.MD5.getPasswordHash().hash("This is an md5 password","po9cazbx" )));
+  }
+
+  @Test
+  void listProviders(){
+    Provider[] providers = Security.getProviders();
+    for(Provider provider:providers){
+      System.err.println(provider.getName());
+      for(Service service:provider.getServices()){
+        System.err.println("\t"+service.getType()+" "+service.getAlgorithm());
+      }
+    }
+  }
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
@@ -36,7 +57,7 @@ class SaslUnitTest extends BaseSaslUnitTest {
   void testMechanism(String mechanism, String user, String password) throws SaslException {
     Map<String, String> props = new HashMap<>();
     props.put(Sasl.QOP, QOP_LEVEL);
-    createServer(new HtPasswd("./src/main/resources/.htpassword"), mechanism, PROTOCOL, SERVER_NAME, props);
+    createServer(new HtPasswd("./src/test/resources/.htpassword"), mechanism, PROTOCOL, SERVER_NAME, props);
     createClient(
         user,
         password,

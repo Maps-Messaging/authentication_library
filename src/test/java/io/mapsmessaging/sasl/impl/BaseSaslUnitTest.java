@@ -2,15 +2,22 @@ package io.mapsmessaging.sasl.impl;
 
 import io.mapsmessaging.sasl.IdentityLookup;
 import io.mapsmessaging.sasl.impl.htpasswd.HashType;
+import io.mapsmessaging.sasl.provider.MapsSaslProvider;
+import java.security.Security;
 import java.util.Map;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 
-class BaseSaslUnitTest {
+public class BaseSaslUnitTest {
 
+  @BeforeAll
+  static void register(){
+    Security.addProvider(new MapsSaslProvider());
+  }
 
   protected SaslServer saslServer;
   protected SaslClient saslClient;

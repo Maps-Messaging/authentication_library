@@ -1,5 +1,6 @@
 package io.mapsmessaging.sasl.impl.htpasswd;
 
+import io.mapsmessaging.sasl.impl.htpasswd.hash.MD5PasswordHash;
 import io.mapsmessaging.sasl.impl.htpasswd.hash.PasswordHash;
 import io.mapsmessaging.sasl.impl.htpasswd.hash.PlainPasswordHash;
 import io.mapsmessaging.sasl.impl.htpasswd.hash.Sha1PasswordHash;
@@ -7,7 +8,7 @@ import lombok.Getter;
 
 public enum HashType {
   PLAIN("", new PlainPasswordHash()),
-  MD5("$apr1$", new Sha1PasswordHash()),
+  MD5("$apr1$", new MD5PasswordHash()),
   SHA1("{SHA}", new Sha1PasswordHash()),
   BCRYPT("$2y$", new Sha1PasswordHash());
 
