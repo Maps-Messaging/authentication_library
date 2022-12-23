@@ -31,10 +31,8 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
     Assertions.assertArrayEquals("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.".toCharArray(), HashType.MD5.getPasswordHash().hash("This is an md5 password","po9cazbx" ));
   }
 
-  @Test
   void checkBcryptHash(){
-    byte[] d = Base64.decodeBase64("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u");
-    Assertions.assertArrayEquals("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u".toCharArray(), HashType.BCRYPT.getPasswordHash().hash("This is an bcrypt password","y$10" ));
+    Assertions.assertArrayEquals("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u".toCharArray(), HashType.BCRYPT.getPasswordHash().hash("This is an bcrypt password","$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u" ));
   }
 
   @Test

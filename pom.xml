@@ -6,15 +6,162 @@
 
   <groupId>io.mapsmessaging</groupId>
   <artifactId>SaslHelper</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0</version>
+
+  <packaging>jar</packaging>
+
+  <name>Maps Messaging SASL Helper</name>
+  <description>SASL Helper functions and file implementation </description>
+  <url>https://www.mapsmessaging.io</url>
+
+  <licenses>
+    <license>
+      <name>Mozilla Public License Version 2.0</name>
+      <url>https://www.mozilla.org/en-US/MPL/2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>CommonsClause</name>
+      <url>https://commonsclause.com/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/Maps-Messaging/SaslHelper.git</url>
+  </scm>
 
   <properties>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <sonar.organization>maps-messaging</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
 
+  <build>
+    <plugins>
+      <!-- Allow JDKs greater than 1.8 to be used by maven -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <compilerArgs>
+            <arg>-h</arg>
+            <arg>src/main/cpp/</arg>
+          </compilerArgs>
+          <encoding>UTF-8</encoding>
+          <source>11</source>
+          <target>11</target>
+        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.10.1</version>
+      </plugin>
+
+      <!-- Setup code coverage by jacoco for our tests -->
+      <plugin>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <!-- test code, lets not track the testing -->
+            <exclude>**/*Test.*</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <!-- attached to Maven test phase -->
+          <execution>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <id>report</id>
+            <phase>test</phase>
+          </execution>
+        </executions>
+        <groupId>org.jacoco</groupId>
+        <version>0.8.8</version>
+      </plugin>
+
+      <!-- Setup the JUnit tests runner -->
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>@{argLine}</argLine>
+          <includes>
+            <include>**/*Test.java</include>
+            <include>**/*IT.java</include>
+          </includes>
+        </configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>2.22.2</version>
+      </plugin>
+
+      <!-- build the source jar as well -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- JavaDoc -->
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <charset>UTF-8</charset>
+          <encoding>UTF-8</encoding>
+          <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+          <reportOutputDirectory>${project.build.directory}/site/docs</reportOutputDirectory>
+          <show>public</show>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <id>attach-javadocs</id>
+          </execution>
+        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>3.4.1</version>
+      </plugin>
+    </plugins>
+  </build>
+
+  <repositories>
+    <repository>
+      <id>mapsmessaging.io</id>
+      <name>artifactory-releases</name>
+      <url>https://mapsmessaging.jfrog.io/artifactory/mapsmessaging-mvn-prod</url>
+    </repository>
+
+    <repository>
+      <id>snaphsot.mapsmessaging.io</id>
+      <name>artifactory-snapshot</name>
+      <url>https://mapsmessaging.jfrog.io/artifactory/mapsmessaging-mvn-snapshot</url>
+    </repository>
+  </repositories>
+
+
   <dependencies>
+
+    <dependency>
+      <groupId>io.mapsmessaging</groupId>
+      <artifactId>Simple_Logging</artifactId>
+      <version>2.0.6</version>
+    </dependency>
+
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -33,12 +180,6 @@
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.15</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>2.0.6</version>
     </dependency>
 
     <dependency>
