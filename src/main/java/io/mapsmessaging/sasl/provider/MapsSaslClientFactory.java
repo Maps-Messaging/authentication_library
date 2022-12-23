@@ -1,6 +1,6 @@
 package io.mapsmessaging.sasl.provider;
 
-import io.mapsmessaging.sasl.provider.scram.ScramSaslClient;
+import io.mapsmessaging.sasl.provider.scram.client.ScramSaslClient;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslClient;

@@ -1,4 +1,4 @@
-package io.mapsmessaging.sasl.provider.scram;
+package io.mapsmessaging.sasl.provider.scram.server;
 
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
