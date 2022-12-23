@@ -7,7 +7,7 @@ import javax.security.sasl.SaslException;
 
 public class ScramSaslClient implements SaslClient {
 
-  protected ScramSaslClient(String[] mechanisms, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
+  public ScramSaslClient(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
 
   }
 

@@ -7,7 +7,7 @@ import javax.security.sasl.SaslServer;
 
 public class ScramSaslServer implements SaslServer {
 
-  protected ScramSaslServer(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
+  public ScramSaslServer(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
 
   }
 
