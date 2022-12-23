@@ -13,6 +13,11 @@ public class ChallengeResponse {
     data = new LinkedHashMap<>();
   }
 
+  public ChallengeResponse(byte[] comms){
+    this(new String(comms));
+  }
+
+
   public ChallengeResponse(String comms){
     this();
     parseString(comms);
