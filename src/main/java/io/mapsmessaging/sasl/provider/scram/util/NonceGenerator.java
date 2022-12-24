@@ -12,7 +12,7 @@ public class NonceGenerator {
     prng = new SecureRandom();
   }
 
-  public String generateRandomStringNonce(int size) {
+  public String generateNonce(int size) {
     byte[] nonce = new byte[size];
     int x = 0;
     while(x<size){
@@ -23,17 +23,10 @@ public class NonceGenerator {
     return new String(nonce);
   }
 
-
-  public byte[] generateRandomNonce() {
-    byte[] nonce = new byte[12];
-    prng.nextBytes(nonce);
-    return nonce;
-  }
-
   public static void main(String[] args){
     for(int x=0;x<100;x++){
       NonceGenerator nonceGenerator = new NonceGenerator();
-      System.err.println(nonceGenerator.generateRandomStringNonce(48));
+      System.err.println(nonceGenerator.generateNonce(48));
     }
   }
 }

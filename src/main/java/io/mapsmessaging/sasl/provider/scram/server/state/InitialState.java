@@ -1,4 +1,4 @@
-package io.mapsmessaging.sasl.provider.scram.client.state;
+package io.mapsmessaging.sasl.provider.scram.server.state;
 
 import io.mapsmessaging.sasl.provider.scram.State;
 import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
@@ -6,14 +6,16 @@ import io.mapsmessaging.sasl.provider.scram.msgs.FirstClientMessage;
 import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.util.Map;
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 public class InitialState extends State {
 
-  public InitialState(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
-    super(authorizationId, protocol, serverName, props, cbh);
+  public InitialState(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
+    super("", protocol, serverName, props, cbh);
   }
 
   @Override
@@ -23,13 +25,19 @@ public class InitialState extends State {
 
   @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
-    context.setClientNonce(nonceGenerator.generateNonce(48));
+    context.setServerNonce(nonceGenerator.generateNonce(48));
     ChallengeResponse firstClientChallenge = new FirstClientMessage();
-    NameCallback[] callbacks = new NameCallback[1];
+    Callback[] callbacks = new NameCallback[2];
     callbacks[0] = new NameCallback("SCRAM Username Prompt");
+    callbacks[1] = new PasswordCallback("SCRAM Password Prompt", false);
     cbh.handle(callbacks);
-    firstClientChallenge.put(ChallengeResponse.USERNAME, callbacks[0].getName());
-    firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
+    String username = ((NameCallback)callbacks[0]).getName();
+    if(username == null){
+      // Need to log an exception
+    }
+    char[] password = ((PasswordCallback)callbacks[1]).getPassword();
+    firstClientChallenge.put(ChallengeResponse.NONCE, context.getServerNonce());
+    firstClientChallenge.put(ChallengeResponse.SALT, new String(password));
     return firstClientChallenge;
   }
 

@@ -1,13 +1,22 @@
 package io.mapsmessaging.sasl.provider.scram.server;
 
+import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
+import io.mapsmessaging.sasl.provider.scram.server.state.InitialState;
+import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
+import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 
 public class ScramSaslServer implements SaslServer {
 
+  private final SessionContext context;
+
   public ScramSaslServer(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
+    context = new SessionContext();
+    context.setState(new InitialState(protocol, serverName, props, cbh));
 
   }
 
@@ -18,12 +27,19 @@ public class ScramSaslServer implements SaslServer {
 
   @Override
   public byte[] evaluateResponse(byte[] response) throws SaslException {
-    return new byte[0];
+    try {
+      context.getState().handeResponse(new ChallengeResponse(response), context);
+      return context.getState().produceChallenge(context).toString().getBytes();
+    } catch (IOException | UnsupportedCallbackException e) {
+      SaslException ex = new SaslException("Exception raised eveluating challenge");
+      ex.initCause(e);
+      throw ex;
+    }
   }
 
   @Override
   public boolean isComplete() {
-    return false;
+    return context.getState().isComplete();
   }
 
   @Override

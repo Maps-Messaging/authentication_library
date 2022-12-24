@@ -1,7 +1,8 @@
-package io.mapsmessaging.sasl.provider.scram.client.state;
+package io.mapsmessaging.sasl.provider.scram;
 
 import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.sasl.provider.scram.util.NonceGenerator;
+import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
@@ -27,7 +28,7 @@ public abstract class State {
 
   public abstract boolean isComplete();
 
-  public abstract ChallengeResponse produceChallenge() throws IOException, UnsupportedCallbackException;
+  public abstract ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException;
 
-  public abstract void handeResponse(ChallengeResponse response ) throws IOException, UnsupportedCallbackException;
+  public abstract void handeResponse(ChallengeResponse response, SessionContext context ) throws IOException, UnsupportedCallbackException;
 }
