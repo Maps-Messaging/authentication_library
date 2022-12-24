@@ -29,7 +29,11 @@ public class ScramSaslServer implements SaslServer {
   public byte[] evaluateResponse(byte[] response) throws SaslException {
     try {
       context.getState().handeResponse(new ChallengeResponse(response), context);
-      return context.getState().produceChallenge(context).toString().getBytes();
+      ChallengeResponse challengeResponse = context.getState().produceChallenge(context);
+      if(challengeResponse != null){
+        return challengeResponse.toString().getBytes();
+      }
+      return null;
     } catch (IOException | UnsupportedCallbackException e) {
       SaslException ex = new SaslException("Exception raised eveluating challenge");
       ex.initCause(e);

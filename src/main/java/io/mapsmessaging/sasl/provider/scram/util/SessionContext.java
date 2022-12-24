@@ -8,6 +8,10 @@ public class SessionContext {
 
   @Getter
   @Setter
+  private boolean receivedClientMessage = false;
+
+  @Getter
+  @Setter
   private String clientNonce;
 
   @Getter

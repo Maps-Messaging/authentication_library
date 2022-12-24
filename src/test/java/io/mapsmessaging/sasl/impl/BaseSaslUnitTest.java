@@ -16,7 +16,7 @@ public class BaseSaslUnitTest {
 
   @BeforeAll
   static void register(){
-    Security.addProvider(new MapsSaslProvider());
+    Security.insertProviderAt(new MapsSaslProvider(), 1);
   }
 
   protected SaslServer saslServer;
@@ -42,9 +42,11 @@ public class BaseSaslUnitTest {
     byte[] challenge;
     byte[] response = new byte[0];
 
-    while(!saslClient.isComplete()) {
+    while(!saslClient.isComplete() && !saslServer.isComplete()) {
       challenge = saslServer.evaluateResponse(response);
+      if(challenge != null) System.err.println(">>"+new String(challenge));
       response = saslClient.evaluateChallenge(challenge);
+      if(response != null)System.err.println("<<"+new String(response));
     }
     if(response != null){
       return saslServer.evaluateResponse(response);

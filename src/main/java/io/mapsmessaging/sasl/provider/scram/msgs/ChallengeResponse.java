@@ -23,7 +23,7 @@ public class ChallengeResponse {
 
   private final Map<String, String> data;
 
-  protected ChallengeResponse(){
+  public ChallengeResponse(){
     data = new LinkedHashMap<>();
   }
 
@@ -85,4 +85,7 @@ public class ChallengeResponse {
     return result.substring(0, result.length() -1);
   }
 
+  public boolean isEmpty() {
+    return data.isEmpty();
+  }
 }

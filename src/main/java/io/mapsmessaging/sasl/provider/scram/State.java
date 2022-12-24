@@ -26,6 +26,15 @@ public abstract class State {
     nonceGenerator = new NonceGenerator();
   }
 
+  protected State(State lhs){
+    this.authorizationId = lhs.authorizationId;
+    this.props = lhs.props;
+    this.protocol = lhs.protocol;
+    this.serverName = lhs.serverName;
+    this.cbh = lhs.cbh;
+    nonceGenerator = lhs.nonceGenerator;
+  }
+
   public abstract boolean isComplete();
 
   public abstract ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException;

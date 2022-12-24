@@ -39,15 +39,17 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
   void listProviders(){
     Provider[] providers = Security.getProviders();
     for(Provider provider:providers){
-      System.err.println(provider.getName());
-      for(Service service:provider.getServices()){
-        System.err.println("\t"+service.getType()+" "+service.getAlgorithm());
+      if(provider.getName().toLowerCase().contains("sasl")){
+        System.err.println(provider.getName());
+        for(Service service:provider.getServices()){
+          System.err.println("\t"+service.getType()+" "+service.getAlgorithm());
+        }
       }
     }
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
+  @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5", "SCRAM"})
   void simpleValidTest(String mechanism) throws SaslException {
     testMechanism(mechanism, "fred2@google.com", "This is a random password");
   }
@@ -72,6 +74,7 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
         SERVER_NAME,
         props
     );
+    System.err.println(saslClient.getClass().getName()+" <> "+saslServer.getClass().getName());
     simpleValidation();
   }
 

@@ -2,7 +2,6 @@ package io.mapsmessaging.sasl.provider.scram.client.state;
 
 import io.mapsmessaging.sasl.provider.scram.State;
 import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.sasl.provider.scram.msgs.FirstClientMessage;
 import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.util.Map;
@@ -24,12 +23,13 @@ public class InitialState extends State {
   @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
     context.setClientNonce(nonceGenerator.generateNonce(48));
-    ChallengeResponse firstClientChallenge = new FirstClientMessage();
+    ChallengeResponse firstClientChallenge = new ChallengeResponse();
     NameCallback[] callbacks = new NameCallback[1];
     callbacks[0] = new NameCallback("SCRAM Username Prompt");
     cbh.handle(callbacks);
     firstClientChallenge.put(ChallengeResponse.USERNAME, callbacks[0].getName());
     firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
+    context.setState(new ChallengeState(this));
     return firstClientChallenge;
   }
 

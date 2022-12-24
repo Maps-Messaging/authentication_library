@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 
@@ -33,8 +34,14 @@ public class ScramSaslClient implements SaslClient {
   @Override
   public byte[] evaluateChallenge(byte[] challenge) throws SaslException {
     try {
-      context.getState().handeResponse(new ChallengeResponse(challenge), context);
-      return context.getState().produceChallenge(context).toString().getBytes();
+      if(challenge != null){
+        context.getState().handeResponse(new ChallengeResponse(challenge), context);
+      }
+      ChallengeResponse challengeResponse = context.getState().produceChallenge(context);
+      if(challengeResponse != null){
+        return challengeResponse.toString().getBytes();
+      }
+      return null;
     } catch (IOException | UnsupportedCallbackException e) {
       SaslException ex = new SaslException("Exception raised eveluating challenge");
       ex.initCause(e);
@@ -59,6 +66,9 @@ public class ScramSaslClient implements SaslClient {
 
   @Override
   public Object getNegotiatedProperty(String propName) {
+    if(propName.equals(Sasl.QOP)){
+      return "auth";
+    }
     return null;
   }
 

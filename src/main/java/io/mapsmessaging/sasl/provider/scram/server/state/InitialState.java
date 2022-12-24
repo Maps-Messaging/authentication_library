@@ -2,7 +2,6 @@ package io.mapsmessaging.sasl.provider.scram.server.state;
 
 import io.mapsmessaging.sasl.provider.scram.State;
 import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.sasl.provider.scram.msgs.FirstClientMessage;
 import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.util.Map;
@@ -25,10 +24,26 @@ public class InitialState extends State {
 
   @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
-    context.setServerNonce(nonceGenerator.generateNonce(48));
-    ChallengeResponse firstClientChallenge = new FirstClientMessage();
-    Callback[] callbacks = new NameCallback[2];
-    callbacks[0] = new NameCallback("SCRAM Username Prompt");
+    if(!context.isReceivedClientMessage()){
+      return null;
+    }
+    ChallengeResponse response = new ChallengeResponse();
+    response.put(ChallengeResponse.NONCE, context.getServerNonce());
+    response.put(ChallengeResponse.ITERATION_COUNT, ""+context.getInterations());
+    response.put(ChallengeResponse.SALT, context.getPasswordSalt());
+    context.setState(new ValidationState(this));
+    return response;
+  }
+
+  @Override
+  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+    if(response.isEmpty()){
+      return;
+    }
+    context.setReceivedClientMessage(true);
+    context.setUsername(response.get(ChallengeResponse.USERNAME));
+    Callback[] callbacks = new Callback[2];
+    callbacks[0] = new NameCallback("SCRAM Username Prompt", context.getUsername());
     callbacks[1] = new PasswordCallback("SCRAM Password Prompt", false);
     cbh.handle(callbacks);
     String username = ((NameCallback)callbacks[0]).getName();
@@ -36,13 +51,8 @@ public class InitialState extends State {
       // Need to log an exception
     }
     char[] password = ((PasswordCallback)callbacks[1]).getPassword();
-    firstClientChallenge.put(ChallengeResponse.NONCE, context.getServerNonce());
-    firstClientChallenge.put(ChallengeResponse.SALT, new String(password));
-    return firstClientChallenge;
-  }
-
-  @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
-    // This is the first state, there is no challenge or response
+    context.setPasswordSalt(new String(password));
+    context.setServerNonce(nonceGenerator.generateNonce(48));
+    context.setInterations(4096);
   }
 }
