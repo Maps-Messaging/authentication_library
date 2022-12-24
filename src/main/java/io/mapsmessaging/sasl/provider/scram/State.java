@@ -53,6 +53,8 @@ public abstract class State {
 
   public abstract boolean isComplete();
 
+  public abstract boolean hasInitialResponse();
+
   public abstract ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException;
 
   public abstract void handeResponse(ChallengeResponse response, SessionContext context ) throws IOException, UnsupportedCallbackException;

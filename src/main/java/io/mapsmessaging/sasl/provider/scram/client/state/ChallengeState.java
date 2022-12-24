@@ -34,6 +34,11 @@ public class ChallengeState extends State {
   }
 
   @Override
+  public boolean hasInitialResponse() {
+    return true;
+  }
+
+  @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());

@@ -44,9 +44,9 @@ public class BaseSaslUnitTest {
 
     while(!saslClient.isComplete() && !saslServer.isComplete()) {
       challenge = saslServer.evaluateResponse(response);
-      if(challenge != null) System.err.println(">>"+new String(challenge));
+      if(challenge != null) System.err.println("Server>Client :"+new String(challenge));
       response = saslClient.evaluateChallenge(challenge);
-      if(response != null)System.err.println("<<"+new String(response));
+      if(response != null)System.err.println("Client>Server :"+new String(response));
     }
     if(response != null){
       return saslServer.evaluateResponse(response);

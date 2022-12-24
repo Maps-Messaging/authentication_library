@@ -29,12 +29,14 @@ public class IdentityEntry {
   private final char[] passwordHash;
   @Getter
   private final String salt;
+  @Getter
+  private final String password;
 
   public IdentityEntry(String line) {
     int usernamePos = line.indexOf(":");
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
-
+    password = line;
     hashType = HashType.detect(line);
     line = line.substring(hashType.getName().length());
     switch (hashType) {

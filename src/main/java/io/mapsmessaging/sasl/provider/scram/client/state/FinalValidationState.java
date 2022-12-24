@@ -33,6 +33,11 @@ public class FinalValidationState extends State {
   }
 
   @Override
+  public boolean hasInitialResponse() {
+    return true;
+  }
+
+  @Override
   public boolean isComplete() {
     return isComplete;
   }
