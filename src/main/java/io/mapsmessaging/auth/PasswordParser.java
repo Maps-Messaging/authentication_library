@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.sasl.impl.htpasswd.hash;
+package io.mapsmessaging.auth;
 
-public class BCryptPasswordHash implements PasswordHash {
-  @Override
-  public char[] hash(String password, String salt) {
-    String h = "";
-    return h.toCharArray();
-  }
+public interface PasswordParser {
+
+  PasswordParser create(String password);
+
+  String getKey();
+
+  boolean hasSalt();
+
+  char[] getSalt();
+
+  char[] getPassword();
+
+  char[] getFullPasswordHash();
+
+  String getName();
+
 }

@@ -3,6 +3,8 @@ package io.mapsmessaging.sasl.impl.htpassword;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.mapsmessaging.auth.PasswordParser;
+import io.mapsmessaging.auth.PasswordParserFactory;
 import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
 import io.mapsmessaging.sasl.impl.htpasswd.HashType;
 import io.mapsmessaging.sasl.impl.htpasswd.HtPasswd;
@@ -13,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -28,7 +29,9 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
 
   @Test
   void checkMd5Hash(){
-    Assertions.assertArrayEquals("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.".toCharArray(), HashType.MD5.getPasswordHash().hash("This is an md5 password","po9cazbx" ));
+    String encoded = "$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.";
+    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(encoded);
+    Assertions.assertArrayEquals(encoded.toCharArray(), HashType.MD5.getPasswordHash().hash("This is an md5 password", new String(passwordParser.getSalt()) ));
   }
 
   void checkBcryptHash(){
@@ -49,9 +52,15 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5", "SCRAM"})
-  void simpleValidTest(String mechanism) throws SaslException {
+  @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
+  void simpleDigestNonSaltValidTest(String mechanism) throws SaslException {
     testMechanism(mechanism, "fred2@google.com", "This is a random password");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"SCRAM"})
+  void simpleScramValidTest(String mechanism) throws SaslException {
+    testMechanism(mechanism, "fred3@google.com", "This is a random password");
   }
 
   @ParameterizedTest
