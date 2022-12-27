@@ -32,6 +32,12 @@ public class ValidationState  extends State {
     isComplete = false;
   }
 
+
+  @Override
+  public boolean hasInitialResponse() {
+    return true;
+  }
+
   @Override
   public boolean isComplete() {
     return isComplete;

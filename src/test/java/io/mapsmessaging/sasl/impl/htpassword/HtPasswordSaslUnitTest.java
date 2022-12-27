@@ -35,7 +35,9 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
   }
 
   void checkBcryptHash(){
-    Assertions.assertArrayEquals("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u".toCharArray(), HashType.BCRYPT.getPasswordHash().hash("This is an bcrypt password","$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u" ));
+    char[] hash = HashType.BCRYPT.getPasswordHash().hash("This is an bcrypt password","$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u" );
+    System.err.println(new String(hash));
+    Assertions.assertArrayEquals("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u".toCharArray(), hash);
   }
 
   @Test

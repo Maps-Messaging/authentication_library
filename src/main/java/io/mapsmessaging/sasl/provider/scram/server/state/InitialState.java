@@ -39,6 +39,11 @@ public class InitialState extends State {
   }
 
   @Override
+  public boolean hasInitialResponse() {
+    return false;
+  }
+
+  @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
     if(!context.isReceivedClientMessage()){
       return null;
