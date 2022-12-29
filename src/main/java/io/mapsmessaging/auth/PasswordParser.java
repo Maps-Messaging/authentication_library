@@ -24,12 +24,18 @@ public interface PasswordParser {
 
   boolean hasSalt();
 
-  char[] getSalt();
+  byte[] computeHash(byte[] password, byte[] salt, int cost);
 
-  char[] getPassword();
+  byte[] getSalt();
+
+  byte[] getPassword();
 
   char[] getFullPasswordHash();
 
   String getName();
+
+  default int getCost(){
+    return 0;
+  }
 
 }

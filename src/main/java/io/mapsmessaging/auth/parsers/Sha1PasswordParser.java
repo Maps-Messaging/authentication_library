@@ -19,19 +19,21 @@ package io.mapsmessaging.auth.parsers;
 import io.mapsmessaging.auth.PasswordParser;
 
 public class Sha1PasswordParser implements PasswordParser {
-  private final String password;
 
-  public Sha1PasswordParser(){
-    password = "";
+  private final byte[] password;
+
+  public Sha1PasswordParser() {
+    password = new byte[0];
   }
 
-  protected Sha1PasswordParser(String password){
-    this.password = password;
+  protected Sha1PasswordParser(String password) {
+    this.password = password.getBytes();
   }
 
-  public PasswordParser create(String password){
+  public PasswordParser create(String password) {
     return new Sha1PasswordParser(password);
   }
+
   @Override
   public String getKey() {
     return "{SHA}";
@@ -43,18 +45,23 @@ public class Sha1PasswordParser implements PasswordParser {
   }
 
   @Override
-  public char[] getSalt() {
-    return new char[0];
+  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+    return new byte[0];
   }
 
   @Override
-  public char[] getPassword() {
-    return password.toCharArray();
+  public byte[] getSalt() {
+    return new byte[0];
+  }
+
+  @Override
+  public byte[] getPassword() {
+    return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + password).toCharArray();
+    return (getKey() + new String(password)).toCharArray();
   }
 
   @Override

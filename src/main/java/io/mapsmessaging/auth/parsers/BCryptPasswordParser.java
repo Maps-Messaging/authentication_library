@@ -16,30 +16,38 @@
 
 package io.mapsmessaging.auth.parsers;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.auth.PasswordParser;
 
 public abstract class BCryptPasswordParser implements PasswordParser {
 
-  private final String password;
-  private final String salt;
+  private final byte[] password;
+  private final byte[] salt;
   private final int cost;
 
-  public BCryptPasswordParser(){
-    password = "";
-    salt = "";
-    cost =0;
+  protected BCryptPasswordParser() {
+    password = new byte[0];
+    salt = new byte[0];
+    cost = 0;
   }
 
-  protected BCryptPasswordParser(String password){
+  protected BCryptPasswordParser(String password) {
     String t = password.substring(getKey().length());
     int dollar = t.indexOf("$");
     cost = Integer.parseInt(t.substring(0, dollar));
-    t = t.substring(dollar+1);
+    t = t.substring(dollar + 1);
     String s = t.substring(0, 22);
     String p = t.substring(23);
-    salt = s;
-    this.password = p;
+    Radix64Encoder encoder = new Radix64Encoder.Default();
+    salt = encoder.decode(s.getBytes());
+    this.password = encoder.decode(p.getBytes());
+  }
+
+  @Override
+  public int getCost(){
+    return cost;
   }
 
   @Override
@@ -47,24 +55,29 @@ public abstract class BCryptPasswordParser implements PasswordParser {
     return true;
   }
 
-  @Override
-  public char[] getSalt() {
-    return salt.toCharArray();
-  }
+  protected abstract Version getVersion();
 
-  public byte[] getRawSalt(){
-    Radix64Encoder encoder = new  Radix64Encoder.Default();
-    return encoder.decode(salt.getBytes());
+  @Override
+  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+    return BCrypt.with(getVersion()).hash(cost, salt, password);
   }
 
   @Override
-  public char[] getPassword() {
-    return password.toCharArray();
+  public byte[] getSalt() {
+    return salt;
+  }
+
+  @Override
+  public byte[] getPassword() {
+    return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + cost+"$"+salt+password).toCharArray();
+    Radix64Encoder encoder = new Radix64Encoder.Default();
+
+    String t = new String(encoder.encode(salt))+ new String(encoder.encode(password));
+    return (getKey() + cost + "$" + t).toCharArray();
   }
 
   @Override

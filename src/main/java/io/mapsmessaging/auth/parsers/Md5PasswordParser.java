@@ -17,33 +17,35 @@
 package io.mapsmessaging.auth.parsers;
 
 import io.mapsmessaging.auth.PasswordParser;
+import org.apache.commons.codec.digest.Md5Crypt;
 
 public class Md5PasswordParser implements PasswordParser {
 
-  private final String password;
-  private final String salt;
+  private final byte[] password;
+  private final byte[] salt;
 
-  public Md5PasswordParser(){
-    password = "";
-    salt = "";
+  public Md5PasswordParser() {
+    password = new byte[0];
+    salt = new byte[0];;
   }
 
-  protected Md5PasswordParser(String password){
+  protected Md5PasswordParser(String password) {
     String sub = password.substring(getKey().length());
     int split = sub.indexOf("$");
-    String pw="";
+    String pw = "";
     String sl = "";
-    if(split != -1){
+    if (split != -1) {
       sl = sub.substring(0, split);
-      pw = sub.substring(split+1);
+      pw = sub.substring(split + 1);
     }
-    this.password = pw;
-    this.salt = sl;
+    this.password = pw.getBytes();
+    this.salt = sl.getBytes();
   }
 
-  public PasswordParser create(String password){
+  public PasswordParser create(String password) {
     return new Md5PasswordParser(password);
   }
+
   @Override
   public String getKey() {
     return "$apr1$";
@@ -51,22 +53,27 @@ public class Md5PasswordParser implements PasswordParser {
 
   @Override
   public boolean hasSalt() {
-    return salt.length() > 0;
+    return salt.length > 0;
   }
 
   @Override
-  public char[] getSalt() {
-    return salt.toCharArray();
+  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+    return Md5Crypt.apr1Crypt(password, new String(salt)).getBytes();
   }
 
   @Override
-  public char[] getPassword() {
-    return password.toCharArray();
+  public byte[] getSalt() {
+    return salt;
+  }
+
+  @Override
+  public byte[] getPassword() {
+    return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey()+salt+"$" + password).toCharArray();
+    return (getKey() + new String(salt) + "$" + new String(password)).toCharArray();
   }
 
   @Override

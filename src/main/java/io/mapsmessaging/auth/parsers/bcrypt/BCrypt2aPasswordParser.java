@@ -16,13 +16,15 @@
 
 package io.mapsmessaging.auth.parsers.bcrypt;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import io.mapsmessaging.auth.PasswordParser;
 import io.mapsmessaging.auth.parsers.BCryptPasswordParser;
 
 public class BCrypt2aPasswordParser extends BCryptPasswordParser {
 
 
-  public BCrypt2aPasswordParser(){
+  public BCrypt2aPasswordParser() {
     super();
   }
 
@@ -30,7 +32,12 @@ public class BCrypt2aPasswordParser extends BCryptPasswordParser {
     super(password);
   }
 
-  public PasswordParser create(String password){
+  @Override
+  protected Version getVersion() {
+    return Version.VERSION_2A;
+  }
+
+  public PasswordParser create(String password) {
     return new BCrypt2aPasswordParser(password);
   }
 
