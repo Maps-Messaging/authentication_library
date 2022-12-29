@@ -60,7 +60,7 @@ public class HtPasswd implements IdentityLookup {
           line = reader.readLine();
         }
       } catch (IOException e) {
-        e.printStackTrace();
+        // To Do : Need to add log meesage
       }
     }
   }
