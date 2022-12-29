@@ -16,35 +16,45 @@
 
 package io.mapsmessaging.auth.parsers;
 
+import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.auth.PasswordParser;
 
-public class BCryptPasswordParser  implements PasswordParser {
+public abstract class BCryptPasswordParser implements PasswordParser {
+
   private final String password;
+  private final String salt;
+  private final int cost;
 
   public BCryptPasswordParser(){
     password = "";
+    salt = "";
+    cost =0;
   }
 
   protected BCryptPasswordParser(String password){
-    this.password = password;
-  }
-
-  public PasswordParser create(String password){
-    return new BCryptPasswordParser(password);
-  }
-  @Override
-  public String getKey() {
-    return "$2y$";
+    String t = password.substring(getKey().length());
+    int dollar = t.indexOf("$");
+    cost = Integer.parseInt(t.substring(0, dollar));
+    t = t.substring(dollar+1);
+    String s = t.substring(0, 22);
+    String p = t.substring(23);
+    salt = s;
+    this.password = p;
   }
 
   @Override
   public boolean hasSalt() {
-    return false;
+    return true;
   }
 
   @Override
   public char[] getSalt() {
-    return new char[0];
+    return salt.toCharArray();
+  }
+
+  public byte[] getRawSalt(){
+    Radix64Encoder encoder = new  Radix64Encoder.Default();
+    return encoder.decode(salt.getBytes());
   }
 
   @Override
@@ -54,11 +64,11 @@ public class BCryptPasswordParser  implements PasswordParser {
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + password).toCharArray();
+    return (getKey() + cost+"$"+salt+password).toCharArray();
   }
 
   @Override
   public String getName() {
-    return "MD5";
+    return "BCrypt";
   }
 }

@@ -3,8 +3,11 @@ package io.mapsmessaging.sasl.impl.htpassword;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import io.mapsmessaging.auth.PasswordParser;
 import io.mapsmessaging.auth.PasswordParserFactory;
+import io.mapsmessaging.auth.parsers.BCryptPasswordParser;
 import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
 import io.mapsmessaging.sasl.impl.htpasswd.HashType;
 import io.mapsmessaging.sasl.impl.htpasswd.HtPasswd;
@@ -34,10 +37,12 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
     Assertions.assertArrayEquals(encoded.toCharArray(), HashType.MD5.getPasswordHash().hash("This is an md5 password", new String(passwordParser.getSalt()) ));
   }
 
+  @Test
   void checkBcryptHash(){
-    char[] hash = HashType.BCRYPT.getPasswordHash().hash("This is an bcrypt password","$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u" );
-    System.err.println(new String(hash));
-    Assertions.assertArrayEquals("BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u".toCharArray(), hash);
+    String encoded = "$2y$10$usnulDZ/2qo7.8h9k1tgZO2trerPMjuIx8PtClu8Uk.28amTowoFq";
+    BCryptPasswordParser passwordParser = (BCryptPasswordParser) PasswordParserFactory.getInstance().parse(encoded);
+    byte[] hash = BCrypt.with(Version.VERSION_2Y).hash(10, passwordParser.getRawSalt(), "This Is A Password".getBytes());
+    Assertions.assertArrayEquals(encoded.getBytes(), hash);
   }
 
   @Test
