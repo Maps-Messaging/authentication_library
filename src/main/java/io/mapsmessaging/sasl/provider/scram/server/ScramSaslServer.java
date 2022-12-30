@@ -26,6 +26,7 @@ import javax.security.sasl.SaslServer;
 public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   public ScramSaslServer(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
+
     context.setState(new InitialState(protocol, serverName, props, cbh));
   }
 

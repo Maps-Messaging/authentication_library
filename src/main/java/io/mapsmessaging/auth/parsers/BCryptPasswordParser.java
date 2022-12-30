@@ -23,6 +23,7 @@ import io.mapsmessaging.auth.PasswordParser;
 
 public abstract class BCryptPasswordParser implements PasswordParser {
 
+  private final Version version;
   private final byte[] password;
   private final byte[] salt;
   private final int cost;
@@ -31,9 +32,11 @@ public abstract class BCryptPasswordParser implements PasswordParser {
     password = new byte[0];
     salt = new byte[0];
     cost = 0;
+    version = null;
   }
 
-  protected BCryptPasswordParser(String password) {
+  protected BCryptPasswordParser(String password, Version version) {
+    this.version = version;
     String t = password.substring(getKey().length());
     int dollar = t.indexOf("$");
     cost = Integer.parseInt(t.substring(0, dollar));
@@ -55,11 +58,9 @@ public abstract class BCryptPasswordParser implements PasswordParser {
     return true;
   }
 
-  protected abstract Version getVersion();
-
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    return BCrypt.with(getVersion()).hash(cost, salt, password);
+    return BCrypt.with(version).hash(cost, salt, password);
   }
 
   @Override
@@ -75,7 +76,6 @@ public abstract class BCryptPasswordParser implements PasswordParser {
   @Override
   public char[] getFullPasswordHash() {
     Radix64Encoder encoder = new Radix64Encoder.Default();
-
     String t = new String(encoder.encode(salt))+ new String(encoder.encode(password));
     return (getKey() + cost + "$" + t).toCharArray();
   }

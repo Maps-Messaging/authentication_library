@@ -57,11 +57,9 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
   void listProviders(){
     Provider[] providers = Security.getProviders();
     for(Provider provider:providers){
-      if(provider.getName().toLowerCase().contains("sasl")){
-        System.err.println(provider.getName());
-        for(Service service:provider.getServices()){
-          System.err.println("\t"+service.getType()+" "+service.getAlgorithm());
-        }
+      System.err.println(provider.getName());
+      for(Service service:provider.getServices()){
+        System.err.println("\t"+service.getType()+" "+service.getAlgorithm());
       }
     }
   }

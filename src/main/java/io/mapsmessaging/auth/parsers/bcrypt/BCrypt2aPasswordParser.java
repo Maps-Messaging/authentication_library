@@ -29,12 +29,7 @@ public class BCrypt2aPasswordParser extends BCryptPasswordParser {
   }
 
   public BCrypt2aPasswordParser(String password) {
-    super(password);
-  }
-
-  @Override
-  protected Version getVersion() {
-    return Version.VERSION_2A;
+    super(password, Version.VERSION_2A);
   }
 
   public PasswordParser create(String password) {
