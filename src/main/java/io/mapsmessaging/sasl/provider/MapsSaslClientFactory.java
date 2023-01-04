@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,8 +29,10 @@ public class MapsSaslClientFactory implements SaslClientFactory {
   public SaslClient createSaslClient(String[] mechanisms, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh)
       throws SaslException {
     for(String mechanism:mechanisms){
-      if(mechanism.toLowerCase().startsWith("scram")){
-        return new ScramSaslClient(authorizationId, protocol, serverName, props, cbh);
+      String mech = mechanism.toLowerCase().trim();
+      if(mech.startsWith("scram")){
+        String algorithm = mech.substring("scram-".length());
+        return new ScramSaslClient(algorithm, authorizationId, protocol, serverName, props, cbh);
       }
     }
     throw new SaslException("Unknown mechanism "+mechanisms);

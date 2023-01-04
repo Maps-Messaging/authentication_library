@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package io.mapsmessaging.sasl.provider;
 
 import java.security.Provider;
+import java.security.Security;
 
 public class MapsSaslProvider extends Provider {
 
@@ -26,8 +27,19 @@ public class MapsSaslProvider extends Provider {
 
   public MapsSaslProvider() {
     super("MapsSasl", "1.0", "Provider for SCRAM SASL implementation.");
-    put("SaslClientFactory.SCRAM", CLIENT_FACTORY);
-    put("SaslServerFactory.SCRAM", SERVER_FACTORY);
+    put("SaslClientFactory.SCRAM-bcrypt-sha1", CLIENT_FACTORY);
+    put("SaslServerFactory.SCRAM-bcrypt-sha1", SERVER_FACTORY);
+    Provider[] providers = Security.getProviders();
+
+    for(Provider provider:providers){
+      System.err.println(provider.getName());
+      for(Service service:provider.getServices()){
+        if(service.getAlgorithm().toLowerCase().startsWith("hmac")){
+          put("SaslClientFactory.SCRAM-"+service.getAlgorithm(), CLIENT_FACTORY);
+          put("SaslServerFactory.SCRAM-"+service.getAlgorithm(), SERVER_FACTORY);
+        }
+      }
+    }
   }
 
 }

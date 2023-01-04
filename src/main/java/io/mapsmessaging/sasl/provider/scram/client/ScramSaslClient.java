@@ -25,7 +25,7 @@ import javax.security.sasl.SaslClient;
 
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
-  public ScramSaslClient(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
+  public ScramSaslClient(String algorithm, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));
   }
 

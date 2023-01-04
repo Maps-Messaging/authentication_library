@@ -16,10 +16,13 @@
 
 package io.mapsmessaging.sasl.provider.scram.server.state;
 
+import io.mapsmessaging.auth.PasswordParser;
+import io.mapsmessaging.auth.PasswordParserFactory;
 import io.mapsmessaging.sasl.provider.scram.State;
 import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Map;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -82,10 +85,12 @@ public class InitialState extends State {
 
     char[] password = ((PasswordCallback)callbacks[1]).getPassword();
     //
-    // To Do: Parse the password by type defined ( BCRYPT, CRYPT etc ) then set the below based on the parsed info
+    // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based on the parsed info
     //
-    context.setPasswordSalt(new String(password));
+    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
+    context.setPasswordSalt(Base64.getEncoder().encodeToString(passwordParser.getSalt()));
+    context.setInterations(passwordParser.getCost());
+
     context.setServerNonce(nonceGenerator.generateNonce(48));
-    context.setInterations(4096);
   }
 }
