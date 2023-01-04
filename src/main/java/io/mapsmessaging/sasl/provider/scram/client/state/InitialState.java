@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
 
 package io.mapsmessaging.sasl.provider.scram.client.state;
 
+import io.mapsmessaging.sasl.SaslPrep;
 import io.mapsmessaging.sasl.provider.scram.State;
 import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.util.Map;
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 public class InitialState extends State {
@@ -44,10 +47,25 @@ public class InitialState extends State {
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
     context.setClientNonce(nonceGenerator.generateNonce(48));
     ChallengeResponse firstClientChallenge = new ChallengeResponse();
-    NameCallback[] callbacks = new NameCallback[1];
+
+    //
+    // Request information from the user
+    //
+    Callback[] callbacks = new Callback[2];
     callbacks[0] = new NameCallback("SCRAM Username Prompt");
+    callbacks[1] = new PasswordCallback("SCRAM Password Prompt", false);
     cbh.handle(callbacks);
-    firstClientChallenge.put(ChallengeResponse.USERNAME, callbacks[0].getName());
+
+    //
+    // Update the context
+    //
+    context.setUsername( ((NameCallback)callbacks[0]).getName());
+    context.setPrepPassword(SaslPrep.getInstance().stringPrep( new String(((PasswordCallback)callbacks[1]).getPassword())));
+
+    //
+    // Set up the initial challenge
+    //
+    firstClientChallenge.put(ChallengeResponse.USERNAME, context.getUsername());
     firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
     context.setState(new ChallengeState(this));
     return firstClientChallenge;

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public class InitialState extends State {
       return null;
     }
     ChallengeResponse response = new ChallengeResponse();
-    response.put(ChallengeResponse.NONCE, context.getServerNonce());
+    response.put(ChallengeResponse.NONCE, context.getClientNonce()+context.getServerNonce());
     response.put(ChallengeResponse.ITERATION_COUNT, ""+context.getInterations());
     response.put(ChallengeResponse.SALT, context.getPasswordSalt());
     context.setState(new ValidationState(this));
@@ -61,8 +61,16 @@ public class InitialState extends State {
     if(response.isEmpty()){
       return;
     }
+    //
+    // Set up the context with the received information
+    //
     context.setReceivedClientMessage(true);
     context.setUsername(response.get(ChallengeResponse.USERNAME));
+    context.setClientNonce(response.get(ChallengeResponse.NONCE));
+
+    //
+    // Get the server back end user information
+    //
     Callback[] callbacks = new Callback[2];
     callbacks[0] = new NameCallback("SCRAM Username Prompt", context.getUsername());
     callbacks[1] = new PasswordCallback("SCRAM Password Prompt", false);
@@ -71,7 +79,11 @@ public class InitialState extends State {
     if(username == null){
       // Need to log an exception
     }
+
     char[] password = ((PasswordCallback)callbacks[1]).getPassword();
+    //
+    // To Do: Parse the password by type defined ( BCRYPT, CRYPT etc ) then set the below based on the parsed info
+    //
     context.setPasswordSalt(new String(password));
     context.setServerNonce(nonceGenerator.generateNonce(48));
     context.setInterations(4096);

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,15 +18,10 @@ package io.mapsmessaging.sasl.provider.scram.client;
 
 import io.mapsmessaging.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.sasl.provider.scram.client.state.InitialState;
-import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
-import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
-import javax.security.sasl.SaslException;
 
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 

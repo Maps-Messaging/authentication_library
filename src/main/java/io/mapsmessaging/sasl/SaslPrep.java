@@ -14,45 +14,32 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.sasl.provider.scram.util;
+package io.mapsmessaging.sasl;
 
-import io.mapsmessaging.sasl.provider.scram.State;
-import lombok.Getter;
-import lombok.Setter;
+import com.ongres.stringprep.Profile;
+import com.ongres.stringprep.Stringprep;
 
-public class SessionContext {
+/**
+ * rfc4013 implementation, for more information please see
+ * https://www.rfc-editor.org/rfc/rfc4013
+ */
 
-  @Getter
-  @Setter
-  private boolean receivedClientMessage = false;
+public class SaslPrep {
 
-  @Getter
-  @Setter
-  private String clientNonce;
+  private static final SaslPrep instance = new SaslPrep();
+  private final Profile saslPrep;
 
-  @Getter
-  @Setter
-  private String serverNonce;
+  private SaslPrep(){
+    saslPrep = Stringprep.getProvider("SASLprep");
+  }
 
-  @Getter
-  @Setter
-  private String passwordSalt;
+  public static SaslPrep getInstance(){
+    return instance;
+  }
 
-  @Getter
-  @Setter
-  private String username;
+  // Implements RFC rfc4013
+  public String stringPrep(String string){
+    return saslPrep.prepareStored(string);
+  }
 
-  @Getter
-  @Setter
-  private State state;
-
-  @Getter
-  @Setter
-  private int interations;
-
-  @Getter
-  @Setter
-  private String prepPassword;
-
-  public SessionContext(){}
 }
