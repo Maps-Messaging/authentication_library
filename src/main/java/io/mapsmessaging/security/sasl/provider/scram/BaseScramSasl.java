@@ -18,6 +18,7 @@ public class BaseScramSasl {
     return context.getState().isComplete();
   }
 
+  @SuppressWarnings("java:S1168") // We return null since it needs to be
   public byte[] evaluateChallenge(byte[] challenge) throws SaslException {
     try {
       if(challenge != null){
@@ -35,14 +36,17 @@ public class BaseScramSasl {
     }
   }
 
-  public byte[] unwrap(byte[] incoming, int offset, int len) throws SaslException {
+  @SuppressWarnings("java:S1172") // this is a place holder function
+  public byte[] unwrap(byte[] incoming, int offset, int len) {
     return new byte[0];
   }
 
-  public byte[] wrap(byte[] outgoing, int offset, int len) throws SaslException {
+  @SuppressWarnings("java:S1172") // this is a place holder function
+  public byte[] wrap(byte[] outgoing, int offset, int len) {
     return new byte[0];
   }
 
-  public void dispose() throws SaslException {
+  public void dispose() {
+    // this is a place holder
   }
 }

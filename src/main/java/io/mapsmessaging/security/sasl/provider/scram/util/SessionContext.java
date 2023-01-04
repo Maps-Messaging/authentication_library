@@ -92,9 +92,6 @@ public class SessionContext {
   @Getter
   private byte[] serverSignature;
 
-
-  public SessionContext(){}
-
   public void setServerNonce(String nonce) throws SaslException {
     if(!nonce.startsWith(clientNonce)){
       throw new SaslException("Server Nonce must start with client nonce");
