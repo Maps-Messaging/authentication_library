@@ -16,7 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.util;
 
-import io.mapsmessaging.security.auth.PasswordParser;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;

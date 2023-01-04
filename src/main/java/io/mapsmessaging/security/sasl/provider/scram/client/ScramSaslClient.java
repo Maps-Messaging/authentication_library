@@ -16,7 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
-import io.mapsmessaging.security.auth.parsers.bcrypt.BCrypt2yPasswordParser;
+import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.client.state.InitialState;
 import java.security.NoSuchAlgorithmException;

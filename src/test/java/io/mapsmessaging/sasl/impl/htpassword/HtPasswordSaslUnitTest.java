@@ -20,10 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.mapsmessaging.sasl.impl.BaseSasl;
-import io.mapsmessaging.security.auth.PasswordParser;
-import io.mapsmessaging.security.auth.PasswordParserFactory;
-import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
-import io.mapsmessaging.security.sasl.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.identity.parsers.HashType;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;

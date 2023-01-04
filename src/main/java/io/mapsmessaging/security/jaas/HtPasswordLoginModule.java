@@ -1,8 +1,9 @@
 package io.mapsmessaging.security.jaas;
 
-import io.mapsmessaging.security.auth.PasswordParser;
-import io.mapsmessaging.security.auth.PasswordParserFactory;
-import io.mapsmessaging.security.sasl.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.identity.IdentityLookup;
+import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -16,7 +17,7 @@ import javax.security.auth.login.LoginException;
 
 public class HtPasswordLoginModule extends BaseLoginModule {
 
-  private HtPasswd htPasswd;
+  private IdentityLookup identityLookup;
 
   @Override
   public void initialize(
@@ -25,7 +26,7 @@ public class HtPasswordLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
-    htPasswd = new HtPasswd(options.get("htPasswordFile").toString());
+    identityLookup = new HtPasswd(options.get("htPasswordFile").toString());
   }
 
   @Override
@@ -43,7 +44,7 @@ public class HtPasswordLoginModule extends BaseLoginModule {
     try {
       callbackHandler.handle(callbacks);
       username = ((NameCallback) callbacks[0]).getName();
-      char[] lookup = htPasswd.getPasswordHash(username);
+      char[] lookup = identityLookup.getPasswordHash(username);
       if(lookup == null){
         throw new LoginException("No such user");
       }

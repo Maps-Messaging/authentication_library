@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.impl.htpasswd.hash;
+package io.mapsmessaging.security.identity;
 
-import org.apache.commons.codec.digest.Md5Crypt;
+public interface IdentityLookup {
 
-public class MD5PasswordHash implements PasswordHash {
+  char[] getPasswordHash(String username) throws NoSuchUserFoundException;
 
-  @Override
-  public char[] hash(String password, String salt) {
-    return Md5Crypt.apr1Crypt(password.getBytes(), salt ).toCharArray();
-  }
 }

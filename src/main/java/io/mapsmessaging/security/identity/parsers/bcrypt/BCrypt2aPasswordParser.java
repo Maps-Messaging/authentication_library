@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.auth.parsers.bcrypt;
+package io.mapsmessaging.security.identity.parsers.bcrypt;
 
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
-import io.mapsmessaging.security.auth.PasswordParser;
-import io.mapsmessaging.security.auth.parsers.BCryptPasswordParser;
+import io.mapsmessaging.security.identity.parsers.BCryptPasswordParser;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
-public class BCrypt2xPasswordParser extends BCryptPasswordParser {
+public class BCrypt2aPasswordParser extends BCryptPasswordParser {
 
-  public BCrypt2xPasswordParser() {
-    super(Version.VERSION_2X);
+  public BCrypt2aPasswordParser() {
+    super(Version.VERSION_2A);
   }
 
-  public BCrypt2xPasswordParser(String password) {
-    super(password, Version.VERSION_2X);
+  public BCrypt2aPasswordParser(String password) {
+    super(password, Version.VERSION_2A);
   }
 
   public PasswordParser create(String password) {
-    return new BCrypt2xPasswordParser(password);
+    return new BCrypt2aPasswordParser(password);
   }
 
   @Override
   public String getKey() {
-    return "$2x$";
+    return "$2a$";
   }
+
 }

@@ -14,44 +14,55 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.auth.parsers;
+package io.mapsmessaging.security.identity.parsers;
 
-import io.mapsmessaging.security.auth.PasswordParser;
+import org.apache.commons.codec.digest.Md5Crypt;
 
-public class PlainPasswordParser implements PasswordParser {
+public class Md5PasswordParser implements PasswordParser {
 
   private final byte[] password;
+  private final byte[] salt;
 
-  public PlainPasswordParser() {
+  public Md5PasswordParser() {
     password = new byte[0];
+    salt = new byte[0];
   }
 
-  public PlainPasswordParser(String password) {
-    this.password = password.getBytes();
+  protected Md5PasswordParser(String password) {
+    String sub = password.substring(getKey().length());
+    int split = sub.indexOf("$");
+    String pw = "";
+    String sl = "";
+    if (split != -1) {
+      sl = sub.substring(0, split);
+      pw = sub.substring(split + 1);
+    }
+    this.password = pw.getBytes();
+    this.salt = sl.getBytes();
   }
 
   public PasswordParser create(String password) {
-    return new PlainPasswordParser(password);
+    return new Md5PasswordParser(password);
   }
 
   @Override
   public String getKey() {
-    return "";
+    return "$apr1$";
   }
 
   @Override
   public boolean hasSalt() {
-    return false;
+    return salt.length > 0;
   }
 
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    return new byte[0];
+    return Md5Crypt.apr1Crypt(password, new String(salt)).getBytes();
   }
 
   @Override
   public byte[] getSalt() {
-    return new byte[0];
+    return salt;
   }
 
   @Override
@@ -61,11 +72,11 @@ public class PlainPasswordParser implements PasswordParser {
 
   @Override
   public char[] getFullPasswordHash() {
-    return new String(password).toCharArray();
+    return (getKey() + new String(salt) + "$" + new String(password)).toCharArray();
   }
 
   @Override
   public String getName() {
-    return "PLAIN";
+    return "MD5";
   }
 }

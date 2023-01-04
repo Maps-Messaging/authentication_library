@@ -14,30 +14,26 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.impl.htpasswd;
+package io.mapsmessaging.security.identity.parsers;
 
-import io.mapsmessaging.security.sasl.impl.htpasswd.hash.BCryptPasswordHash;
-import io.mapsmessaging.security.sasl.impl.htpasswd.hash.MD5PasswordHash;
-import io.mapsmessaging.security.sasl.impl.htpasswd.hash.PasswordHash;
-import io.mapsmessaging.security.sasl.impl.htpasswd.hash.PlainPasswordHash;
-import io.mapsmessaging.security.sasl.impl.htpasswd.hash.Sha1PasswordHash;
+import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import lombok.Getter;
 
 public enum HashType {
-  PLAIN("", new PlainPasswordHash()),
-  MD5("$apr1$", new MD5PasswordHash()),
-  SHA1("{SHA}", new Sha1PasswordHash()),
-  BCRYPT("$2y$", new BCryptPasswordHash());
+  PLAIN("", new PlainPasswordParser()),
+  MD5("$apr1$", new Md5PasswordParser()),
+  SHA1("{SHA}", new Sha1PasswordParser()),
+  BCRYPT("$2y$", new BCrypt2yPasswordParser());
 
   @Getter
   private final String name;
 
   @Getter
-  private final PasswordHash passwordHash;
+  private final PasswordParser passwordParser;
 
-  HashType(String name, PasswordHash passwordHash) {
+  HashType(String name, PasswordParser passwordParser) {
     this.name = name;
-    this.passwordHash = passwordHash;
+    this.passwordParser = passwordParser;
   }
 
   public static HashType detect(String type) {

@@ -14,13 +14,28 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl;
+package io.mapsmessaging.security.identity.parsers;
 
-import java.io.IOException;
+public interface PasswordParser {
 
-public class NoSuchUserFoundException extends IOException {
+  PasswordParser create(String password);
 
-  public NoSuchUserFoundException(String s) {
-    super(s);
+  String getKey();
+
+  boolean hasSalt();
+
+  byte[] computeHash(byte[] password, byte[] salt, int cost);
+
+  byte[] getSalt();
+
+  byte[] getPassword();
+
+  char[] getFullPasswordHash();
+
+  String getName();
+
+  default int getCost(){
+    return 0;
   }
+
 }

@@ -1,6 +1,5 @@
 package io.mapsmessaging.sasl.impl;
 
-import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -11,13 +10,11 @@ public class ClientCallbackHandler  implements CallbackHandler {
 
   private final String username;
   private final String password;
-  private final HashType hashType;
   private final String serverName;
 
-  public ClientCallbackHandler(String username, String password, HashType hashType, String serverName){
+  public ClientCallbackHandler(String username, String password, String serverName) {
     this.username = username;
     this.password = password;
-    this.hashType = hashType;
     this.serverName = serverName;
   }
 
@@ -29,7 +26,7 @@ public class ClientCallbackHandler  implements CallbackHandler {
         nc.setName(username);
       } else if (cb instanceof PasswordCallback) {
         PasswordCallback pc = (PasswordCallback) cb;
-        pc.setPassword(hashType.getPasswordHash().hash(password));
+        pc.setPassword(password.toCharArray());
       } else if (cb instanceof RealmCallback) {
         RealmCallback rc = (RealmCallback) cb;
         rc.setText(serverName);

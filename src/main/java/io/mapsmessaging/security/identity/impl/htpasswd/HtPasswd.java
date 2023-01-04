@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.impl.htpasswd;
+package io.mapsmessaging.security.identity.impl.htpasswd;
 
-import io.mapsmessaging.security.sasl.IdentityLookup;
-import io.mapsmessaging.security.sasl.NoSuchUserFoundException;
+import io.mapsmessaging.security.identity.IdentityLookup;
+import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

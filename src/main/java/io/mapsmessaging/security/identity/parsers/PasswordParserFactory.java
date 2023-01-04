@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.auth;
+package io.mapsmessaging.security.identity.parsers;
 
-import io.mapsmessaging.security.auth.parsers.PlainPasswordParser;
 import java.util.ServiceLoader;
 
 public class PasswordParserFactory {

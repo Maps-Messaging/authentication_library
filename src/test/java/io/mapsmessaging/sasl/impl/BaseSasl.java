@@ -1,8 +1,8 @@
 package io.mapsmessaging.sasl.impl;
 
 import io.mapsmessaging.security.MapsSecurityProvider;
-import io.mapsmessaging.security.sasl.IdentityLookup;
-import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
+import io.mapsmessaging.security.identity.IdentityLookup;
+import io.mapsmessaging.security.identity.parsers.HashType;
 import java.security.Security;
 import java.util.Map;
 import javax.security.sasl.Sasl;
@@ -32,7 +32,9 @@ public class BaseSasl {
       String authorizationId,
       String serverName,
       Map<String, String> props) throws SaslException {
-    ClientCallbackHandler clientHandler = new ClientCallbackHandler(username, password, hashType, serverName);
+    byte[] hash = hashType.getPasswordParser().computeHash(password.getBytes(), null, 0);
+    String hashed = new String(hash);
+    ClientCallbackHandler clientHandler = new ClientCallbackHandler(username, hashed, serverName);
     saslClient = Sasl.createSaslClient(mechanism, authorizationId, protocol, serverName, props, clientHandler);
   }
 

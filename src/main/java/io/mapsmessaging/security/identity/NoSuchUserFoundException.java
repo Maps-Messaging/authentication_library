@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.impl.htpasswd.hash;
+package io.mapsmessaging.security.identity;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
+import java.io.IOException;
 
-public class Sha1PasswordHash implements PasswordHash{
+public class NoSuchUserFoundException extends IOException {
 
-  @SuppressWarnings("java:S4790") // Yes, we know SHA1 is weak, however, it is used unfortunately
-  @Override
-  public char[] hash(String password, String salt) {
-    String passwd64 = "{SHA}"+Base64.encodeBase64String(DigestUtils.sha1(password));
-    return passwd64.toCharArray();
+  public NoSuchUserFoundException(String s) {
+    super(s);
   }
 }

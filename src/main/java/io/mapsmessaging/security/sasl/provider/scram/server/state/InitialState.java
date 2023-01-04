@@ -17,8 +17,8 @@
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
-import io.mapsmessaging.security.auth.PasswordParser;
-import io.mapsmessaging.security.auth.PasswordParserFactory;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;

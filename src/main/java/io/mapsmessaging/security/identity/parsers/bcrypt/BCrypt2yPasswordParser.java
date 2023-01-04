@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.auth.parsers.bcrypt;
+package io.mapsmessaging.security.identity.parsers.bcrypt;
 
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
-import io.mapsmessaging.security.auth.PasswordParser;
-import io.mapsmessaging.security.auth.parsers.BCryptPasswordParser;
+import io.mapsmessaging.security.identity.parsers.BCryptPasswordParser;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
 public class BCrypt2yPasswordParser extends BCryptPasswordParser {
 
