@@ -63,7 +63,7 @@
     <!-- Sonar-JaCoCo properties -->
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/</sonar.coverage.jacoco.xmlReportPaths>
     <sonar.language>java</sonar.language>
 
     <sonar.projectKey>Sasl_Helper</sonar.projectKey>
