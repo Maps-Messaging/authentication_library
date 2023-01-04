@@ -51,16 +51,14 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <sonar.sources>src/main</sonar.sources>
     <!-- Below property indicates the pattern of the test suite -->
     <runSuite>**/*Suite.class</runSuite>
+
+    <!-- Sonar-JaCoCo properties -->
+    <sonar.sources>src/main</sonar.sources>
     <sonar.test.exclusions>
       **/*Test.*,**.*JMH.*
     </sonar.test.exclusions>
-
-    <!-- Sonar-JaCoCo properties -->
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/</sonar.coverage.jacoco.xmlReportPaths>
