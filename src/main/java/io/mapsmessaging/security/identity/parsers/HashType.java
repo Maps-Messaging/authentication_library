@@ -35,16 +35,4 @@ public enum HashType {
     this.name = name;
     this.passwordParser = passwordParser;
   }
-
-  public static HashType detect(String type) {
-    String test = type.toLowerCase();
-    if (test.startsWith("$apr1$")) {
-      return MD5;
-    } else if (test.startsWith("{sha}")) {
-      return SHA1;
-    } else if (test.startsWith("$2y$")) {
-      return BCRYPT;
-    }
-    return PLAIN;
-  }
 }
