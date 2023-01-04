@@ -61,8 +61,9 @@ public class SessionContext {
   private String prepPassword;
 
   @Getter
-  @Setter
   private Mac mac;
+
+  private String algorithm;
 
   @Getter
   @Setter
@@ -101,6 +102,11 @@ public class SessionContext {
     serverNonce = nonce;
   }
 
+  public void setMac(Mac mac){
+    this.mac = mac;
+    algorithm = mac.getAlgorithm().substring("hmac".length());
+  }
+
   public byte[] computeHmac(byte[] key, String string) throws InvalidKeyException {
     mac.reset();
     SecretKeySpec secretKey = new SecretKeySpec(key, mac.getAlgorithm());
@@ -111,7 +117,7 @@ public class SessionContext {
 
   public void computeServerSignature(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
     byte[] serverKey = computeHmac(password, "Server Key");
-    MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
+    MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
     byte[] tmp = messageDigest.digest(serverKey);
     serverSignature = computeHmac(tmp, authString);
   }
@@ -121,7 +127,7 @@ public class SessionContext {
   }
 
   public void computeStoredKeyAndSignature(String authString) throws NoSuchAlgorithmException, InvalidKeyException {
-    MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
+    MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
     storedKey = messageDigest.digest(clientKey);
     clientSignature = computeHmac(storedKey, authString);
   }

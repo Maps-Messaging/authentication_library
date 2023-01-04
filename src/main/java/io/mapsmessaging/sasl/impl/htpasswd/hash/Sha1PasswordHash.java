@@ -21,9 +21,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class Sha1PasswordHash implements PasswordHash{
 
+  @SuppressWarnings("java:S4790") // Yes, we know SHA1 is weak, however, it is used unfortunately
   @Override
   public char[] hash(String password, String salt) {
-    
     String passwd64 = "{SHA}"+Base64.encodeBase64String(DigestUtils.sha1(password));
     return passwd64.toCharArray();
   }

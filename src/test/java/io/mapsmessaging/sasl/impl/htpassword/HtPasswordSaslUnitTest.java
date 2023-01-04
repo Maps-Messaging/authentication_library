@@ -111,7 +111,6 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
         SERVER_NAME,
         props
     );
-    System.err.println(saslClient.getClass().getName()+" <> "+saslServer.getClass().getName());
     simpleValidation();
   }
 
