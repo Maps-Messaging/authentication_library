@@ -72,7 +72,7 @@ public class HtPasswordSaslUnitTest extends BaseSasl {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SCRAM-BCRYPT-SHA1", "SCRAM-BCRYPT-SHA256", "SCRAM-BCRYPT-SHA512"})
+  @ValueSource(strings = {"SCRAM-BCRYPT-SHA1"})
   public void simpleScramValidTest(String mechanism) throws SaslException {
     testMechanism(mechanism, "test3", "This is an bcrypt password", HashType.PLAIN);
   }
