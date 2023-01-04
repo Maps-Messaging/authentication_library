@@ -1,10 +1,11 @@
 # SASL Helpers and implementation
-Provides a SASL implementation for both client and server with support for .htpasswd files 
+Provides a SASL implementation for both client and server with support for .htpasswd files to start with 
 
 - CRAM-MD5
 - DIGEST-MD5
 - SCRAM - work in progress
 
+JAAS Login module support for HtPassword files
 
 # pom.xml setup
 
