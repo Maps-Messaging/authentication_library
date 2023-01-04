@@ -26,8 +26,8 @@
 
   <packaging>jar</packaging>
 
-  <name>Maps Messaging SASL Helper</name>
-  <description>SASL Helper functions and file implementation </description>
+  <name>Authentication Library</name>
+  <description>SASL SCRAM and JAAS implementations</description>
   <url>https://www.mapsmessaging.io</url>
 
   <licenses>
