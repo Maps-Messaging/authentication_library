@@ -1,6 +1,6 @@
 package io.mapsmessaging.sasl.impl;
 
-import io.mapsmessaging.sasl.IdentityLookup;
+import io.mapsmessaging.security.sasl.IdentityLookup;
 import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;

@@ -1,8 +1,8 @@
 package io.mapsmessaging.sasl.impl;
 
-import io.mapsmessaging.sasl.IdentityLookup;
-import io.mapsmessaging.sasl.impl.htpasswd.HashType;
-import io.mapsmessaging.sasl.provider.MapsSaslProvider;
+import io.mapsmessaging.security.sasl.IdentityLookup;
+import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
+import io.mapsmessaging.security.MapsSecurityProvider;
 import java.security.Security;
 import java.util.Map;
 import javax.security.sasl.Sasl;
@@ -16,7 +16,7 @@ public class BaseSaslUnitTest {
 
   @BeforeAll
   static void register(){
-    Security.insertProviderAt(new MapsSaslProvider(), 1);
+    Security.insertProviderAt(new MapsSecurityProvider(), 1);
   }
 
   protected SaslServer saslServer;

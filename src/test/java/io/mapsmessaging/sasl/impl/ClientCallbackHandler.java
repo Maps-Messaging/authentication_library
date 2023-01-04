@@ -1,6 +1,6 @@
 package io.mapsmessaging.sasl.impl;
 
-import io.mapsmessaging.sasl.impl.htpasswd.HashType;
+import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;

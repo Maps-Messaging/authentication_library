@@ -19,11 +19,11 @@ package io.mapsmessaging.sasl.impl.htpassword;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.mapsmessaging.auth.PasswordParser;
-import io.mapsmessaging.auth.PasswordParserFactory;
+import io.mapsmessaging.security.auth.PasswordParser;
+import io.mapsmessaging.security.auth.PasswordParserFactory;
 import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
-import io.mapsmessaging.sasl.impl.htpasswd.HashType;
-import io.mapsmessaging.sasl.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
+import io.mapsmessaging.security.sasl.impl.htpasswd.HtPasswd;
 import java.security.Provider;
 import java.security.Provider.Service;
 import java.security.Security;
