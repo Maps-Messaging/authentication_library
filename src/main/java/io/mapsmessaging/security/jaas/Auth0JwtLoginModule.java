@@ -1,9 +1,15 @@
 package io.mapsmessaging.security.jaas;
 
-import io.mapsmessaging.security.auth.PasswordParser;
-import io.mapsmessaging.security.auth.PasswordParserFactory;
-import io.mapsmessaging.security.sasl.impl.htpasswd.HtPasswd;
+import com.auth0.jwk.Jwk;
+import com.auth0.jwk.JwkException;
+import com.auth0.jwk.JwkProvider;
+import com.auth0.jwk.UrlJwkProvider;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.JWTVerifier;
 import java.io.IOException;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Map;
 import javax.security.auth.Subject;
@@ -14,9 +20,9 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
-public class HtPasswordLoginModule extends BaseLoginModule {
+public class Auth0JwtLoginModule extends BaseLoginModule {
 
-  private HtPasswd htPasswd;
+  private String domain;
 
   @Override
   public void initialize(
@@ -25,12 +31,12 @@ public class HtPasswordLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
-    htPasswd = new HtPasswd(options.get("htPasswordFile").toString());
+    domain = (String) options.get("auth0Domain");
   }
 
   @Override
   public boolean login() throws LoginException {
-
+    succeeded = false;
     // prompt for a user name and password
     if (callbackHandler == null) {
       throw new LoginException("Error: no CallbackHandler available to garner authentication information from the user");
@@ -43,31 +49,27 @@ public class HtPasswordLoginModule extends BaseLoginModule {
     try {
       callbackHandler.handle(callbacks);
       username = ((NameCallback) callbacks[0]).getName();
-      char[] lookup = htPasswd.getPasswordHash(username);
-      if(lookup == null){
-        throw new LoginException("No such user");
-      }
-
       char[] tmpPassword = ((PasswordCallback) callbacks[1]).getPassword();
-      ((PasswordCallback) callbacks[1]).clearPassword();
-
       if (tmpPassword == null) {
-        // treat a NULL password as an empty password
         tmpPassword = new char[0];
       }
-      String rawPassword = new String(tmpPassword);
-      String lookupPassword = new String(lookup);
-      PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(lookupPassword);
+      String token = new String(tmpPassword);
+      ((PasswordCallback) callbacks[1]).clearPassword();
+      // Password should be a valid JWT
+      JwkProvider provider = new UrlJwkProvider("https://" + domain + "/");
+      DecodedJWT jwt = JWT.decode(token);
+      // Get the kid from received JWT token
+      Jwk jwk = provider.get(jwt.getKeyId());
 
+      Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
 
-      // This would be done on the client side of this
-      byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
-      if (!Arrays.equals(hash, lookupPassword.getBytes())) {
-        throw new LoginException("Invalid password");
-      }
+      JWTVerifier verifier = JWT.require(algorithm)
+          .withIssuer("https://" + domain + "/")
+          .build();
+
+      verifier.verify(token);
       succeeded = true;
-      return true;
-    } catch (IOException ioe) {
+    } catch (JwkException | IOException ioe) {
       throw new LoginException(ioe.toString());
     } catch (UnsupportedCallbackException uce) {
       throw new LoginException(
@@ -76,17 +78,19 @@ public class HtPasswordLoginModule extends BaseLoginModule {
               + " not available to garner authentication information "
               + "from the user");
     }
+    return succeeded;
   }
 
   @Override
   public boolean commit() {
     if (!succeeded) {
-      return false;
+      return succeeded;
     } else {
-      userPrincipal = new AnonymousPrincipal(username);
-      subject.getPrincipals().add(userPrincipal);
-      // in any case, clean out state
-      password = null;
+      if (password != null) {
+        Arrays.fill(password, ' ');
+        password = null;
+      }
+      commitSucceeded = true;
       return true;
     }
   }
