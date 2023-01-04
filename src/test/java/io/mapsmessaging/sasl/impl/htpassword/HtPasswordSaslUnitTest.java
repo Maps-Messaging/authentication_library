@@ -19,14 +19,11 @@ package io.mapsmessaging.sasl.impl.htpassword;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
 import io.mapsmessaging.security.auth.PasswordParser;
 import io.mapsmessaging.security.auth.PasswordParserFactory;
-import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
 import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
 import io.mapsmessaging.security.sasl.impl.htpasswd.HtPasswd;
-import java.security.Provider;
-import java.security.Provider.Service;
-import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;
@@ -66,17 +63,6 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
     // The result should be that the hash = password + salt hashed should match what the server has
     Assertions.assertArrayEquals(passwordHashString.toCharArray(), new String(hash).toCharArray());
 
-  }
-
-  @Test
-  void listProviders(){
-    Provider[] providers = Security.getProviders();
-    for(Provider provider:providers){
-      System.err.println(provider.getName());
-      for(Service service:provider.getServices()){
-        System.err.println("\t"+service.getType()+" "+service.getAlgorithm());
-      }
-    }
   }
 
   @ParameterizedTest
