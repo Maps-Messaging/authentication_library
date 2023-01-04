@@ -21,25 +21,26 @@ import com.ongres.stringprep.Stringprep;
 
 /**
  * rfc4013 implementation, for more information please see
- * https://www.rfc-editor.org/rfc/rfc4013
+ * <a href="https://www.rfc-editor.org/rfc/rfc4013">rfc4013</a>
  */
 
 public class SaslPrep {
 
   private static final SaslPrep instance = new SaslPrep();
-  private final Profile saslPrep;
 
-  private SaslPrep(){
-    saslPrep = Stringprep.getProvider("SASLprep");
+  private final Profile profile;
+
+  private SaslPrep() {
+    profile = Stringprep.getProvider("SASLprep");
   }
 
-  public static SaslPrep getInstance(){
+  public static SaslPrep getInstance() {
     return instance;
   }
 
   // Implements RFC rfc4013
   public String stringPrep(String string){
-    return saslPrep.prepareStored(string);
+    return profile.prepareStored(string);
   }
 
 }

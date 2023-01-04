@@ -16,7 +16,6 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.msgs;
 
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,24 +59,8 @@ public class ChallengeResponse {
     return data.remove(key);
   }
 
-  public byte[] getDecodedBase64(String key){
-    String t = data.get(key);
-    if(t != null){
-      return Base64.getDecoder().decode(t);
-    }
-    return null;
-  }
-
-  public boolean contains(String key){
-    return data.containsKey(key);
-  }
-
   public void put(String key, String value){
     data.put(key, value);
-  }
-
-  public void putAsBase64Encoded(String key, byte[] value){
-    data.put(key, Base64.getEncoder().encodeToString(value));
   }
 
   private void parseString(String val){

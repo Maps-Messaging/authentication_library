@@ -26,7 +26,7 @@ public class Md5PasswordParser implements PasswordParser {
 
   public Md5PasswordParser() {
     password = new byte[0];
-    salt = new byte[0];;
+    salt = new byte[0];
   }
 
   protected Md5PasswordParser(String password) {

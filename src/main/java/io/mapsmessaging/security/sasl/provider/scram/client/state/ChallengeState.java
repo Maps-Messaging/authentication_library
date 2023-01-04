@@ -53,7 +53,8 @@ public class ChallengeState extends State {
     if(context.getPasswordParser() != null){
       Radix64Encoder encoder = new Radix64Encoder.Default();
       byte[] salt = encoder.decode(context.getPasswordSalt().getBytes());
-      saltedPassword = new String(context.getPasswordParser().computeHash(context.getPrepPassword().getBytes(), salt, context.getInterations()));
+      byte[] computedHash = context.getPasswordParser().computeHash(context.getPrepPassword().getBytes(), salt, context.getInterations());
+      saltedPassword = new String(computedHash);
     }
 
     //
