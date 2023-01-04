@@ -1,8 +1,8 @@
 package io.mapsmessaging.sasl.impl;
 
+import io.mapsmessaging.security.MapsSecurityProvider;
 import io.mapsmessaging.security.sasl.IdentityLookup;
 import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
-import io.mapsmessaging.security.MapsSecurityProvider;
 import java.security.Security;
 import java.util.Map;
 import javax.security.sasl.Sasl;
@@ -11,6 +11,8 @@ import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+
+@SuppressWarnings("java:S2187") // Ignore the no test rule
 
 public class BaseSaslUnitTest {
 
@@ -38,18 +40,17 @@ public class BaseSaslUnitTest {
     saslServer =  Sasl.createSaslServer(mechanism, protocol, serverName, props, new ServerCallbackHandler(serverName, identityLookup));
   }
 
-  protected byte[] runAuth() throws SaslException {
+  protected void runAuth() throws SaslException {
     byte[] challenge;
     byte[] response = new byte[0];
 
-    while(!saslClient.isComplete() && !saslServer.isComplete()) {
+    while (!saslClient.isComplete() && !saslServer.isComplete()) {
       challenge = saslServer.evaluateResponse(response);
       response = saslClient.evaluateChallenge(challenge);
     }
-    if(response != null){
-      return saslServer.evaluateResponse(response);
+    if (response != null) {
+      saslServer.evaluateResponse(response);
     }
-    return new byte[0];
   }
 
   @AfterEach
