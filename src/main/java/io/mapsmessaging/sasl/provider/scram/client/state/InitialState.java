@@ -59,8 +59,10 @@ public class InitialState extends State {
     //
     // Update the context
     //
+    String rawPassword = new String((((PasswordCallback)callbacks[1]).getPassword()));
+
     context.setUsername( ((NameCallback)callbacks[0]).getName());
-    context.setPrepPassword(SaslPrep.getInstance().stringPrep( new String(((PasswordCallback)callbacks[1]).getPassword())));
+    context.setPrepPassword(SaslPrep.getInstance().stringPrep(rawPassword));
 
     //
     // Set up the initial challenge
@@ -68,6 +70,7 @@ public class InitialState extends State {
     firstClientChallenge.put(ChallengeResponse.USERNAME, context.getUsername());
     firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
     context.setState(new ChallengeState(this));
+    context.setInitialClientChallenge(firstClientChallenge.toString());
     return firstClientChallenge;
   }
 

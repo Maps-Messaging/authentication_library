@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,16 +16,14 @@
 
 package io.mapsmessaging.auth.parsers.bcrypt;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import io.mapsmessaging.auth.PasswordParser;
 import io.mapsmessaging.auth.parsers.BCryptPasswordParser;
 
 public class BCrypt2aPasswordParser extends BCryptPasswordParser {
 
-
   public BCrypt2aPasswordParser() {
-    super();
+    super(Version.VERSION_2A);
   }
 
   public BCrypt2aPasswordParser(String password) {

@@ -17,6 +17,7 @@
 package io.mapsmessaging.sasl.provider;
 
 import io.mapsmessaging.sasl.provider.scram.client.ScramSaslClient;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslClient;
@@ -32,7 +33,13 @@ public class MapsSaslClientFactory implements SaslClientFactory {
       String mech = mechanism.toLowerCase().trim();
       if(mech.startsWith("scram")){
         String algorithm = mech.substring("scram-".length());
-        return new ScramSaslClient(algorithm, authorizationId, protocol, serverName, props, cbh);
+        try {
+          return new ScramSaslClient(algorithm, authorizationId, protocol, serverName, props, cbh);
+        } catch (NoSuchAlgorithmException e) {
+          SaslException saslException = new SaslException(e.getMessage());
+          saslException.initCause(e);
+          throw saslException;
+        }
       }
     }
     throw new SaslException("Unknown mechanism "+mechanisms);

@@ -1,3 +1,19 @@
+/*
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.mapsmessaging.sasl.impl.htpassword;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -5,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.mapsmessaging.auth.PasswordParser;
 import io.mapsmessaging.auth.PasswordParserFactory;
-import io.mapsmessaging.auth.parsers.Md5PasswordParser;
 import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
 import io.mapsmessaging.sasl.impl.htpasswd.HashType;
 import io.mapsmessaging.sasl.impl.htpasswd.HtPasswd;
@@ -67,29 +82,29 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
   void simpleDigestNonSaltValidTest(String mechanism) throws SaslException {
-    testMechanism(mechanism, "fred2@google.com", "This is a random password");
+    testMechanism(mechanism, "fred2@google.com", "This is a random password", HashType.SHA1);
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SCRAM"})
+  @ValueSource(strings = {"SCRAM-BCRYPT-SHA1", "SCRAM-BCRYPT-SHA256", "SCRAM-BCRYPT-SHA512"})
   void simpleScramValidTest(String mechanism) throws SaslException {
-    testMechanism(mechanism, "fred3@google.com", "This is a random password");
+    testMechanism(mechanism, "test3", "This is an bcrypt password", HashType.PLAIN);
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
   void simpleWrongPasswordTest(String mechanism) {
-    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", "This is a wrong password"));
+    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", "This is a wrong password", HashType.SHA1));
   }
 
-  void testMechanism(String mechanism, String user, String password) throws SaslException {
+  void testMechanism(String mechanism, String user, String password, HashType type) throws SaslException {
     Map<String, String> props = new HashMap<>();
     props.put(Sasl.QOP, QOP_LEVEL);
     createServer(new HtPasswd("./src/test/resources/.htpassword"), mechanism, PROTOCOL, SERVER_NAME, props);
     createClient(
         user,
         password,
-        HashType.SHA1,
+        type,
         new String[]{mechanism},
         PROTOCOL,
         AUTHORIZATION_ID,

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class HtPasswd implements IdentityLookup {
     if (identityEntry == null) {
       throw new NoSuchUserFoundException("User: " + username + " not found");
     }
-    return identityEntry.getPasswordHash();
+    return identityEntry.getPassword().toCharArray();
   }
 
   private void load() {

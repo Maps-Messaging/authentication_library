@@ -16,7 +16,14 @@
 
 package io.mapsmessaging.sasl.provider.scram.util;
 
+import io.mapsmessaging.auth.PasswordParser;
 import io.mapsmessaging.sasl.provider.scram.State;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.sasl.SaslException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +38,6 @@ public class SessionContext {
   private String clientNonce;
 
   @Getter
-  @Setter
   private String serverNonce;
 
   @Getter
@@ -54,5 +60,78 @@ public class SessionContext {
   @Setter
   private String prepPassword;
 
+  @Getter
+  @Setter
+  private Mac mac;
+
+  @Getter
+  @Setter
+  private PasswordParser passwordParser;
+
+  @Getter
+  @Setter
+  private String initialClientChallenge;
+
+  @Getter
+  @Setter
+  private String initialServerChallenge;
+
+  @Getter
+  private byte[] clientKey;
+
+  @Getter
+  private byte[] storedKey;
+
+  @Getter
+  private byte[] clientSignature;
+
+  @Getter
+  private byte[] clientProof;
+
+  @Getter
+  private byte[] serverSignature;
+
+
   public SessionContext(){}
+
+  public void setServerNonce(String nonce) throws SaslException {
+    if(!nonce.startsWith(clientNonce)){
+      throw new SaslException("Server Nonce must start with client nonce");
+    }
+    serverNonce = nonce;
+  }
+
+  public byte[] computeHmac(byte[] key, String string) throws InvalidKeyException {
+    mac.reset();
+    SecretKeySpec secretKey = new SecretKeySpec(key, mac.getAlgorithm());
+    mac.init(secretKey);
+    mac.update(string.getBytes());
+    return mac.doFinal();
+  }
+
+  public void computeServerSignature(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
+    byte[] serverKey = computeHmac(password, "Server Key");
+    MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
+    byte[] tmp = messageDigest.digest(serverKey);
+    serverSignature = computeHmac(tmp, authString);
+  }
+
+  public void computeClientKey(byte[] password) throws InvalidKeyException {
+    clientKey = computeHmac(password, "Client Key");
+  }
+
+  public void computeStoredKeyAndSignature(String authString) throws NoSuchAlgorithmException, InvalidKeyException {
+    MessageDigest messageDigest = MessageDigest.getInstance("SHA1");
+    storedKey = messageDigest.digest(clientKey);
+    clientSignature = computeHmac(storedKey, authString);
+  }
+
+  public void computeClientHashes(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
+    computeClientKey(password);
+    computeStoredKeyAndSignature(authString);
+    clientProof = clientKey.clone();
+    for (int i = 0; i < clientProof.length; i++) {
+      clientProof[i] ^= clientSignature[i];
+    }
+  }
 }

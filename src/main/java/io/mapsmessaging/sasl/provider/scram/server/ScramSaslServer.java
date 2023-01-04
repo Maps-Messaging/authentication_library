@@ -16,9 +16,12 @@
 
 package io.mapsmessaging.sasl.provider.scram.server;
 
+import io.mapsmessaging.auth.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.sasl.provider.scram.server.state.InitialState;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import javax.crypto.Mac;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
@@ -26,7 +29,17 @@ import javax.security.sasl.SaslServer;
 public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   public ScramSaslServer(String algorithm, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
-
+    if(algorithm.startsWith("bcrypt")){
+      context.setPasswordParser(new BCrypt2yPasswordParser());
+      algorithm = algorithm.substring("bcrypt-".length());
+    }
+    try {
+      context.setMac(Mac.getInstance("Hmac"+algorithm.toUpperCase()));
+    } catch (NoSuchAlgorithmException e) {
+      SaslException saslException = new SaslException(e.getMessage());
+      saslException.initCause(e);
+      throw saslException;
+    }
     context.setState(new InitialState(protocol, serverName, props, cbh));
   }
 

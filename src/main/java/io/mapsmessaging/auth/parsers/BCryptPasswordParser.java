@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +33,13 @@ public abstract class BCryptPasswordParser implements PasswordParser {
     salt = new byte[0];
     cost = 0;
     version = null;
+  }
+
+  protected BCryptPasswordParser( Version version) {
+    password = new byte[0];
+    salt = new byte[0];
+    cost = 0;
+    this.version = version;
   }
 
   protected BCryptPasswordParser(String password, Version version) {

@@ -16,13 +16,13 @@
 
 package io.mapsmessaging.sasl.provider.scram.server.state;
 
+import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.auth.PasswordParser;
 import io.mapsmessaging.auth.PasswordParserFactory;
 import io.mapsmessaging.sasl.provider.scram.State;
 import io.mapsmessaging.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Map;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -52,10 +52,11 @@ public class InitialState extends State {
       return null;
     }
     ChallengeResponse response = new ChallengeResponse();
-    response.put(ChallengeResponse.NONCE, context.getClientNonce()+context.getServerNonce());
+    response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.ITERATION_COUNT, ""+context.getInterations());
     response.put(ChallengeResponse.SALT, context.getPasswordSalt());
     context.setState(new ValidationState(this));
+    context.setInitialServerChallenge(response.toString());
     return response;
   }
 
@@ -64,6 +65,8 @@ public class InitialState extends State {
     if(response.isEmpty()){
       return;
     }
+    context.setInitialClientChallenge(response.toString());
+
     //
     // Set up the context with the received information
     //
@@ -87,10 +90,14 @@ public class InitialState extends State {
     //
     // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based on the parsed info
     //
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
-    context.setPasswordSalt(Base64.getEncoder().encodeToString(passwordParser.getSalt()));
-    context.setInterations(passwordParser.getCost());
 
-    context.setServerNonce(nonceGenerator.generateNonce(48));
+    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
+
+    context.setPasswordParser(passwordParser);
+    Radix64Encoder encoder = new Radix64Encoder.Default();
+    context.setPrepPassword(new String(password));
+    context.setPasswordSalt(new String(encoder.encode(passwordParser.getSalt())));
+    context.setInterations(passwordParser.getCost());
+    context.setServerNonce(context.getClientNonce()+nonceGenerator.generateNonce(48));
   }
 }
