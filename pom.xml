@@ -53,6 +53,31 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <sonar.organization>maps-messaging</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <sonar.sources>src/main</sonar.sources>
+    <!-- Below property indicates the pattern of the test suite -->
+    <runSuite>**/*Suite.class</runSuite>
+    <sonar.test.exclusions>
+      **/*Test.*,**.*JMH.*
+    </sonar.test.exclusions>
+
+    <!-- Sonar-JaCoCo properties -->
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.language>java</sonar.language>
+
+    <sonar.projectKey>Maps-Messaging_jms_selector</sonar.projectKey>
+    <sonar.organization>maps-messaging</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
+    <sonar.c.file.suffixes>-</sonar.c.file.suffixes>
+    <sonar.cpp.file.suffixes>-</sonar.cpp.file.suffixes>
+    <sonar.objc.file.suffixes>-</sonar.objc.file.suffixes>
+
+    <github.global.server>github</github.global.server>
+    <project.scm.id>github</project.scm.id>
   </properties>
 
   <build>
