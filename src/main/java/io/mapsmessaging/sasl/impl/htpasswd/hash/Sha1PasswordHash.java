@@ -24,7 +24,7 @@ public class Sha1PasswordHash implements PasswordHash{
   @Override
   public char[] hash(String password, String salt) {
     
-    String passwd64 = Base64.encodeBase64String(DigestUtils.sha1(password));
+    String passwd64 = "{SHA}"+Base64.encodeBase64String(DigestUtils.sha1(password));
     return passwd64.toCharArray();
   }
 }
