@@ -19,7 +19,7 @@ package io.mapsmessaging.sasl.impl.htpassword;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.mapsmessaging.sasl.impl.BaseSaslUnitTest;
+import io.mapsmessaging.sasl.impl.BaseSasl;
 import io.mapsmessaging.security.auth.PasswordParser;
 import io.mapsmessaging.security.auth.PasswordParserFactory;
 import io.mapsmessaging.security.sasl.impl.htpasswd.HashType;
@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
+public class HtPasswordSaslUnitTest extends BaseSasl {
 
   private static final String SERVER_NAME = "myServer";
   private static final String PROTOCOL = "amqp";
@@ -41,12 +41,12 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
   private static final String QOP_LEVEL = "auth";
 
   @Test
-  void checkMd5Hash() {
+  public void checkMd5Hash() {
     testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is an md5 password");
   }
 
   @Test
-  void checkBcryptHash(){
+  public void checkBcryptHash() {
     testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password");
   }
 
@@ -67,19 +67,19 @@ class HtPasswordSaslUnitTest extends BaseSaslUnitTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
-  void simpleDigestNonSaltValidTest(String mechanism) throws SaslException {
+  public void simpleDigestNonSaltValidTest(String mechanism) throws SaslException {
     testMechanism(mechanism, "fred2@google.com", "This is a random password", HashType.SHA1);
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"SCRAM-BCRYPT-SHA1", "SCRAM-BCRYPT-SHA256", "SCRAM-BCRYPT-SHA512"})
-  void simpleScramValidTest(String mechanism) throws SaslException {
+  public void simpleScramValidTest(String mechanism) throws SaslException {
     testMechanism(mechanism, "test3", "This is an bcrypt password", HashType.PLAIN);
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
-  void simpleWrongPasswordTest(String mechanism) {
+  public void simpleWrongPasswordTest(String mechanism) {
     Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", "This is a wrong password", HashType.SHA1));
   }
 

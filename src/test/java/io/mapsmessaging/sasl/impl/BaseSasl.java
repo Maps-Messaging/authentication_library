@@ -14,10 +14,10 @@ import org.junit.jupiter.api.BeforeAll;
 
 @SuppressWarnings("java:S2187") // Ignore the no test rule
 
-public class BaseSaslUnitTest {
+public class BaseSasl {
 
   @BeforeAll
-  static void register(){
+  static void register() {
     Security.insertProviderAt(new MapsSecurityProvider(), 1);
   }
 
