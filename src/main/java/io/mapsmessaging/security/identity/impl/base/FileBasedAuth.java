@@ -31,12 +31,12 @@ public abstract class FileBasedAuth implements IdentityLookup {
   private final Map<String, IdentityEntry> usernamePasswordMap;
   private long lastModified;
 
-  public FileBasedAuth(){
+  protected FileBasedAuth() {
     filePath = "";
     usernamePasswordMap = new LinkedHashMap<>();
   }
 
-  public FileBasedAuth(String filepath) {
+  protected FileBasedAuth(String filepath) {
     filePath = filepath;
     lastModified = 0;
     usernamePasswordMap = new LinkedHashMap<>();
