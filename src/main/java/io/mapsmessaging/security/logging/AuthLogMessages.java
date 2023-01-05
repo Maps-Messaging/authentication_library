@@ -21,14 +21,19 @@ import io.mapsmessaging.logging.LEVEL;
 import io.mapsmessaging.logging.LogMessage;
 import lombok.Getter;
 
-public enum AuthLogMessages  implements LogMessage {
+public enum AuthLogMessages implements LogMessage {
 
   //-------------------------------------------------------------------------------------------------------------
 
   // <editor-fold desc="Generic messages">
   USER_LOGGED_IN(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged in"),
   NO_SUCH_USER_FOUND(LEVEL.INFO, Auth_Category.AUTHENTICATION, "User {} not found"),
-  USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out");
+  USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out"),
+
+  PASSWORD_FILE_LOADED(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Successfully loaded {} entries for {}"),
+  PASSWORD_FILE_LOAD_EXCEPTION(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Password load failed for {}"),
+  PASSWORD_FILE_CHANGE_DETECTED(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Password file change detected on {}"),
+  CHECKING_PASSWORD_STORE(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Scanning for password file changes on file {}");
   // </editor-fold>
 
   private final @Getter String message;

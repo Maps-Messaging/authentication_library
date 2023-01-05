@@ -19,7 +19,7 @@ package io.mapsmessaging.security.sasl;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager;
 import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +61,7 @@ class SimpleSaslTest extends BaseSasl {
   void testMechanism(String mechanism, String user, String password) throws SaslException {
     Map<String, String> props = new HashMap<>();
     props.put(Sasl.QOP, QOP_LEVEL);
-    createServer(new HtPasswd("./src/test/resources/.htpassword"), mechanism, PROTOCOL, SERVER_NAME, props);
+    createServer(new HtPasswdFileManager("./src/test/resources/.htpassword"), mechanism, PROTOCOL, SERVER_NAME, props);
     createClient(
         user,
         password,

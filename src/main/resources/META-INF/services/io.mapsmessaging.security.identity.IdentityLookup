@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd
-io.mapsmessaging.security.identity.impl.shadow.Shadow
+io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager
+io.mapsmessaging.security.identity.impl.shadow.ShadowFileManager

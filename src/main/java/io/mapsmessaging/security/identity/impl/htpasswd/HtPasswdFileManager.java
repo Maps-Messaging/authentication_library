@@ -21,14 +21,14 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.base.FileBasedAuth;
 import java.util.Map;
 
-public class HtPasswd extends FileBasedAuth {
+public class HtPasswdFileManager extends FileBasedAuth {
 
 
-  public HtPasswd(){
+  public HtPasswdFileManager() {
     super();
   }
 
-  public HtPasswd(String filepath) {
+  public HtPasswdFileManager(String filepath) {
     super(filepath);
   }
 
@@ -46,7 +46,7 @@ public class HtPasswd extends FileBasedAuth {
   public IdentityLookup create(Map<String, ?> config) {
     if (config.containsKey("passwordFile")) {
       String filePath = config.get("passwordFile").toString();
-      return new HtPasswd(filePath);
+      return new HtPasswdFileManager(filePath);
     }
     return null;
   }

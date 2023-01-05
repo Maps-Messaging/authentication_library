@@ -20,7 +20,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager;
 import io.mapsmessaging.security.identity.parsers.Md5PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
@@ -36,7 +36,7 @@ class HtPasswordIdentifierTest {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("passwordFile", "./src/test/resources/.htpassword");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
-    Assertions.assertEquals(lookup.getClass(), HtPasswd.class);
+    Assertions.assertEquals(lookup.getClass(), HtPasswdFileManager.class);
     char[] hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
@@ -62,7 +62,7 @@ class HtPasswordIdentifierTest {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("passwordFile", "./src/test/resources/.htpassword");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
-    Assertions.assertEquals(lookup.getClass(), HtPasswd.class);
+    Assertions.assertEquals(lookup.getClass(), HtPasswdFileManager.class);
     Assertions.assertThrowsExactly(NoSuchUserFoundException.class, () -> lookup.getPasswordHash("noSuchUser"));
   }
 }

@@ -20,7 +20,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.impl.shadow.Shadow;
+import io.mapsmessaging.security.identity.impl.shadow.ShadowFileManager;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
@@ -36,7 +36,7 @@ class ShadowIdentifierTest {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("passwordFile", "./src/test/resources/shadow");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
-    Assertions.assertEquals(lookup.getClass(), Shadow.class);
+    Assertions.assertEquals(lookup.getClass(), ShadowFileManager.class);
     char[] hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
@@ -63,7 +63,7 @@ class ShadowIdentifierTest {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("passwordFile", "./src/test/resources/shadow");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
-    Assertions.assertEquals(lookup.getClass(), Shadow.class);
+    Assertions.assertEquals(lookup.getClass(), ShadowFileManager.class);
     Assertions.assertThrowsExactly(NoSuchUserFoundException.class, () -> lookup.getPasswordHash("noSuchUser"));
   }
 

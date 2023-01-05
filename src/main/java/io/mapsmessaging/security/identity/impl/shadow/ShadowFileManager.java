@@ -21,13 +21,13 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.base.FileBasedAuth;
 import java.util.Map;
 
-public class Shadow extends FileBasedAuth {
+public class ShadowFileManager extends FileBasedAuth {
 
-  public Shadow(){
+  public ShadowFileManager() {
     super();
   }
 
-  public Shadow(String filepath) {
+  public ShadowFileManager(String filepath) {
     super(filepath);
   }
 
@@ -45,7 +45,7 @@ public class Shadow extends FileBasedAuth {
   public IdentityLookup create(Map<String, ?> config) {
     if (config.containsKey("passwordFile")) {
       String filePath = config.get("passwordFile").toString();
-      return new Shadow(filePath);
+      return new ShadowFileManager(filePath);
     }
     return null;
   }

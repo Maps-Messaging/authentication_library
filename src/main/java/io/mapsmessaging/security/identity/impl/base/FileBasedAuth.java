@@ -16,6 +16,14 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.CHECKING_PASSWORD_STORE;
+import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
+import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_FILE_CHANGE_DETECTED;
+import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_FILE_LOADED;
+import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_FILE_LOAD_EXCEPTION;
+
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
@@ -28,6 +36,7 @@ import java.util.Map;
 
 public abstract class FileBasedAuth implements IdentityLookup {
 
+  private final Logger logger = LoggerFactory.getLogger(FileBasedAuth.class);
   private final String filePath;
   private final Map<String, IdentityEntry> usernamePasswordMap;
   private long lastModified;
@@ -54,6 +63,7 @@ public abstract class FileBasedAuth implements IdentityLookup {
     load();
     IdentityEntry identityEntry = usernamePasswordMap.get(username);
     if (identityEntry == null) {
+      logger.log(NO_SUCH_USER_FOUND, username);
       throw new NoSuchUserFoundException("User: " + username + " not found");
     }
     return identityEntry.getPassword().toCharArray();
@@ -62,8 +72,10 @@ public abstract class FileBasedAuth implements IdentityLookup {
   protected abstract IdentityEntry load(String line);
 
   private void load() {
+    logger.log(CHECKING_PASSWORD_STORE, filePath);
     File file = new File(filePath);
     if (file.exists() && lastModified != file.lastModified()) {
+      logger.log(PASSWORD_FILE_CHANGE_DETECTED, filePath);
       lastModified = file.lastModified();
       usernamePasswordMap.clear();
       try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -73,8 +85,9 @@ public abstract class FileBasedAuth implements IdentityLookup {
           usernamePasswordMap.put(identityEntry.getUsername(), identityEntry);
           line = reader.readLine();
         }
+        logger.log(PASSWORD_FILE_LOADED, usernamePasswordMap.size(), filePath);
       } catch (IOException e) {
-        // To Do : Need to add log meesage
+        logger.log(PASSWORD_FILE_LOAD_EXCEPTION, filePath, e);
       }
     }
   }
