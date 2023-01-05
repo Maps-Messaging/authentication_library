@@ -91,6 +91,7 @@ public class IdentityLoginModule extends BaseLoginModule {
       if (!Arrays.equals(hash, lookupPassword.getBytes())) {
         throw new LoginException("Invalid password");
       }
+      userPrincipal = new AnonymousPrincipal(username);
       succeeded = true;
       if (debug) {
         logger.log(USER_LOGGED_IN, username);
@@ -104,19 +105,6 @@ public class IdentityLoginModule extends BaseLoginModule {
               + uce.getCallback().toString()
               + " not available to garner authentication information "
               + "from the user");
-    }
-  }
-
-  @Override
-  public boolean commit() {
-    if (!succeeded) {
-      return false;
-    } else {
-      userPrincipal = new AnonymousPrincipal(username);
-      subject.getPrincipals().add(userPrincipal);
-      // in any case, clean out state
-      password = null;
-      return true;
     }
   }
 }

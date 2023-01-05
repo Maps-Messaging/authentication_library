@@ -1,3 +1,19 @@
+/*
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.mapsmessaging.security.jaas;
 
 import com.auth0.jwk.Jwk;
@@ -10,7 +26,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
-import java.util.Arrays;
 import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -68,6 +83,7 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
           .build();
 
       verifier.verify(token);
+      userPrincipal = new AnonymousPrincipal(username);
       succeeded = true;
     } catch (JwkException | IOException ioe) {
       throw new LoginException(ioe.toString());
@@ -79,19 +95,5 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
               + "from the user");
     }
     return succeeded;
-  }
-
-  @Override
-  public boolean commit() {
-    if (!succeeded) {
-      return succeeded;
-    } else {
-      if (password != null) {
-        Arrays.fill(password, ' ');
-        password = null;
-      }
-      commitSucceeded = true;
-      return true;
-    }
   }
 }

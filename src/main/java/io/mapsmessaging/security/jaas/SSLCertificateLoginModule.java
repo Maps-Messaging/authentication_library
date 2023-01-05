@@ -1,9 +1,23 @@
+/*
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.mapsmessaging.security.jaas;
 
 
 import java.io.IOException;
-import java.security.Principal;
-import java.util.Arrays;
 import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -15,7 +29,6 @@ import javax.security.auth.login.LoginException;
 
 public class SSLCertificateLoginModule extends BaseLoginModule {
 
-  private Principal sslPrincipal;
 
   @Override
   public void initialize(
@@ -24,7 +37,7 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
-    sslPrincipal = null;
+    userPrincipal = null;
   }
 
   @Override
@@ -44,7 +57,7 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
     try {
       callbackHandler.handle(callbacks);
       username = ((NameCallback) callbacks[0]).getName();
-      sslPrincipal = ((PrincipalCallback) callbacks[1]).getPrincipal();
+      userPrincipal = ((PrincipalCallback) callbacks[1]).getPrincipal();
       char[] tmpPassword = ((PasswordCallback) callbacks[2]).getPassword();
       if (tmpPassword == null) {
         // treat a NULL password as an empty password
@@ -64,28 +77,5 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
 
     succeeded = true;
     return true;
-  }
-
-  @Override
-  public boolean commit() {
-    if (!succeeded) {
-      return false;
-    } else {
-      subject.getPrincipals().add(sslPrincipal);
-      // in any case, clean out state
-      if (password != null) {
-        Arrays.fill(password, ' ');
-        password = null;
-      }
-      sslPrincipal = null;
-      commitSucceeded = true;
-      return true;
-    }
-  }
-
-  @Override
-  public boolean abort() throws LoginException {
-    sslPrincipal = null;
-    return super.abort();
   }
 }

@@ -20,6 +20,7 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import javax.security.auth.Subject;
@@ -42,7 +43,7 @@ public abstract class BaseLoginModule implements LoginModule {
   protected String username;
   protected char[] password;
 
-  protected AnonymousPrincipal userPrincipal;
+  protected Principal userPrincipal;
 
   public void initialize(
       Subject subject,
@@ -89,7 +90,23 @@ public abstract class BaseLoginModule implements LoginModule {
     if (debug) {
       logger.log(USER_LOGGED_OUT, username);
     }
-
     return true;
   }
+
+  @Override
+  public boolean commit() {
+    if (!succeeded) {
+      return false;
+    } else {
+      if (password != null) {
+        Arrays.fill(password, ' ');
+        password = null;
+      }
+
+      subject.getPrincipals().add(userPrincipal);
+      commitSucceeded = true;
+      return true;
+    }
+  }
+
 }
