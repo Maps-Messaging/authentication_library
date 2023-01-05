@@ -14,41 +14,40 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.htpasswd;
+package io.mapsmessaging.security.identity.impl.shadow;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.base.FileBasedAuth;
 import io.mapsmessaging.security.identity.impl.base.IdentityEntry;
+import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
 import java.util.Map;
 
-public class HtPasswd extends FileBasedAuth {
+public class Shadow extends FileBasedAuth {
 
-
-  public HtPasswd(){
+  public Shadow(){
     super();
   }
 
-  public HtPasswd(String filepath) {
+  public Shadow(String filepath) {
     super(filepath);
   }
 
   @Override
   protected IdentityEntry load(String line) {
-    return new HtPasswdEntry(line);
+    return new ShadowPasswdEntry(line);
   }
 
   @Override
   public String getName() {
-    return "htpassword";
+    return "shadow";
   }
 
   @Override
   public IdentityLookup create(Map<String, ?> config) {
-    if(config.containsKey("htPasswordFile")){
-      String filePath = config.get("htPasswordFile").toString();
+    if(config.containsKey("shadowFile")){
+      String filePath = config.get("shadowFile").toString();
       return new HtPasswd(filePath);
     }
     return null;
   }
-
 }

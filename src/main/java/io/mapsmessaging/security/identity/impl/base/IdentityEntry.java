@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,30 +14,21 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.htpasswd;
+package io.mapsmessaging.security.identity.impl.base;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import lombok.Getter;
 
 public class IdentityEntry {
 
   @Getter
-  private final String username;
+  protected String username;
 
   @Getter
-  private final PasswordParser passwordParser;
+  protected PasswordParser passwordParser;
 
   @Getter
-  private final String password;
-
-  public IdentityEntry(String line) {
-    int usernamePos = line.indexOf(":");
-    username = line.substring(0, usernamePos);
-    line = line.substring(usernamePos + 1);
-    password = line;
-    passwordParser = PasswordParserFactory.getInstance().parse(password);
-  }
+  protected String password;
 
   @Override
   public String toString() {

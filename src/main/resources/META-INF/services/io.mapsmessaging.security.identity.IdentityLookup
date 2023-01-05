@@ -15,3 +15,4 @@
 #
 
 io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd
+io.mapsmessaging.security.identity.impl.shadow.Shadow
