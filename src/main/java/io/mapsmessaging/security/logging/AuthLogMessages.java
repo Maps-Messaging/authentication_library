@@ -36,10 +36,14 @@ public enum AuthLogMessages implements LogMessage {
   CHECKING_PASSWORD_STORE(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Scanning for password file changes on file {}");
   // </editor-fold>
 
-  private final @Getter String message;
-  private final @Getter LEVEL level;
-  private final @Getter Category category;
-  private final @Getter int parameterCount;
+  @Getter
+  private final String message;
+  @Getter
+  private final LEVEL level;
+  @Getter
+  private final Category category;
+  @Getter
+  private final int parameterCount;
 
   AuthLogMessages(LEVEL level, Auth_Category category, String message) {
     this.message = message;
@@ -61,14 +65,15 @@ public enum AuthLogMessages implements LogMessage {
     JAAS("Jaas");
 
 
-    private final @Getter String description;
+    @Getter
+    private final String description;
 
     Auth_Category(String description) {
       this.description = description;
     }
 
     public String getDivision() {
-      return "Authentication";
+      return "Security";
     }
   }
 }
