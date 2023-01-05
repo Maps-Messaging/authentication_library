@@ -16,10 +16,11 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
 import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
+import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import java.io.IOException;
@@ -35,7 +36,7 @@ import javax.security.auth.login.LoginException;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
-  private IdentityLookup identityLookup;
+  private IdentityLookup identityLookup = null;
 
   @Override
   public void initialize(
@@ -44,11 +45,17 @@ public class IdentityLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
-    identityLookup = new HtPasswd(options.get("htPasswordFile").toString());
+    if(options.containsKey("identityName")){
+      String identityLookupName = options.get("identityName").toString();
+      identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, options);
+    }
   }
 
   @Override
   public boolean login() throws LoginException {
+    if(identityLookup == null){
+      throw new LoginException("No such identity lookup mechanism loaded");
+    }
 
     // prompt for a username and password
     if (callbackHandler == null) {
@@ -64,7 +71,7 @@ public class IdentityLoginModule extends BaseLoginModule {
       username = ((NameCallback) callbacks[0]).getName();
       char[] lookup = identityLookup.getPasswordHash(username);
       if(lookup == null){
-
+        logger.log(NO_SUCH_USER_FOUND, username);
         throw new LoginException("No such user");
       }
 

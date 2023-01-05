@@ -17,13 +17,28 @@
 package io.mapsmessaging.security.identity;
 
 import java.util.Map;
+import java.util.ServiceLoader;
 
-public interface IdentityLookup {
+public class IdentityLookupFactory {
 
-  String getName();
+  private static final IdentityLookupFactory instance = new IdentityLookupFactory();
+  private final ServiceLoader<IdentityLookup> identityLookups;
 
-  char[] getPasswordHash(String username) throws NoSuchUserFoundException;
+  private IdentityLookupFactory(){
+    identityLookups = ServiceLoader.load(IdentityLookup.class);
+  }
 
-  IdentityLookup create(Map<String, ?> config);
+  public static IdentityLookupFactory getInstance(){
+    return instance;
+  }
+
+  public IdentityLookup get(String name, Map<String, ?> config){
+    for(IdentityLookup identityLookup:identityLookups){
+      if(identityLookup.getName().equalsIgnoreCase(name)){
+        return identityLookup.create(config);
+      }
+    }
+    return null;
+  }
 
 }

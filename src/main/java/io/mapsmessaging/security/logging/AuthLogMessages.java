@@ -27,7 +27,8 @@ public enum AuthLogMessages  implements LogMessage {
 
   // <editor-fold desc="Generic messages">
   USER_LOGGED_IN(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged in"),
-  USER_LOGGED_OUT(LEVEL.INFO, Auth_Category.AUTHENTICATION, "User {} logged out");
+  NO_SUCH_USER_FOUND(LEVEL.INFO, Auth_Category.AUTHENTICATION, "User {} not found"),
+  USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out");
   // </editor-fold>
 
   private final @Getter String message;

@@ -31,10 +31,20 @@ public class HtPasswd implements IdentityLookup {
   private final Map<String, IdentityEntry> usernamePasswordMap;
   private long lastModified;
 
+  public HtPasswd(){
+    filePath = "";
+    usernamePasswordMap = new LinkedHashMap<>();
+  }
+
   public HtPasswd(String filepath) {
     filePath = filepath;
     lastModified = 0;
     usernamePasswordMap = new LinkedHashMap<>();
+  }
+
+  @Override
+  public String getName() {
+    return "htpassword";
   }
 
   @Override
@@ -45,6 +55,15 @@ public class HtPasswd implements IdentityLookup {
       throw new NoSuchUserFoundException("User: " + username + " not found");
     }
     return identityEntry.getPassword().toCharArray();
+  }
+
+  @Override
+  public IdentityLookup create(Map<String, ?> config) {
+    if(config.containsKey("htPasswordFile")){
+      String filePath = config.get("htPasswordFile").toString();
+      return new HtPasswd(filePath);
+    }
+    return null;
   }
 
   private void load() {
