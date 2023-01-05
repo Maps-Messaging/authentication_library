@@ -30,6 +30,8 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 public class InitialState extends State {
 
+  private static final String GS2_HEADER = "n,,";
+
   public InitialState(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
     super(authorizationId, protocol, serverName, props, cbh);
   }
@@ -47,7 +49,6 @@ public class InitialState extends State {
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
     context.setClientNonce(nonceGenerator.generateNonce(48));
     ChallengeResponse firstClientChallenge = new ChallengeResponse();
-
     //
     // Request information from the user
     //
@@ -71,6 +72,7 @@ public class InitialState extends State {
     firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
     context.setState(new ChallengeState(this));
     context.setInitialClientChallenge(firstClientChallenge.toString());
+    firstClientChallenge.setGs2Header(GS2_HEADER);
     return firstClientChallenge;
   }
 

@@ -16,10 +16,13 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.msgs;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ChallengeResponse {
 
@@ -36,17 +39,21 @@ public class ChallengeResponse {
   public static final String SERVER_ERROR = "e";
 
 
+  @Setter
+  @Getter
+  private String gs2Header = "";
+
   private final Map<String, String> data;
 
   public ChallengeResponse(){
     data = new LinkedHashMap<>();
   }
 
-  public ChallengeResponse(byte[] comms){
+  public ChallengeResponse(byte[] comms) throws IOException {
     this(new String(comms));
   }
 
-  public ChallengeResponse(String comms){
+  public ChallengeResponse(String comms) throws IOException {
     this();
     parseString(comms);
   }
@@ -63,10 +70,22 @@ public class ChallengeResponse {
     data.put(key, value);
   }
 
-  private void parseString(String val){
+  private void parseString(String val) throws IOException {
+    if( val.startsWith("y,") ||
+        val.startsWith("p,") ){
+      throw new IOException("GS2 Channel bonding not supported");
+    }
+
+    if( val.startsWith("n,")){
+      val = val.substring(2);
+    }
+
     StringTokenizer st = new StringTokenizer(val, ",");
     while(st.hasMoreElements()){
-      parseKeyValue(((String) st.nextElement()).trim());
+      String entry = st.nextElement().toString().trim();
+      if(entry.length() > 0){
+        parseKeyValue(entry);
+      }
     }
   }
 
@@ -84,7 +103,7 @@ public class ChallengeResponse {
     for(Entry<String, String> entry:data.entrySet()){
       stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(",");
     }
-    String result = stringBuilder.toString();
+    String result = gs2Header+stringBuilder;
     return result.substring(0, result.length() -1);
   }
 
