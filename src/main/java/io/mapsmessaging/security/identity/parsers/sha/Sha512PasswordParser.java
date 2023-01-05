@@ -16,12 +16,25 @@
 
 package io.mapsmessaging.security.identity.parsers.sha;
 
-import java.security.NoSuchAlgorithmException;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
 public class Sha512PasswordParser extends ShaPasswordParser{
 
-  public Sha512PasswordParser(String password) throws NoSuchAlgorithmException {
-    super("$6$", "SHA-512", password.substring("$6$".length()));
+  public Sha512PasswordParser() {
+    this("$6$");
   }
 
+  public Sha512PasswordParser(String password)  {
+    super("$6$",  password.substring("$6$".length()));
+  }
+
+  @Override
+  public PasswordParser create(String password) {
+    return new Sha512PasswordParser(password);
+  }
+
+  @Override
+  public String getName() {
+    return "SHA-512";
+  }
 }

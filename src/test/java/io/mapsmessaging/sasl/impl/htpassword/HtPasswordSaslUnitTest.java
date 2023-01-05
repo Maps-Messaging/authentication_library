@@ -21,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.mapsmessaging.sasl.impl.BaseSasl;
 import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
-import io.mapsmessaging.security.identity.parsers.HashType;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
+import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;
@@ -68,29 +68,32 @@ public class HtPasswordSaslUnitTest extends BaseSasl {
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
   public void simpleDigestNonSaltValidTest(String mechanism) throws SaslException {
-    testMechanism(mechanism, "fred2@google.com", "This is a random password", HashType.SHA1);
+    Sha1PasswordParser passwordParser = new Sha1PasswordParser();
+    byte[] password = passwordParser.computeHash("This is a random password".getBytes(), null, 0);
+    testMechanism(mechanism, "fred2@google.com", new String(password));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"SCRAM-BCRYPT-SHA1"})
   public void simpleScramValidTest(String mechanism) throws SaslException {
-    testMechanism(mechanism, "test3", "This is an bcrypt password", HashType.PLAIN);
+    testMechanism(mechanism, "test3", "This is an bcrypt password");
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
   public void simpleWrongPasswordTest(String mechanism) {
-    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", "This is a wrong password", HashType.SHA1));
+    Sha1PasswordParser passwordParser = new Sha1PasswordParser();
+    byte[] password = passwordParser.computeHash("This is a wrong password".getBytes(), null, 0);
+    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", new String(password)));
   }
 
-  void testMechanism(String mechanism, String user, String password, HashType type) throws SaslException {
+  void testMechanism(String mechanism, String user, String password) throws SaslException {
     Map<String, String> props = new HashMap<>();
     props.put(Sasl.QOP, QOP_LEVEL);
     createServer(new HtPasswd("./src/test/resources/.htpassword"), mechanism, PROTOCOL, SERVER_NAME, props);
     createClient(
         user,
         password,
-        type,
         new String[]{mechanism},
         PROTOCOL,
         AUTHORIZATION_ID,

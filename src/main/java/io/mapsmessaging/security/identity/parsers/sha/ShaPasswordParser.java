@@ -17,28 +17,26 @@
 package io.mapsmessaging.security.identity.parsers.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.digest.Crypt;
 
-public class ShaPasswordParser implements PasswordParser {
+public abstract class ShaPasswordParser implements PasswordParser {
 
   private final byte[] password;
   private final String salt;
   private final String key;
-  private final MessageDigest digest;
 
-  public ShaPasswordParser(String key, String algorthm, String password) throws NoSuchAlgorithmException {
+  protected ShaPasswordParser(String key, String password) {
     this.key = key;
-    digest = MessageDigest.getInstance(algorthm);
     int idx = password.indexOf("$");
-    salt = password.substring(0, idx);
-    password = password.substring(idx+1);
-    this.password = password.getBytes();
-  }
-
-  public PasswordParser create(String password) {
-    return new Sha1PasswordParser(password);
+    if(idx > 0){
+      salt = password.substring(0, idx);
+      password = password.substring(idx+1);
+      this.password = password.getBytes();
+    }
+    else{
+      this.password = new byte[0];
+      salt = "";
+    }
   }
 
   @Override
@@ -54,10 +52,6 @@ public class ShaPasswordParser implements PasswordParser {
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
     return Crypt.crypt(password, new String(salt)).getBytes();
-//    digest.reset();
-//    digest.update(salt);
-//    digest.update(password);
-//    return (getKey() + Base64.encodeBase64String(digest.digest())).getBytes();
   }
 
   @Override
@@ -75,9 +69,5 @@ public class ShaPasswordParser implements PasswordParser {
     return (getKey() + new String(password)).toCharArray();
   }
 
-  @Override
-  public String getName() {
-    return key;
-  }
 
 }

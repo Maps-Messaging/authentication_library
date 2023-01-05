@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,7 +36,8 @@ public class PasswordParserFactory {
 
   public PasswordParser parse(String password){
     for(PasswordParser passwordParser:passwordParsers){
-      if(password.startsWith(passwordParser.getKey())){
+
+      if(password.length() >= passwordParser.getKey().length() && password.startsWith(passwordParser.getKey())){
         return passwordParser.create(password);
       }
     }
