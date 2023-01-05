@@ -16,7 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.htpasswd;
 
-import io.mapsmessaging.security.identity.impl.base.IdentityEntry;
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 
 public class HtPasswdEntry extends IdentityEntry {

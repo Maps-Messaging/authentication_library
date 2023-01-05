@@ -24,6 +24,8 @@ public interface IdentityLookup {
 
   char[] getPasswordHash(String username) throws NoSuchUserFoundException;
 
+  IdentityEntry findEntry(String username);
+
   IdentityLookup create(Map<String, ?> config);
 
 }

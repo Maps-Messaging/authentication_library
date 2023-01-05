@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl;
 
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
@@ -43,6 +44,16 @@ class HtPasswordIdentifierTest {
     Assertions.assertEquals("$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", pwd);
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
     Assertions.assertEquals(Md5PasswordParser.class, passwordParser.getClass());
+  }
+
+  @Test
+  void simpleEntryTest() {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("htPasswordFile", "./src/test/resources/.htpassword");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
+    IdentityEntry entry = lookup.findEntry("test");
+    Assertions.assertNotNull(entry);
+    Assertions.assertEquals("test:$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", entry.toString());
   }
 
   @Test

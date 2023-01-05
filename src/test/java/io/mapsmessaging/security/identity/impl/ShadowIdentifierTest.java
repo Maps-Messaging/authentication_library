@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl;
 
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
@@ -44,6 +45,17 @@ class ShadowIdentifierTest {
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
     Assertions.assertEquals(Sha512PasswordParser.class, passwordParser.getClass());
   }
+
+  @Test
+  void simpleEntryTest() {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("shadowFile", "./src/test/resources/shadow");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
+    IdentityEntry entry = lookup.findEntry("test");
+    Assertions.assertNotNull(entry);
+    Assertions.assertEquals("test:$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", entry.toString());
+  }
+
 
   @Test
   void noUser() {

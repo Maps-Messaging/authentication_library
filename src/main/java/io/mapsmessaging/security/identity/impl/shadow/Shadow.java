@@ -16,9 +16,9 @@
 
 package io.mapsmessaging.security.identity.impl.shadow;
 
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.base.FileBasedAuth;
-import io.mapsmessaging.security.identity.impl.base.IdentityEntry;
 import java.util.Map;
 
 public class Shadow extends FileBasedAuth {

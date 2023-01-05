@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.io.BufferedReader;
@@ -40,6 +41,12 @@ public abstract class FileBasedAuth implements IdentityLookup {
     filePath = filepath;
     lastModified = 0;
     usernamePasswordMap = new LinkedHashMap<>();
+  }
+
+  @Override
+  public IdentityEntry findEntry(String username) {
+    load();
+    return usernamePasswordMap.get(username);
   }
 
   @Override

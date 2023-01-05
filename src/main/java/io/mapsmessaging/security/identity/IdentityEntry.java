@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.base;
+package io.mapsmessaging.security.identity;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import lombok.Getter;
@@ -32,6 +32,6 @@ public class IdentityEntry {
 
   @Override
   public String toString() {
-    return username + ":" + password + "\n";
+    return username + ":" + password;
   }
 }

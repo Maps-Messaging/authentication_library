@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.htpassword;
+package io.mapsmessaging.security.sasl;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
 import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
-import io.mapsmessaging.security.sasl.BaseSasl;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;
@@ -30,7 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class HtPasswordSaslUnitTest extends BaseSasl {
+class SimpleSaslTest extends BaseSasl {
 
   private static final String SERVER_NAME = "myServer";
   private static final String PROTOCOL = "amqp";

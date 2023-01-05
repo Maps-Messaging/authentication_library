@@ -16,7 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.shadow;
 
-import io.mapsmessaging.security.identity.impl.base.IdentityEntry;
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 
 public class ShadowPasswdEntry extends IdentityEntry {
