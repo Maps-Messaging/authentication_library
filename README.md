@@ -24,8 +24,8 @@ Then include the dependency
      <!-- Non Blocking Task Queue module -->
     <dependency>
       <groupId>io.mapsmessaging</groupId>
-      <artifactId>SaslHelper</artifactId>
-      <version>1.0.0</version>
+      <artifactId>AuthenticationLibrary</artifactId>
+      <version>0.2.0</version>
     </dependency>
 ```   
 
