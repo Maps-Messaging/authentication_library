@@ -19,7 +19,6 @@ package io.mapsmessaging.security.identity.impl.shadow;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.base.FileBasedAuth;
 import io.mapsmessaging.security.identity.impl.base.IdentityEntry;
-import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
 import java.util.Map;
 
 public class Shadow extends FileBasedAuth {
@@ -46,7 +45,7 @@ public class Shadow extends FileBasedAuth {
   public IdentityLookup create(Map<String, ?> config) {
     if(config.containsKey("shadowFile")){
       String filePath = config.get("shadowFile").toString();
-      return new HtPasswd(filePath);
+      return new Shadow(filePath);
     }
     return null;
   }
