@@ -18,12 +18,16 @@ package io.mapsmessaging.security.identity.parsers;
 
 import org.junit.jupiter.api.Test;
 
-public class BCryptTests extends BaseTest {
-
+class BCryptTests extends BashHashFunctions {
 
   @Test
-  public void checkBcryptHash() {
+  void checkBcryptHash() {
     testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password");
+  }
+
+  @Test
+  void checkBcryptHashWrongPassword() {
+    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is a wrong password", false);
   }
 
 }

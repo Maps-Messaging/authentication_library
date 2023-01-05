@@ -16,22 +16,30 @@
 
 package io.mapsmessaging.security.identity.parsers;
 
+import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 
-public class BaseTest {
+public class BashHashFunctions {
 
-  protected void testHashing(String passwordHashString, String rawPassword){
+  protected void testHashing(String passwordHashString, String rawPassword) {
+    testHashing(passwordHashString, rawPassword, true);
+  }
+
+  protected void testHashing(String passwordHashString, String rawPassword, boolean shouldPass) {
     //
     // We parse the password string to extract the public SALT, so we can pass to the client
     //
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(passwordHashString);
 
-
     // This would be done on the client side of this
     byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
 
     // The result should be that the hash = password + salt hashed should match what the server has
-    Assertions.assertArrayEquals(passwordHashString.toCharArray(), new String(hash).toCharArray());
+    if (shouldPass) {
+      Assertions.assertArrayEquals(passwordHashString.getBytes(), hash);
+    } else {
+      Assertions.assertFalse(Arrays.equals(passwordHashString.getBytes(), hash));
+    }
   }
 
 }

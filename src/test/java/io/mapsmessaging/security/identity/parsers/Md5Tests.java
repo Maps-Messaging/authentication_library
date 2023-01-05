@@ -18,10 +18,16 @@ package io.mapsmessaging.security.identity.parsers;
 
 import org.junit.jupiter.api.Test;
 
-public class Md5Tests extends BaseTest {
+class Md5Tests extends BashHashFunctions {
+
   @Test
-  public void checkMd5Hash() {
+  void checkMd5Hash() {
     testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is an md5 password");
+  }
+
+  @Test
+  void checkMd5HashWithBadPassword() {
+    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is wrong", false);
   }
 
 }

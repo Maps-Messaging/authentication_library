@@ -39,7 +39,7 @@ public class HtPasswordSaslUnitTest extends BaseSasl {
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
-  public void simpleDigestNonSaltValidTest(String mechanism) throws SaslException {
+  void simpleDigestNonSaltValidTest(String mechanism) throws SaslException {
     Sha1PasswordParser passwordParser = new Sha1PasswordParser();
     byte[] password = passwordParser.computeHash("This is a random password".getBytes(), null, 0);
     testMechanism(mechanism, "fred2@google.com", new String(password));
@@ -47,13 +47,13 @@ public class HtPasswordSaslUnitTest extends BaseSasl {
 
   @ParameterizedTest
   @ValueSource(strings = {"SCRAM-BCRYPT-SHA1"})
-  public void simpleScramValidTest(String mechanism) throws SaslException {
+  void simpleScramValidTest(String mechanism) throws SaslException {
     testMechanism(mechanism, "test3", "This is an bcrypt password");
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
-  public void simpleWrongPasswordTest(String mechanism) {
+  void simpleWrongPasswordTest(String mechanism) {
     Sha1PasswordParser passwordParser = new Sha1PasswordParser();
     byte[] password = passwordParser.computeHash("This is a wrong password".getBytes(), null, 0);
     Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", new String(password)));
