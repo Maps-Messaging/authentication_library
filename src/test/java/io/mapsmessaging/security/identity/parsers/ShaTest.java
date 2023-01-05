@@ -18,16 +18,21 @@ package io.mapsmessaging.security.identity.parsers;
 
 import org.junit.jupiter.api.Test;
 
-class Md5Tests extends BashHashFunctions {
+class ShaTest extends BashHashFunctions {
+
 
   @Test
-  void checkMd5Hash() {
-    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is an md5 password");
+  void checkSha512Hash() {
+    testHashing("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", "onewordpassword");
   }
 
   @Test
-  void checkMd5HashWithBadPassword() {
-    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is wrong", false);
+  void checkSha512HashWithSpaces() {
+    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "this has spaces");
   }
 
+  @Test
+  void checkSha512HashBadPassword() {
+    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "just wrong", false);
+  }
 }

@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class HtPasswordSaslUnitTest extends BaseSasl {
+class HtPasswordSaslUnitTest extends BaseSasl {
 
   private static final String SERVER_NAME = "myServer";
   private static final String PROTOCOL = "amqp";

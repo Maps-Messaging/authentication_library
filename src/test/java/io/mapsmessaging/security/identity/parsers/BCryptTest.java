@@ -18,21 +18,16 @@ package io.mapsmessaging.security.identity.parsers;
 
 import org.junit.jupiter.api.Test;
 
-class ShaTests extends BashHashFunctions {
-
+class BCryptTest extends BashHashFunctions {
 
   @Test
-  void checkSha512Hash() {
-    testHashing("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", "onewordpassword");
+  void checkBcryptHash() {
+    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password");
   }
 
   @Test
-  void checkSha512HashWithSpaces() {
-    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "this has spaces");
+  void checkBcryptHashWrongPassword() {
+    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is a wrong password", false);
   }
 
-  @Test
-  void checkSha512HashBadPassword() {
-    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "just wrong", false);
-  }
 }
