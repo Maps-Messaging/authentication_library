@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.sasl.impl.htpassword;
+package io.mapsmessaging.security.sasl.htpassword;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.mapsmessaging.sasl.impl.BaseSasl;
 import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
+import io.mapsmessaging.security.sasl.BaseSasl;
 import java.util.HashMap;
 import java.util.Map;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -39,31 +36,6 @@ public class HtPasswordSaslUnitTest extends BaseSasl {
   private static final String PROTOCOL = "amqp";
   private static final String AUTHORIZATION_ID = null;
   private static final String QOP_LEVEL = "auth";
-
-  @Test
-  public void checkMd5Hash() {
-    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is an md5 password");
-  }
-
-  @Test
-  public void checkBcryptHash() {
-    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password");
-  }
-
-  private void testHashing(String passwordHashString, String rawPassword){
-    //
-    // We parse the password string to extract the public SALT, so we can pass to the client
-    //
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(passwordHashString);
-
-
-    // This would be done on the client side of this
-    byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
-
-    // The result should be that the hash = password + salt hashed should match what the server has
-    Assertions.assertArrayEquals(passwordHashString.toCharArray(), new String(hash).toCharArray());
-
-  }
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})

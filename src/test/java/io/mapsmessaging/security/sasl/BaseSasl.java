@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.sasl.impl;
+package io.mapsmessaging.security.sasl;
 
 import io.mapsmessaging.security.MapsSecurityProvider;
 import io.mapsmessaging.security.identity.IdentityLookup;
