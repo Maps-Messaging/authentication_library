@@ -1,4 +1,22 @@
+/*
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.mapsmessaging.security.jaas;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswd;
@@ -15,7 +33,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
-public class HtPasswordLoginModule extends BaseLoginModule {
+public class IdentityLoginModule extends BaseLoginModule {
 
   private IdentityLookup identityLookup;
 
@@ -32,7 +50,7 @@ public class HtPasswordLoginModule extends BaseLoginModule {
   @Override
   public boolean login() throws LoginException {
 
-    // prompt for a user name and password
+    // prompt for a username and password
     if (callbackHandler == null) {
       throw new LoginException("Error: no CallbackHandler available to garner authentication information from the user");
     }
@@ -46,6 +64,7 @@ public class HtPasswordLoginModule extends BaseLoginModule {
       username = ((NameCallback) callbacks[0]).getName();
       char[] lookup = identityLookup.getPasswordHash(username);
       if(lookup == null){
+
         throw new LoginException("No such user");
       }
 
@@ -67,6 +86,7 @@ public class HtPasswordLoginModule extends BaseLoginModule {
         throw new LoginException("Invalid password");
       }
       succeeded = true;
+      if(debug) logger.log(USER_LOGGED_IN, username);
       return true;
     } catch (IOException ioe) {
       throw new LoginException(ioe.toString());
