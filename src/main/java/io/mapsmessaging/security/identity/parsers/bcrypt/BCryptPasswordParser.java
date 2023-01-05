@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.parsers;
+package io.mapsmessaging.security.identity.parsers.bcrypt;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
 public abstract class BCryptPasswordParser implements PasswordParser {
 

@@ -17,7 +17,6 @@
 package io.mapsmessaging.security.identity.parsers.bcrypt;
 
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
-import io.mapsmessaging.security.identity.parsers.BCryptPasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
 public class BCrypt2bPasswordParser extends BCryptPasswordParser {
