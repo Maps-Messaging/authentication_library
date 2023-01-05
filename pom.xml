@@ -21,8 +21,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.mapsmessaging</groupId>
-  <artifactId>SaslHelper</artifactId>
-  <version>1.0.0</version>
+  <artifactId>AuthenticationLibrary</artifactId>
+  <version>0.2.0</version>
 
   <packaging>jar</packaging>
 
@@ -44,7 +44,7 @@
   </licenses>
 
   <scm>
-    <url>https://github.com/Maps-Messaging/SaslHelper.git</url>
+    <url>https://github.com/Maps-Messaging/Authentication-Library.git</url>
   </scm>
 
   <properties>
@@ -64,7 +64,7 @@
     <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/</sonar.coverage.jacoco.xmlReportPaths>
     <sonar.language>java</sonar.language>
 
-    <sonar.projectKey>Sasl_Helper</sonar.projectKey>
+    <sonar.projectKey>Authentication_Library</sonar.projectKey>
     <sonar.organization>maps-messaging</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
