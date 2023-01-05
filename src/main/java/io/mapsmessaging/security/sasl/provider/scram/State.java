@@ -33,7 +33,7 @@ public abstract class State {
   protected final CallbackHandler cbh;
   protected final NonceGenerator nonceGenerator;
 
-  protected State(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
+  protected State(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
     this.authorizationId = authorizationId;
     this.props = props;
     this.protocol = protocol;
@@ -42,7 +42,7 @@ public abstract class State {
     nonceGenerator = new NonceGenerator();
   }
 
-  protected State(State lhs){
+  protected State(State lhs) {
     this.authorizationId = lhs.authorizationId;
     this.props = lhs.props;
     this.protocol = lhs.protocol;
@@ -57,5 +57,5 @@ public abstract class State {
 
   public abstract ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException;
 
-  public abstract void handeResponse(ChallengeResponse response, SessionContext context ) throws IOException, UnsupportedCallbackException;
+  public abstract void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException;
 }

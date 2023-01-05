@@ -28,11 +28,11 @@ public class MapsSaslServerFactory implements SaslServerFactory {
   @Override
   public SaslServer createSaslServer(String mechanism, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
     String mech = mechanism.toLowerCase().trim();
-    if(mech.startsWith("scram")){
+    if (mech.startsWith("scram")) {
       String algorithm = mech.substring("scram-".length());
       return new ScramSaslServer(algorithm, protocol, serverName, props, cbh);
     }
-    throw new SaslException("Unknown mechanism "+mechanism);
+    throw new SaslException("Unknown mechanism " + mechanism);
   }
 
   @Override

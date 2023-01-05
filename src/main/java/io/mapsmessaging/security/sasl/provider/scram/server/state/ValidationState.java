@@ -27,11 +27,11 @@ import java.util.Base64;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
 
-public class ValidationState  extends State {
+public class ValidationState extends State {
 
   private boolean isComplete;
 
-  public ValidationState(State state){
+  public ValidationState(State state) {
     super(state);
     isComplete = false;
   }
@@ -62,7 +62,7 @@ public class ValidationState  extends State {
     //
     // Compute Proof
     //
-    String authString = context.getInitialClientChallenge()+","+context.getInitialServerChallenge()+","+response;
+    String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
     try {
       context.computeClientKey(context.getPrepPassword().getBytes());
       context.computeStoredKeyAndSignature(authString);

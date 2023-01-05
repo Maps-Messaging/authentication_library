@@ -32,7 +32,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 public class InitialState extends State {
 
-  public InitialState(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
+  public InitialState(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
     super("", protocol, serverName, props, cbh);
   }
 
@@ -48,12 +48,12 @@ public class InitialState extends State {
 
   @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
-    if(!context.isReceivedClientMessage()){
+    if (!context.isReceivedClientMessage()) {
       return null;
     }
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
-    response.put(ChallengeResponse.ITERATION_COUNT, ""+context.getInterations());
+    response.put(ChallengeResponse.ITERATION_COUNT, "" + context.getInterations());
     response.put(ChallengeResponse.SALT, context.getPasswordSalt());
     context.setState(new ValidationState(this));
     context.setInitialServerChallenge(response.toString());
@@ -62,7 +62,7 @@ public class InitialState extends State {
 
   @Override
   public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
-    if(response.isEmpty()){
+    if (response.isEmpty()) {
       return;
     }
     context.setInitialClientChallenge(response.toString());
@@ -81,12 +81,12 @@ public class InitialState extends State {
     callbacks[0] = new NameCallback("SCRAM Username Prompt", context.getUsername());
     callbacks[1] = new PasswordCallback("SCRAM Password Prompt", false);
     cbh.handle(callbacks);
-    String username = ((NameCallback)callbacks[0]).getName();
-    if(username == null){
+    String username = ((NameCallback) callbacks[0]).getName();
+    if (username == null) {
       // Need to log an exception
     }
 
-    char[] password = ((PasswordCallback)callbacks[1]).getPassword();
+    char[] password = ((PasswordCallback) callbacks[1]).getPassword();
     //
     // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based on the parsed info
     //
@@ -98,6 +98,6 @@ public class InitialState extends State {
     context.setPrepPassword(new String(password));
     context.setPasswordSalt(new String(encoder.encode(passwordParser.getSalt())));
     context.setInterations(passwordParser.getCost());
-    context.setServerNonce(context.getClientNonce()+nonceGenerator.generateNonce(48));
+    context.setServerNonce(context.getClientNonce() + nonceGenerator.generateNonce(48));
   }
 }

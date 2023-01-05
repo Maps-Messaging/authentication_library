@@ -93,13 +93,13 @@ public class SessionContext {
   private byte[] serverSignature;
 
   public void setServerNonce(String nonce) throws SaslException {
-    if(!nonce.startsWith(clientNonce)){
+    if (!nonce.startsWith(clientNonce)) {
       throw new SaslException("Server Nonce must start with client nonce");
     }
     serverNonce = nonce;
   }
 
-  public void setMac(Mac mac){
+  public void setMac(Mac mac) {
     this.mac = mac;
     algorithm = mac.getAlgorithm().substring("hmac".length());
   }

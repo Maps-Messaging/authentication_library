@@ -21,23 +21,20 @@ import java.util.ServiceLoader;
 public class PasswordParserFactory {
 
   private static final PasswordParserFactory instance = new PasswordParserFactory();
+  private final ServiceLoader<PasswordParser> passwordParsers;
 
-  public static PasswordParserFactory getInstance(){
+  private PasswordParserFactory() {
+    passwordParsers = ServiceLoader.load(PasswordParser.class);
+  }
+
+  public static PasswordParserFactory getInstance() {
     return instance;
   }
 
-  private final ServiceLoader<PasswordParser> passwordParsers;
+  public PasswordParser parse(String password) {
+    for (PasswordParser passwordParser : passwordParsers) {
 
-
-  private PasswordParserFactory(){
-    passwordParsers =  ServiceLoader.load(PasswordParser.class);
-  }
-
-
-  public PasswordParser parse(String password){
-    for(PasswordParser passwordParser:passwordParsers){
-
-      if(password.length() >= passwordParser.getKey().length() && password.startsWith(passwordParser.getKey())){
+      if (password.length() >= passwordParser.getKey().length() && password.startsWith(passwordParser.getKey())) {
         return passwordParser.create(password);
       }
     }

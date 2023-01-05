@@ -35,7 +35,7 @@ public abstract class BCryptPasswordParser implements PasswordParser {
     version = null;
   }
 
-  protected BCryptPasswordParser( Version version) {
+  protected BCryptPasswordParser(Version version) {
     password = new byte[0];
     salt = new byte[0];
     cost = 0;
@@ -56,7 +56,7 @@ public abstract class BCryptPasswordParser implements PasswordParser {
   }
 
   @Override
-  public int getCost(){
+  public int getCost() {
     return cost;
   }
 
@@ -83,7 +83,7 @@ public abstract class BCryptPasswordParser implements PasswordParser {
   @Override
   public char[] getFullPasswordHash() {
     Radix64Encoder encoder = new Radix64Encoder.Default();
-    String t = new String(encoder.encode(salt))+ new String(encoder.encode(password));
+    String t = new String(encoder.encode(salt)) + new String(encoder.encode(password));
     return (getKey() + cost + "$" + t).toCharArray();
   }
 

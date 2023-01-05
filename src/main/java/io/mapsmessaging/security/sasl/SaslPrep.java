@@ -39,7 +39,7 @@ public class SaslPrep {
   }
 
   // Implements RFC rfc4013
-  public String stringPrep(String string){
+  public String stringPrep(String string) {
     return profile.prepareStored(string);
   }
 

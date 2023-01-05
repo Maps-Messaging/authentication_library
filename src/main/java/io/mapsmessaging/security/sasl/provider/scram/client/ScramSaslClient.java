@@ -29,11 +29,11 @@ import javax.security.sasl.SaslClient;
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
   public ScramSaslClient(String algorithm, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws NoSuchAlgorithmException {
-    if(algorithm.startsWith("bcrypt")){
+    if (algorithm.startsWith("bcrypt")) {
       context.setPasswordParser(new BCrypt2yPasswordParser());
       algorithm = algorithm.substring("bcrypt-".length());
     }
-    context.setMac(Mac.getInstance("Hmac"+algorithm.toUpperCase()));
+    context.setMac(Mac.getInstance("Hmac" + algorithm.toUpperCase()));
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));
   }
 
@@ -49,7 +49,7 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
   @Override
   public Object getNegotiatedProperty(String propName) {
-    if(propName.equals(Sasl.QOP)){
+    if (propName.equals(Sasl.QOP)) {
       return "auth";
     }
     return null;

@@ -29,12 +29,12 @@ import javax.security.sasl.SaslServer;
 public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   public ScramSaslServer(String algorithm, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
-    if(algorithm.startsWith("bcrypt")){
+    if (algorithm.startsWith("bcrypt")) {
       context.setPasswordParser(new BCrypt2yPasswordParser());
       algorithm = algorithm.substring("bcrypt-".length());
     }
     try {
-      context.setMac(Mac.getInstance("Hmac"+algorithm.toUpperCase()));
+      context.setMac(Mac.getInstance("Hmac" + algorithm.toUpperCase()));
     } catch (NoSuchAlgorithmException e) {
       SaslException saslException = new SaslException(e.getMessage());
       saslException.initCause(e);

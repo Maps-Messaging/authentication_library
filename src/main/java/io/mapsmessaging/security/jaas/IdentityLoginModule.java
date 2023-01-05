@@ -45,7 +45,7 @@ public class IdentityLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
-    if(options.containsKey("identityName")){
+    if (options.containsKey("identityName")) {
       String identityLookupName = options.get("identityName").toString();
       identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, options);
     }
@@ -53,7 +53,7 @@ public class IdentityLoginModule extends BaseLoginModule {
 
   @Override
   public boolean login() throws LoginException {
-    if(identityLookup == null){
+    if (identityLookup == null) {
       throw new LoginException("No such identity lookup mechanism loaded");
     }
 
@@ -70,7 +70,7 @@ public class IdentityLoginModule extends BaseLoginModule {
       callbackHandler.handle(callbacks);
       username = ((NameCallback) callbacks[0]).getName();
       char[] lookup = identityLookup.getPasswordHash(username);
-      if(lookup == null){
+      if (lookup == null) {
         logger.log(NO_SUCH_USER_FOUND, username);
         throw new LoginException("No such user");
       }
@@ -86,14 +86,15 @@ public class IdentityLoginModule extends BaseLoginModule {
       String lookupPassword = new String(lookup);
       PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(lookupPassword);
 
-
       // This would be done on the client side of this
       byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
       if (!Arrays.equals(hash, lookupPassword.getBytes())) {
         throw new LoginException("Invalid password");
       }
       succeeded = true;
-      if(debug) logger.log(USER_LOGGED_IN, username);
+      if (debug) {
+        logger.log(USER_LOGGED_IN, username);
+      }
       return true;
     } catch (IOException ioe) {
       throw new LoginException(ioe.toString());

@@ -32,7 +32,7 @@ public class InitialState extends State {
 
   private static final String GS2_HEADER = "n,,";
 
-  public InitialState(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh){
+  public InitialState(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
     super(authorizationId, protocol, serverName, props, cbh);
   }
 
@@ -41,7 +41,7 @@ public class InitialState extends State {
     return false;
   }
 
-  public boolean hasInitialResponse(){
+  public boolean hasInitialResponse() {
     return false;
   }
 
@@ -60,9 +60,9 @@ public class InitialState extends State {
     //
     // Update the context
     //
-    String rawPassword = new String((((PasswordCallback)callbacks[1]).getPassword()));
+    String rawPassword = new String((((PasswordCallback) callbacks[1]).getPassword()));
 
-    context.setUsername( ((NameCallback)callbacks[0]).getName());
+    context.setUsername(((NameCallback) callbacks[0]).getName());
     context.setPrepPassword(SaslPrep.getInstance().stringPrep(rawPassword));
 
     //

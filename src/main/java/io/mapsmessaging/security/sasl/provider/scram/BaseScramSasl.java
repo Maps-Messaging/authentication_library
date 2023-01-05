@@ -10,7 +10,7 @@ public class BaseScramSasl {
 
   protected final SessionContext context;
 
-  public BaseScramSasl(){
+  public BaseScramSasl() {
     this.context = new SessionContext();
   }
 
@@ -21,11 +21,11 @@ public class BaseScramSasl {
   @SuppressWarnings("java:S1168") // We return null since it needs to be
   public byte[] evaluateChallenge(byte[] challenge) throws SaslException {
     try {
-      if(challenge != null){
+      if (challenge != null) {
         context.getState().handeResponse(new ChallengeResponse(challenge), context);
       }
       ChallengeResponse challengeResponse = context.getState().produceChallenge(context);
-      if(challengeResponse != null){
+      if (challengeResponse != null) {
         return challengeResponse.toString().getBytes();
       }
       return null;

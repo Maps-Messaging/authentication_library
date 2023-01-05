@@ -2,7 +2,7 @@ package io.mapsmessaging.security.jaas;
 
 import java.security.Principal;
 
-public class AnonymousPrincipal  implements Principal {
+public class AnonymousPrincipal implements Principal {
 
   private final String name;
 

@@ -29,7 +29,7 @@ public class FinalValidationState extends State {
 
   private boolean isComplete;
 
-  public FinalValidationState(State state){
+  public FinalValidationState(State state) {
     super(state);
     isComplete = false;
   }

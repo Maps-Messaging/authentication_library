@@ -28,13 +28,13 @@ public class MapsSecurityProvider extends Provider {
   public MapsSecurityProvider() {
     super("MapsSasl", "1.0", "Provider for SCRAM SASL implementation.");
     Provider[] providers = Security.getProviders();
-    for(Provider provider:providers){
-      for(Service service:provider.getServices()){
-        if(service.getAlgorithm().toLowerCase().startsWith("hmac")){
-          put("SaslClientFactory.SCRAM-"+service.getAlgorithm().substring("hmac".length()), CLIENT_FACTORY);
-          put("SaslServerFactory.SCRAM-"+service.getAlgorithm().substring("hmac".length()), SERVER_FACTORY);
-          put("SaslClientFactory.SCRAM-bcrypt-"+service.getAlgorithm().substring("hmac".length()), CLIENT_FACTORY);
-          put("SaslServerFactory.SCRAM-bcrypt-"+service.getAlgorithm().substring("hmac".length()), SERVER_FACTORY);
+    for (Provider provider : providers) {
+      for (Service service : provider.getServices()) {
+        if (service.getAlgorithm().toLowerCase().startsWith("hmac")) {
+          put("SaslClientFactory.SCRAM-" + service.getAlgorithm().substring("hmac".length()), CLIENT_FACTORY);
+          put("SaslServerFactory.SCRAM-" + service.getAlgorithm().substring("hmac".length()), SERVER_FACTORY);
+          put("SaslClientFactory.SCRAM-bcrypt-" + service.getAlgorithm().substring("hmac".length()), CLIENT_FACTORY);
+          put("SaslServerFactory.SCRAM-bcrypt-" + service.getAlgorithm().substring("hmac".length()), SERVER_FACTORY);
         }
       }
     }

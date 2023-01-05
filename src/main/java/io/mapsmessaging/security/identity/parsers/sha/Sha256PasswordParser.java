@@ -18,14 +18,14 @@ package io.mapsmessaging.security.identity.parsers.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
-public class Sha256PasswordParser  extends ShaPasswordParser{
+public class Sha256PasswordParser extends ShaPasswordParser {
 
   public Sha256PasswordParser() {
-   this("$5$");
+    this("$5$");
   }
 
   public Sha256PasswordParser(String password) {
-    super("$5$",  password.substring("$5$".length()));
+    super("$5$", password.substring("$5$".length()));
   }
 
   @Override

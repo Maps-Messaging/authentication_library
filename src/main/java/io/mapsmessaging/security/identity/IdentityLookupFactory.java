@@ -24,17 +24,17 @@ public class IdentityLookupFactory {
   private static final IdentityLookupFactory instance = new IdentityLookupFactory();
   private final ServiceLoader<IdentityLookup> identityLookups;
 
-  private IdentityLookupFactory(){
+  private IdentityLookupFactory() {
     identityLookups = ServiceLoader.load(IdentityLookup.class);
   }
 
-  public static IdentityLookupFactory getInstance(){
+  public static IdentityLookupFactory getInstance() {
     return instance;
   }
 
-  public IdentityLookup get(String name, Map<String, ?> config){
-    for(IdentityLookup identityLookup:identityLookups){
-      if(identityLookup.getName().equalsIgnoreCase(name)){
+  public IdentityLookup get(String name, Map<String, ?> config) {
+    for (IdentityLookup identityLookup : identityLookups) {
+      if (identityLookup.getName().equalsIgnoreCase(name)) {
         return identityLookup.create(config);
       }
     }

@@ -29,7 +29,7 @@ import javax.security.sasl.SaslException;
 
 public class ChallengeState extends State {
 
-  public ChallengeState(State state){
+  public ChallengeState(State state) {
     super(state);
   }
 
@@ -49,8 +49,8 @@ public class ChallengeState extends State {
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.CHANNEL_BINDING, "biws");
 
-    String saltedPassword="";
-    if(context.getPasswordParser() != null){
+    String saltedPassword = "";
+    if (context.getPasswordParser() != null) {
       Radix64Encoder encoder = new Radix64Encoder.Default();
       byte[] salt = encoder.decode(context.getPasswordSalt().getBytes());
       byte[] computedHash = context.getPasswordParser().computeHash(context.getPrepPassword().getBytes(), salt, context.getInterations());
@@ -61,7 +61,7 @@ public class ChallengeState extends State {
     // Compute Proof
     //
     try {
-      String authString = context.getInitialClientChallenge()+","+context.getInitialServerChallenge()+","+response;
+      String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
       context.computeClientHashes(saltedPassword.getBytes(), authString);
       response.put(ChallengeResponse.PROOF, Base64.getEncoder().encodeToString(context.getClientProof()));
 

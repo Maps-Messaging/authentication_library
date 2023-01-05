@@ -31,7 +31,7 @@ public class NonceGenerator {
   public String generateNonce(int size) {
     byte[] nonce = new byte[size];
     int x = 0;
-    while(x<size){
+    while (x < size) {
       int idx = Math.abs(prng.nextInt(NONCE_CHARS.length));
       nonce[x] = NONCE_CHARS[idx];
       x++;

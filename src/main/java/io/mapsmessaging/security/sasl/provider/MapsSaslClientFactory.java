@@ -29,9 +29,9 @@ public class MapsSaslClientFactory implements SaslClientFactory {
   @Override
   public SaslClient createSaslClient(String[] mechanisms, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh)
       throws SaslException {
-    for(String mechanism:mechanisms){
+    for (String mechanism : mechanisms) {
       String mech = mechanism.toLowerCase().trim();
-      if(mech.startsWith("scram")){
+      if (mech.startsWith("scram")) {
         String algorithm = mech.substring("scram-".length());
         try {
           return new ScramSaslClient(algorithm, authorizationId, protocol, serverName, props, cbh);
@@ -42,7 +42,7 @@ public class MapsSaslClientFactory implements SaslClientFactory {
         }
       }
     }
-    throw new SaslException("Unknown mechanism "+mechanisms);
+    throw new SaslException("Unknown mechanism " + mechanisms);
   }
 
   @Override

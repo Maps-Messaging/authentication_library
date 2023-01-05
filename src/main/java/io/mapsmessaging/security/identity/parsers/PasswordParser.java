@@ -34,7 +34,7 @@ public interface PasswordParser {
 
   String getName();
 
-  default int getCost(){
+  default int getCost() {
     return 0;
   }
 

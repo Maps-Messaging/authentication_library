@@ -25,9 +25,8 @@ public class BCrypt2bPasswordParser extends BCryptPasswordParser {
     super(Version.VERSION_2B);
   }
 
-
   public BCrypt2bPasswordParser(String password) {
-    super(password,  Version.VERSION_2B);
+    super(password, Version.VERSION_2B);
   }
 
   public PasswordParser create(String password) {

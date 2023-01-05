@@ -28,12 +28,11 @@ public abstract class ShaPasswordParser implements PasswordParser {
   protected ShaPasswordParser(String key, String password) {
     this.key = key;
     int idx = password.indexOf("$");
-    if(idx > 0){
+    if (idx > 0) {
       salt = password.substring(0, idx);
-      password = password.substring(idx+1);
+      password = password.substring(idx + 1);
       this.password = password.getBytes();
-    }
-    else{
+    } else {
       this.password = new byte[0];
       salt = "";
     }
@@ -56,7 +55,7 @@ public abstract class ShaPasswordParser implements PasswordParser {
 
   @Override
   public byte[] getSalt() {
-    return (key+salt).getBytes();
+    return (key + salt).getBytes();
   }
 
   @Override

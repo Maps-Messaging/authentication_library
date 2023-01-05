@@ -18,14 +18,14 @@ package io.mapsmessaging.security.identity.parsers.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
-public class Sha512PasswordParser extends ShaPasswordParser{
+public class Sha512PasswordParser extends ShaPasswordParser {
 
   public Sha512PasswordParser() {
     this("$6$");
   }
 
-  public Sha512PasswordParser(String password)  {
-    super("$6$",  password.substring("$6$".length()));
+  public Sha512PasswordParser(String password) {
+    super("$6$", password.substring("$6$".length()));
   }
 
   @Override

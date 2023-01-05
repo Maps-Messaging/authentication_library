@@ -86,7 +86,9 @@ public abstract class BaseLoginModule implements LoginModule {
       password = null;
     }
     userPrincipal = null;
-    if(debug) logger.log(USER_LOGGED_OUT, username);
+    if (debug) {
+      logger.log(USER_LOGGED_OUT, username);
+    }
 
     return true;
   }

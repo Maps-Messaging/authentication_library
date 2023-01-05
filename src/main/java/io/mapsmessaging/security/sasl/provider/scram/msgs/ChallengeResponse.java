@@ -37,15 +37,12 @@ public class ChallengeResponse {
   public static final String RESERVED = "m";
   public static final String CHANNEL_BINDING = "c";
   public static final String SERVER_ERROR = "e";
-
-
+  private final Map<String, String> data;
   @Setter
   @Getter
   private String gs2Header = "";
 
-  private final Map<String, String> data;
-
-  public ChallengeResponse(){
+  public ChallengeResponse() {
     data = new LinkedHashMap<>();
   }
 
@@ -58,53 +55,53 @@ public class ChallengeResponse {
     parseString(comms);
   }
 
-  public String get(String key){
+  public String get(String key) {
     return data.get(key);
   }
 
-  public String remove(String key){
+  public String remove(String key) {
     return data.remove(key);
   }
 
-  public void put(String key, String value){
+  public void put(String key, String value) {
     data.put(key, value);
   }
 
   private void parseString(String val) throws IOException {
-    if( val.startsWith("y,") ||
-        val.startsWith("p,") ){
+    if (val.startsWith("y,") ||
+        val.startsWith("p,")) {
       throw new IOException("GS2 Channel bonding not supported");
     }
 
-    if( val.startsWith("n,")){
+    if (val.startsWith("n,")) {
       val = val.substring(2);
     }
 
     StringTokenizer st = new StringTokenizer(val, ",");
-    while(st.hasMoreElements()){
+    while (st.hasMoreElements()) {
       String entry = st.nextElement().toString().trim();
-      if(entry.length() > 0){
+      if (entry.length() > 0) {
         parseKeyValue(entry);
       }
     }
   }
 
-  private void parseKeyValue(String keyValue){
+  private void parseKeyValue(String keyValue) {
     int index = keyValue.indexOf("=");
-    if(index > 0){
+    if (index > 0) {
       String key = keyValue.substring(0, index).trim();
-      String val = keyValue.substring(index+1).trim();
+      String val = keyValue.substring(index + 1).trim();
       data.put(key, val);
     }
   }
 
-  public String toString(){
+  public String toString() {
     StringBuilder stringBuilder = new StringBuilder();
-    for(Entry<String, String> entry:data.entrySet()){
+    for (Entry<String, String> entry : data.entrySet()) {
       stringBuilder.append(entry.getKey()).append("=").append(entry.getValue()).append(",");
     }
-    String result = gs2Header+stringBuilder;
-    return result.substring(0, result.length() -1);
+    String result = gs2Header + stringBuilder;
+    return result.substring(0, result.length() - 1);
   }
 
   public boolean isEmpty() {
