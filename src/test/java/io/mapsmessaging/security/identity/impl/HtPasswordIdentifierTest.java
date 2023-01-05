@@ -34,7 +34,7 @@ class HtPasswordIdentifierTest {
   @Test
   void simpleLoad() throws NoSuchUserFoundException {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("htPasswordFile", "./src/test/resources/.htpassword");
+    map.put("passwordFile", "./src/test/resources/.htpassword");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
     Assertions.assertEquals(lookup.getClass(), HtPasswd.class);
     char[] hash = lookup.getPasswordHash("test");
@@ -49,7 +49,7 @@ class HtPasswordIdentifierTest {
   @Test
   void simpleEntryTest() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("htPasswordFile", "./src/test/resources/.htpassword");
+    map.put("passwordFile", "./src/test/resources/.htpassword");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
@@ -60,7 +60,7 @@ class HtPasswordIdentifierTest {
   @Test
   void noUser() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("htPasswordFile", "./src/test/resources/.htpassword");
+    map.put("passwordFile", "./src/test/resources/.htpassword");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
     Assertions.assertEquals(lookup.getClass(), HtPasswd.class);
     Assertions.assertThrowsExactly(NoSuchUserFoundException.class, () -> lookup.getPasswordHash("noSuchUser"));

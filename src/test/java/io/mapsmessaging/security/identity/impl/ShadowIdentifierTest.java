@@ -34,7 +34,7 @@ class ShadowIdentifierTest {
   @Test
   void simpleLoad() throws NoSuchUserFoundException {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("shadowFile", "./src/test/resources/shadow");
+    map.put("passwordFile", "./src/test/resources/shadow");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
     Assertions.assertEquals(lookup.getClass(), Shadow.class);
     char[] hash = lookup.getPasswordHash("test");
@@ -49,7 +49,7 @@ class ShadowIdentifierTest {
   @Test
   void simpleEntryTest() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("shadowFile", "./src/test/resources/shadow");
+    map.put("passwordFile", "./src/test/resources/shadow");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
@@ -61,7 +61,7 @@ class ShadowIdentifierTest {
   @Test
   void noUser() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("shadowFile", "./src/test/resources/shadow");
+    map.put("passwordFile", "./src/test/resources/shadow");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
     Assertions.assertEquals(lookup.getClass(), Shadow.class);
     Assertions.assertThrowsExactly(NoSuchUserFoundException.class, () -> lookup.getPasswordHash("noSuchUser"));

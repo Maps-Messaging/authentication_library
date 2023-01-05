@@ -44,8 +44,8 @@ public class HtPasswd extends FileBasedAuth {
 
   @Override
   public IdentityLookup create(Map<String, ?> config) {
-    if(config.containsKey("htPasswordFile")){
-      String filePath = config.get("htPasswordFile").toString();
+    if (config.containsKey("passwordFile")) {
+      String filePath = config.get("passwordFile").toString();
       return new HtPasswd(filePath);
     }
     return null;

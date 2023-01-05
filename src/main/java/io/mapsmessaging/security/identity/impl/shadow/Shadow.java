@@ -43,8 +43,8 @@ public class Shadow extends FileBasedAuth {
 
   @Override
   public IdentityLookup create(Map<String, ?> config) {
-    if(config.containsKey("shadowFile")){
-      String filePath = config.get("shadowFile").toString();
+    if (config.containsKey("passwordFile")) {
+      String filePath = config.get("passwordFile").toString();
       return new Shadow(filePath);
     }
     return null;
