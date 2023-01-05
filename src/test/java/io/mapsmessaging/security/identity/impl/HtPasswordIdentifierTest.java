@@ -54,6 +54,7 @@ class HtPasswordIdentifierTest {
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", entry.toString());
+    Assertions.assertEquals(Md5PasswordParser.class, entry.getPasswordParser().getClass());
   }
 
   @Test

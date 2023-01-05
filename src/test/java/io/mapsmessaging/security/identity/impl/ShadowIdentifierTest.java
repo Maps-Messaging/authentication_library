@@ -54,6 +54,7 @@ class ShadowIdentifierTest {
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", entry.toString());
+    Assertions.assertEquals(Sha512PasswordParser.class, entry.getPasswordParser().getClass());
   }
 
 
