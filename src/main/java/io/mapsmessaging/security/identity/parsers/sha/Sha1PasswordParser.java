@@ -46,6 +46,7 @@ public class Sha1PasswordParser implements PasswordParser {
     return false;
   }
 
+  @SuppressWarnings("java:S4790") // this is weak but used to test
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
     return (getKey() + Base64.encodeBase64String(DigestUtils.sha1(password))).getBytes();
