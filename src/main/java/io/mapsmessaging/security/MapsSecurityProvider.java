@@ -27,6 +27,7 @@ public class MapsSecurityProvider extends Provider {
 
   public MapsSecurityProvider() {
     super("MapsSasl", "1.0", "Provider for SCRAM SASL implementation.");
+
     Provider[] providers = Security.getProviders();
     for (Provider provider : providers) {
       for (Service service : provider.getServices()) {

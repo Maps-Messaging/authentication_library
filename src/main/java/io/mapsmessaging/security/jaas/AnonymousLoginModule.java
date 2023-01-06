@@ -18,8 +18,6 @@ package io.mapsmessaging.security.jaas;
 
 import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
 
-import io.mapsmessaging.logging.Logger;
-import io.mapsmessaging.logging.LoggerFactory;
 import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -28,12 +26,12 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
 public class AnonymousLoginModule  extends BaseLoginModule {
-  private final Logger logger = LoggerFactory.getLogger(AnonymousLoginModule.class);
 
   public AnonymousLoginModule(){
     super();
     logger.log(DO_NOT_USE_IN_PRODUCTION);
   }
+
   @Override
   public boolean login() throws LoginException {
 
