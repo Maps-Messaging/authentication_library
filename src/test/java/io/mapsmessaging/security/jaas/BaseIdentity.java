@@ -1,3 +1,19 @@
+/*
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package io.mapsmessaging.security.jaas;
 
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
@@ -27,10 +43,24 @@ public abstract class BaseIdentity {
   }
 
   LoginModule createLoginModule(CallbackHandler callbackHandler) {
+    return createLoginModule(callbackHandler, getOptions());
+  }
+
+  LoginModule createLoginModule(CallbackHandler callbackHandler, Map<String, ?> options) {
     LoginModule module = new IdentityLoginModule();
     Subject subject = new Subject();
-    module.initialize(subject, callbackHandler, new LinkedHashMap<>(), getOptions());
+    module.initialize(subject, callbackHandler, new LinkedHashMap<>(), options);
     return module;
+  }
+
+
+  @Test
+  void noPasswordFileTestTest()  {
+    Map<String,String> options = getOptions();
+    options.put("passwordFile", "NoSuchFile");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    LoginModule module = createLoginModule(clientCallbackHandler, options);
+    Assertions.assertThrowsExactly(LoginException.class, () -> module.login());
   }
 
 
