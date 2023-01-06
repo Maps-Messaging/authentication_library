@@ -26,6 +26,7 @@ public enum AuthLogMessages implements LogMessage {
   //-------------------------------------------------------------------------------------------------------------
 
   // <editor-fold desc="Generic messages">
+  DO_NOT_USE_IN_PRODUCTION(LEVEL.AUTH, Auth_Category.AUTHENTICATION, "Warning !!!, Not to be used in a production environment"),
   USER_LOGGED_IN(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged in"),
   NO_SUCH_USER_FOUND(LEVEL.INFO, Auth_Category.AUTHENTICATION, "User {} not found"),
   USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out"),
