@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 
 public abstract class BaseIdentity {
 
+  protected  Subject subject;
   abstract Map<String, String> getOptions();
 
   abstract String getUser();
@@ -48,7 +49,7 @@ public abstract class BaseIdentity {
 
   LoginModule createLoginModule(CallbackHandler callbackHandler, Map<String, ?> options) {
     LoginModule module = new IdentityLoginModule();
-    Subject subject = new Subject();
+    subject = new Subject();
     module.initialize(subject, callbackHandler, new LinkedHashMap<>(), options);
     return module;
   }
@@ -69,6 +70,19 @@ public abstract class BaseIdentity {
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
+    Assertions.assertTrue(subject.getPrincipals().isEmpty());
+    Assertions.assertTrue(module.commit());
+    Assertions.assertFalse(subject.getPrincipals().isEmpty());
+  }
+
+  @Test
+  void simpleAbortLoginTest() throws LoginException {
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    LoginModule module = createLoginModule(clientCallbackHandler);
+    Assertions.assertTrue(module.login());
+    Assertions.assertTrue(subject.getPrincipals().isEmpty());
+    Assertions.assertTrue(module.abort());
+    Assertions.assertTrue(subject.getPrincipals().isEmpty());
   }
 
   @Test
@@ -76,6 +90,7 @@ public abstract class BaseIdentity {
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
+    Assertions.assertTrue(module.commit());
     Assertions.assertTrue(module.logout());
   }
 

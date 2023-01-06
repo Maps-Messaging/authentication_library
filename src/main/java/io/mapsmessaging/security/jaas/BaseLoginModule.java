@@ -21,7 +21,6 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -41,7 +40,6 @@ public abstract class BaseLoginModule implements LoginModule {
   protected boolean commitSucceeded = false;
 
   protected String username;
-  protected char[] password;
 
   protected Principal userPrincipal;
 
@@ -65,10 +63,6 @@ public abstract class BaseLoginModule implements LoginModule {
       // login succeeded but overall authentication failed
       succeeded = false;
       username = null;
-      if (password != null) {
-        Arrays.fill(password, ' ');
-        password = null;
-      }
       userPrincipal = null;
     } else {
       logout();
@@ -82,10 +76,6 @@ public abstract class BaseLoginModule implements LoginModule {
     }
     succeeded = commitSucceeded;
     username = null;
-    if (password != null) {
-      Arrays.fill(password, ' ');
-      password = null;
-    }
     userPrincipal = null;
     if (debug) {
       logger.log(USER_LOGGED_OUT, username);
@@ -98,15 +88,9 @@ public abstract class BaseLoginModule implements LoginModule {
     if (!succeeded) {
       return false;
     } else {
-      if (password != null) {
-        Arrays.fill(password, ' ');
-        password = null;
-      }
-
       subject.getPrincipals().add(userPrincipal);
       commitSucceeded = true;
       return true;
     }
   }
-
 }

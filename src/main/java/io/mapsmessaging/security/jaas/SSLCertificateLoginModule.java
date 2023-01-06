@@ -63,7 +63,7 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
         // treat a NULL password as an empty password
         tmpPassword = new char[0];
       }
-      password = new char[tmpPassword.length];
+      char[] password = new char[tmpPassword.length];
       System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
       ((PasswordCallback) callbacks[2]).clearPassword();
     } catch (IOException ioe) {
