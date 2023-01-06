@@ -60,7 +60,7 @@ public abstract class BaseIdentity {
     options.put("passwordFile", "NoSuchFile");
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
     LoginModule module = createLoginModule(clientCallbackHandler, options);
-    Assertions.assertThrowsExactly(LoginException.class, () -> module.login());
+    Assertions.assertThrowsExactly(LoginException.class, module::login);
   }
 
 
@@ -83,11 +83,11 @@ public abstract class BaseIdentity {
   void simpleFailedLoginTest() throws LoginException {
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getInvalidUser(), getPassword(), "");
     LoginModule module = createLoginModule(clientCallbackHandler);
-    Assertions.assertThrowsExactly(LoginException.class, () -> module.login());
+    Assertions.assertThrowsExactly(LoginException.class, module::login);
 
     clientCallbackHandler = new ClientCallbackHandler(getUser(), getInvalidPassword(), "");
     LoginModule module1 = createLoginModule(clientCallbackHandler);
-    Assertions.assertThrowsExactly(LoginException.class, () -> module1.login());
+    Assertions.assertThrowsExactly(LoginException.class, module1::login);
 
   }
 
