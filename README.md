@@ -25,7 +25,7 @@ Then include the dependency
     <dependency>
       <groupId>io.mapsmessaging</groupId>
       <artifactId>AuthenticationLibrary</artifactId>
-      <version>0.2.1</version>
+      <version>0.2.2</version>
     </dependency>
 ```   
 
