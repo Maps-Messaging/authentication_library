@@ -85,6 +85,7 @@ public abstract class BaseLoginModule implements LoginModule {
       }
       char[] password = new char[tmpPassword.length];
       System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
+      userPrincipal = new AnonymousPrincipal(username);
       if (!validate(username, password)) {
         throw new LoginException("Username or password is invalid");
       }
@@ -98,7 +99,6 @@ public abstract class BaseLoginModule implements LoginModule {
               + " not available to garner authentication information "
               + "from the user");
     }
-    userPrincipal = new AnonymousPrincipal(username);
     succeeded = true;
     return true;
   }

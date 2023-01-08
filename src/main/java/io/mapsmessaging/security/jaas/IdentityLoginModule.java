@@ -59,12 +59,10 @@ public class IdentityLoginModule extends BaseLoginModule {
       PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(lookupPassword);
 
       String rawPassword = new String(password);
-      // This would be done on the client side of this
       byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
       if (!Arrays.equals(hash, lookupPassword.getBytes())) {
         throw new LoginException("Invalid password");
       }
-      userPrincipal = new AnonymousPrincipal(username);
       succeeded = true;
       if (debug) {
         logger.log(USER_LOGGED_IN, username);
