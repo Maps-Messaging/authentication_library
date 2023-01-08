@@ -6,6 +6,9 @@ import javax.crypto.Mac;
 
 public class CryptoHelper {
 
+  private CryptoHelper() {
+    // This is a helper class and does not have any instance methods
+  }
 
   public static MessageDigest findDigest(String algorithm) throws NoSuchAlgorithmException {
     MessageDigest messageDigest = null;
