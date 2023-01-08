@@ -26,6 +26,10 @@ public enum AuthLogMessages implements LogMessage {
   //-------------------------------------------------------------------------------------------------------------
 
   // <editor-fold desc="Generic messages">
+  SCRAM_SERVER_INITIAL_PHASE(LEVEL.INFO, Auth_Category.AUTHENTICATION, "SCRAM server initialising using algorithm {}"),
+  SCRAM_SERVER_STATE_CHANGE(LEVEL.INFO, Auth_Category.AUTHENTICATION, "SCRAM server state changed to {}"),
+
+
   DO_NOT_USE_IN_PRODUCTION(LEVEL.AUTH, Auth_Category.AUTHENTICATION, "Warning !!!, Not to be used in a production environment"),
   USER_LOGGED_IN(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged in"),
   NO_SUCH_USER_FOUND(LEVEL.INFO, Auth_Category.AUTHENTICATION, "User {} not found"),

@@ -19,7 +19,9 @@ package io.mapsmessaging.security.sasl;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager;
+import io.mapsmessaging.security.identity.impl.shadow.ShadowFileManager;
 import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,9 +47,16 @@ class SimpleSaslTest extends BaseSasl {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SCRAM-BCRYPT-SHA1"})
-  void simpleScramValidTest(String mechanism) throws SaslException {
+  @ValueSource(strings = {"SCRAM-BCRYPT-SHA-256"})
+  void simpleBCryptScramValidTest(String mechanism) throws SaslException {
     testMechanism(mechanism, "test3", "This is an bcrypt password");
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"SCRAM-SHA-512"})
+  void simpleShadowScramValidTest(String mechanism) throws SaslException {
+    ShadowFileManager shadowFileManager = new ShadowFileManager("./src/test/resources/shadow");
+    testMechanism(shadowFileManager, mechanism, "test", "onewordpassword");
   }
 
   @ParameterizedTest
@@ -59,9 +68,13 @@ class SimpleSaslTest extends BaseSasl {
   }
 
   void testMechanism(String mechanism, String user, String password) throws SaslException {
+    testMechanism(new HtPasswdFileManager("./src/test/resources/.htpassword"), mechanism, user, password);
+  }
+
+  void testMechanism(IdentityLookup identityLookup, String mechanism, String user, String password) throws SaslException {
     Map<String, String> props = new HashMap<>();
     props.put(Sasl.QOP, QOP_LEVEL);
-    createServer(new HtPasswdFileManager("./src/test/resources/.htpassword"), mechanism, PROTOCOL, SERVER_NAME, props);
+    createServer(identityLookup, mechanism, PROTOCOL, SERVER_NAME, props);
     createClient(
         user,
         password,

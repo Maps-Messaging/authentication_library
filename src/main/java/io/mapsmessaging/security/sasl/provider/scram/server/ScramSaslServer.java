@@ -16,10 +16,9 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server;
 
-import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
+import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.server.state.InitialState;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import javax.crypto.Mac;
 import javax.security.auth.callback.CallbackHandler;
@@ -30,16 +29,18 @@ public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   public ScramSaslServer(String algorithm, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
     if (algorithm.startsWith("bcrypt")) {
-      context.setPasswordParser(new BCrypt2yPasswordParser());
       algorithm = algorithm.substring("bcrypt-".length());
     }
-    try {
-      context.setMac(Mac.getInstance("Hmac" + algorithm.toUpperCase()));
-    } catch (NoSuchAlgorithmException e) {
-      SaslException saslException = new SaslException(e.getMessage());
-      saslException.initCause(e);
+    Mac mac = computeMac(algorithm);
+    if (mac != null) {
+      context.setMac(mac);
+    } else {
+      SaslException saslException = new SaslException("Unable to compute MAC algiorithm");
       throw saslException;
+
     }
+
+    logger.log(AuthLogMessages.SCRAM_SERVER_INITIAL_PHASE, algorithm);
     context.setState(new InitialState(protocol, serverName, props, cbh));
   }
 

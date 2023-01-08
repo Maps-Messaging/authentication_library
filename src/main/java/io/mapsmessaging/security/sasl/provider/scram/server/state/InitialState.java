@@ -19,6 +19,7 @@ package io.mapsmessaging.security.sasl.provider.scram.server.state;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
+import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
@@ -34,6 +35,7 @@ public class InitialState extends State {
 
   public InitialState(String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
     super("", protocol, serverName, props, cbh);
+    logger.log(AuthLogMessages.SCRAM_SERVER_STATE_CHANGE, "Initial State");
   }
 
   @Override

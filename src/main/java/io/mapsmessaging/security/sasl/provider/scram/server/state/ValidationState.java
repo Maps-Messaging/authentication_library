@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
+import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
@@ -34,6 +35,7 @@ public class ValidationState extends State {
   public ValidationState(State state) {
     super(state);
     isComplete = false;
+    logger.log(AuthLogMessages.SCRAM_SERVER_STATE_CHANGE, "Validating State");
   }
 
 

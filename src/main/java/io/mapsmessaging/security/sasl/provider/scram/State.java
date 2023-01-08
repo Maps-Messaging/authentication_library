@@ -16,6 +16,8 @@
 
 package io.mapsmessaging.security.sasl.provider.scram;
 
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.security.sasl.provider.scram.util.NonceGenerator;
 import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
@@ -26,6 +28,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 
 public abstract class State {
 
+  protected final Logger logger = LoggerFactory.getLogger(State.class);
   protected final String authorizationId;
   protected final String protocol;
   protected final String serverName;
