@@ -116,7 +116,6 @@ public class SessionContext {
   }
 
   private MessageDigest findDigest(String lookup) throws NoSuchAlgorithmException {
-    System.err.println("Looking for digest :: " + lookup);
     MessageDigest messageDigest = null;
     try {
       messageDigest = MessageDigest.getInstance(lookup);
@@ -125,7 +124,6 @@ public class SessionContext {
       if (idx > 0) {
         lookup = lookup.substring(0, idx) + lookup.substring(idx + 1);
       }
-      System.err.println("Looking for digest :: " + lookup);
       messageDigest = MessageDigest.getInstance(lookup);
     }
     return messageDigest;
