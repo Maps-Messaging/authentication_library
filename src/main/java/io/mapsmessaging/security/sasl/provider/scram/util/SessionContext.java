@@ -112,8 +112,25 @@ public class SessionContext {
     return mac.doFinal();
   }
 
+  private MessageDigest findDigest(String algorithm) throws NoSuchAlgorithmException {
+    System.err.println("Looking for digest :: " + algorithm);
+    MessageDigest messageDigest = null;
+    try {
+      messageDigest = MessageDigest.getInstance(algorithm);
+    } catch (NoSuchAlgorithmException e) {
+      int idx = algorithm.indexOf("-");
+      if (idx > 0) {
+        algorithm = algorithm.substring(0, idx) + algorithm.substring(idx + 1);
+      }
+      System.err.println("Looking for digest :: " + algorithm);
+      messageDigest = MessageDigest.getInstance(algorithm);
+    }
+    return messageDigest;
+  }
+
   public void computeServerSignature(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
     byte[] serverKey = computeHmac(password, "Server Key");
+    System.err.println("Looking for digest :: " + algorithm);
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
     byte[] tmp = messageDigest.digest(serverKey);
     serverSignature = computeHmac(tmp, authString);
