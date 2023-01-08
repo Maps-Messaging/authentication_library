@@ -112,26 +112,25 @@ public class SessionContext {
     return mac.doFinal();
   }
 
-  private MessageDigest findDigest(String algorithm) throws NoSuchAlgorithmException {
-    System.err.println("Looking for digest :: " + algorithm);
+  private MessageDigest findDigest(String lookup) throws NoSuchAlgorithmException {
+    System.err.println("Looking for digest :: " + lookup);
     MessageDigest messageDigest = null;
     try {
-      messageDigest = MessageDigest.getInstance(algorithm);
+      messageDigest = MessageDigest.getInstance(lookup);
     } catch (NoSuchAlgorithmException e) {
-      int idx = algorithm.indexOf("-");
+      int idx = lookup.indexOf("-");
       if (idx > 0) {
-        algorithm = algorithm.substring(0, idx) + algorithm.substring(idx + 1);
+        lookup = lookup.substring(0, idx) + lookup.substring(idx + 1);
       }
-      System.err.println("Looking for digest :: " + algorithm);
-      messageDigest = MessageDigest.getInstance(algorithm);
+      System.err.println("Looking for digest :: " + lookup);
+      messageDigest = MessageDigest.getInstance(lookup);
     }
     return messageDigest;
   }
 
   public void computeServerSignature(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
     byte[] serverKey = computeHmac(password, "Server Key");
-    System.err.println("Looking for digest :: " + algorithm);
-    MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+    MessageDigest messageDigest = findDigest(algorithm);
     byte[] tmp = messageDigest.digest(serverKey);
     serverSignature = computeHmac(tmp, authString);
   }
@@ -141,7 +140,7 @@ public class SessionContext {
   }
 
   public void computeStoredKeyAndSignature(String authString) throws NoSuchAlgorithmException, InvalidKeyException {
-    MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+    MessageDigest messageDigest = findDigest(algorithm);
     storedKey = messageDigest.digest(clientKey);
     clientSignature = computeHmac(storedKey, authString);
   }
