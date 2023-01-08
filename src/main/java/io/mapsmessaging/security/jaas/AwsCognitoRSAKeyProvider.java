@@ -30,13 +30,9 @@ public class AwsCognitoRSAKeyProvider implements RSAKeyProvider {
   private final URL awsKidStoreUrl;
   private final JwkProvider provider;
 
-  public AwsCognitoRSAKeyProvider(String awsCognitoRegion, String awsUserPoolId) {
+  public AwsCognitoRSAKeyProvider(String awsCognitoRegion, String awsUserPoolId) throws MalformedURLException {
     String url = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", awsCognitoRegion, awsUserPoolId);
-    try {
-      awsKidStoreUrl = new URL(url);
-    } catch (MalformedURLException e) {
-      throw new RuntimeException(String.format("Invalid URL provided, URL=%s", url));
-    }
+    awsKidStoreUrl = new URL(url);
     provider = new JwkProviderBuilder(awsKidStoreUrl).build();
   }
   

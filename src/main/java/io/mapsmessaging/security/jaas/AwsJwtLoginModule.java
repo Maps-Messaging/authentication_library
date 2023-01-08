@@ -20,6 +20,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
+import java.net.MalformedURLException;
 import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -46,12 +47,18 @@ public class AwsJwtLoginModule extends BaseLoginModule {
   @Override
   protected boolean validate(String username, char[] password) throws LoginException {
     String token = new String(password);
-    RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider(region, poolId);
-    Algorithm algorithm = Algorithm.RSA256(keyProvider);
-    JWTVerifier jwtVerifier = JWT.require(algorithm)
-        .withAudience(clientId)
-        .build();
-    jwtVerifier.verify(token);
+    try {
+      RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider(region, poolId);
+      Algorithm algorithm = Algorithm.RSA256(keyProvider);
+      JWTVerifier jwtVerifier = JWT.require(algorithm)
+          .withAudience(clientId)
+          .build();
+      jwtVerifier.verify(token);
+    } catch (MalformedURLException e) {
+      LoginException loginException = new LoginException("Failed to authenticate via AWS");
+      loginException.initCause(e);
+      throw loginException;
+    }
     // Need to validate
     return true;
   }
