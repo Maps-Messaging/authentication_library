@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.util;
 
+import io.mapsmessaging.security.crypto.CryptoHelper;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import java.security.InvalidKeyException;
@@ -115,23 +116,9 @@ public class SessionContext {
     return mac.doFinal();
   }
 
-  private MessageDigest findDigest(String lookup) throws NoSuchAlgorithmException {
-    MessageDigest messageDigest = null;
-    try {
-      messageDigest = MessageDigest.getInstance(lookup);
-    } catch (NoSuchAlgorithmException e) {
-      int idx = lookup.indexOf("-");
-      if (idx > 0) {
-        lookup = lookup.substring(0, idx) + lookup.substring(idx + 1);
-      }
-      messageDigest = MessageDigest.getInstance(lookup);
-    }
-    return messageDigest;
-  }
-
   public void computeServerSignature(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
     byte[] serverKey = computeHmac(password, "Server Key");
-    MessageDigest messageDigest = findDigest(algorithm);
+    MessageDigest messageDigest = CryptoHelper.findDigest(algorithm);
     byte[] tmp = messageDigest.digest(serverKey);
     serverSignature = computeHmac(tmp, authString);
   }
@@ -141,7 +128,7 @@ public class SessionContext {
   }
 
   public void computeStoredKeyAndSignature(String authString) throws NoSuchAlgorithmException, InvalidKeyException {
-    MessageDigest messageDigest = findDigest(algorithm);
+    MessageDigest messageDigest = CryptoHelper.findDigest(algorithm);
     storedKey = messageDigest.digest(clientKey);
     clientSignature = computeHmac(storedKey, authString);
   }

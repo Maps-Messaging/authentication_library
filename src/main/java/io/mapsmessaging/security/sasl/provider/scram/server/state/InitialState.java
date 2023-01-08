@@ -94,7 +94,6 @@ public class InitialState extends State {
     //
 
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
-
     context.setPasswordParser(passwordParser);
     Radix64Encoder encoder = new Radix64Encoder.Default();
     context.setPrepPassword(new String(password));

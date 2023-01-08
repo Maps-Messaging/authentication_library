@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
+import io.mapsmessaging.security.crypto.CryptoHelper;
 import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
@@ -35,7 +36,7 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
     } else {
       context.setPasswordParser(new Sha512PasswordParser());
     }
-    context.setMac(computeMac(algorithm));
+    context.setMac(CryptoHelper.findMac(algorithm));
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));
   }
 

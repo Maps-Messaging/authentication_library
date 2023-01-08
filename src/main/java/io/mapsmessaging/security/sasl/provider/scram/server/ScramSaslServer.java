@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server;
 
+import io.mapsmessaging.security.crypto.CryptoHelper;
 import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.server.state.InitialState;
@@ -31,13 +32,11 @@ public class ScramSaslServer extends BaseScramSasl implements SaslServer {
     if (algorithm.startsWith("bcrypt")) {
       algorithm = algorithm.substring("bcrypt-".length());
     }
-    Mac mac = computeMac(algorithm);
+    Mac mac = CryptoHelper.findMac(algorithm);
     if (mac != null) {
       context.setMac(mac);
     } else {
-      SaslException saslException = new SaslException("Unable to compute MAC algiorithm");
-      throw saslException;
-
+      throw new SaslException("Unable to compute MAC algiorithm");
     }
 
     logger.log(AuthLogMessages.SCRAM_SERVER_INITIAL_PHASE, algorithm);

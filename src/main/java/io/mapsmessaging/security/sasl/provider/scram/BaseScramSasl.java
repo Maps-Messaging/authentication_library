@@ -5,8 +5,6 @@ import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import javax.crypto.Mac;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
 
@@ -15,34 +13,9 @@ public class BaseScramSasl {
   protected final Logger logger = LoggerFactory.getLogger(BaseScramSasl.class);
   protected final SessionContext context;
 
-
   public BaseScramSasl() {
     this.context = new SessionContext();
   }
-
-
-  protected Mac computeMac(String algorithm) {
-    String macLookup = "Hmac" + algorithm.toUpperCase().trim();
-    Mac mac;
-    mac = attemptLookup(macLookup);
-    if (mac == null) {
-      int idx = macLookup.indexOf("-");
-      if (idx > 0) {
-        macLookup = macLookup.substring(0, idx) + macLookup.substring(idx + 1);
-        mac = attemptLookup(macLookup);
-      }
-    }
-    return mac;
-  }
-
-  private Mac attemptLookup(String algorithm) {
-    try {
-      return Mac.getInstance(algorithm);
-    } catch (NoSuchAlgorithmException e) {
-      return null;
-    }
-  }
-
 
   public boolean isComplete() {
     return context.getState().isComplete();
