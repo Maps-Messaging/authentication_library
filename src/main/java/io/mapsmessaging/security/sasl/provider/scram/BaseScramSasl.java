@@ -23,18 +23,13 @@ public class BaseScramSasl {
 
   protected Mac computeMac(String algorithm) {
     String macLookup = "Hmac" + algorithm.toUpperCase().trim();
-    System.err.println("Looking for : " + macLookup);
     Mac mac;
     mac = attemptLookup(macLookup);
     if (mac == null) {
       int idx = macLookup.indexOf("-");
       if (idx > 0) {
         macLookup = macLookup.substring(0, idx) + macLookup.substring(idx + 1);
-        System.err.println("Looking for : " + macLookup);
         mac = attemptLookup(macLookup);
-        if (mac != null) {
-          System.err.println("Found::: " + macLookup);
-        }
       }
     }
     return mac;

@@ -28,7 +28,6 @@ public class MapsSecurityProvider extends Provider {
     if (hmacAlgorithm.toLowerCase().startsWith("sha") && !hmacAlgorithm.toLowerCase().startsWith("sha3")) {
       hmacAlgorithm = hmacAlgorithm.substring(0, "sha".length()) + "-" + hmacAlgorithm.substring("sha".length());
     }
-    System.err.println("RegisteringL:::" + hmacAlgorithm);
     put("SaslClientFactory.SCRAM-" + hmacAlgorithm, CLIENT_FACTORY);
     put("SaslServerFactory.SCRAM-" + hmacAlgorithm, SERVER_FACTORY);
     put("SaslClientFactory.SCRAM-bcrypt-" + hmacAlgorithm, CLIENT_FACTORY);
@@ -41,7 +40,6 @@ public class MapsSecurityProvider extends Provider {
     for (Provider provider : providers) {
       for (Service service : provider.getServices()) {
         if (service.getAlgorithm().toLowerCase().startsWith("hmac")) {
-          System.err.println("Registering HMAC Service -- " + service.getAlgorithm());
           register(service.getAlgorithm().substring("hmac".length()));
         }
       }
