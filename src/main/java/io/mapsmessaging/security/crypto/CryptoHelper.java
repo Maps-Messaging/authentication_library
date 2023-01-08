@@ -2,12 +2,21 @@ package io.mapsmessaging.security.crypto;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 import javax.crypto.Mac;
 
 public class CryptoHelper {
 
   private CryptoHelper() {
     // This is a helper class and does not have any instance methods
+  }
+
+  public static String generateNonce(int size) {
+    SecureRandom prng = new SecureRandom();
+    byte[] nonce = new byte[size];
+    prng.nextBytes(nonce);
+    return Base64.getEncoder().encodeToString(nonce);
   }
 
   public static MessageDigest findDigest(String algorithm) throws NoSuchAlgorithmException {

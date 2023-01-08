@@ -17,9 +17,9 @@
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
 import io.mapsmessaging.security.logging.AuthLogMessages;
+import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

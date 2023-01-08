@@ -17,12 +17,13 @@
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
+import io.mapsmessaging.security.crypto.CryptoHelper;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.logging.AuthLogMessages;
+import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.callback.Callback;
@@ -99,6 +100,6 @@ public class InitialState extends State {
     context.setPrepPassword(new String(password));
     context.setPasswordSalt(new String(encoder.encode(passwordParser.getSalt())));
     context.setInterations(passwordParser.getCost());
-    context.setServerNonce(context.getClientNonce() + nonceGenerator.generateNonce(48));
+    context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
   }
 }

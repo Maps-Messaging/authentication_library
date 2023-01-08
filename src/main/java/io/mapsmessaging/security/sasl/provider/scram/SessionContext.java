@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.provider.scram.util;
+package io.mapsmessaging.security.sasl.provider.scram;
 
 import io.mapsmessaging.security.crypto.CryptoHelper;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.sasl.provider.scram.State;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

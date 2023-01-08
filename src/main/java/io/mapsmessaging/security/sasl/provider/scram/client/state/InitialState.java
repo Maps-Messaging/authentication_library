@@ -16,10 +16,11 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client.state;
 
+import io.mapsmessaging.security.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.SaslPrep;
+import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.callback.Callback;
@@ -47,7 +48,7 @@ public class InitialState extends State {
 
   @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
-    context.setClientNonce(nonceGenerator.generateNonce(48));
+    context.setClientNonce(CryptoHelper.generateNonce(48));
     ChallengeResponse firstClientChallenge = new ChallengeResponse();
     //
     // Request information from the user

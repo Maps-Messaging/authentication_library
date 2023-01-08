@@ -3,7 +3,6 @@ package io.mapsmessaging.security.sasl.provider.scram;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.security.sasl.provider.scram.util.SessionContext;
 import java.io.IOException;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
