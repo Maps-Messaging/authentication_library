@@ -39,7 +39,7 @@ public class MapsSecurityProvider extends Provider {
     Provider[] providers = Security.getProviders();
     for (Provider provider : providers) {
       for (Service service : provider.getServices()) {
-        System.err.println(service.getAlgorithm());
+        System.err.println(service.toString());
         if (service.getAlgorithm().toLowerCase().startsWith("hmac")) {
           register(service.getAlgorithm().substring("hmac".length()));
         }
