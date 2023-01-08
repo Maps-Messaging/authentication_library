@@ -32,15 +32,11 @@ public class BaseScramSasl {
         mac = attemptLookup(macLookup);
       }
     }
-    if (mac == null) {
-      System.err.println("Unable to locate " + algorithm);
-    }
     return mac;
   }
 
   private Mac attemptLookup(String algorithm) {
     try {
-      System.err.println("Attempting lookup with>" + algorithm + "<");
       return Mac.getInstance(algorithm);
     } catch (NoSuchAlgorithmException e) {
       return null;

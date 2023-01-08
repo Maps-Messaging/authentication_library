@@ -25,7 +25,6 @@ public class MapsSecurityProvider extends Provider {
   private static final String SERVER_FACTORY = "io.mapsmessaging.security.sasl.provider.MapsSaslServerFactory";
 
   private void register(String hmacAlgorithm) {
-    System.err.println("Registered:::>" + hmacAlgorithm + "<");
     if (hmacAlgorithm.toLowerCase().startsWith("sha") && !hmacAlgorithm.toLowerCase().startsWith("sha3")) {
       hmacAlgorithm = hmacAlgorithm.substring(0, "sha".length()) + "-" + hmacAlgorithm.substring("sha".length());
     }
@@ -40,6 +39,7 @@ public class MapsSecurityProvider extends Provider {
     Provider[] providers = Security.getProviders();
     for (Provider provider : providers) {
       for (Service service : provider.getServices()) {
+        System.err.println(service.getAlgorithm());
         if (service.getAlgorithm().toLowerCase().startsWith("hmac")) {
           register(service.getAlgorithm().substring("hmac".length()));
         }
