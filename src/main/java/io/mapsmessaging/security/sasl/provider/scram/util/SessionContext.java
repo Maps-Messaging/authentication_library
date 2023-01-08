@@ -102,6 +102,9 @@ public class SessionContext {
   public void setMac(Mac mac) {
     this.mac = mac;
     algorithm = mac.getAlgorithm().substring("hmac".length());
+    if (algorithm.toLowerCase().startsWith("sha") && !algorithm.toLowerCase().startsWith("sha-")) {
+      algorithm = algorithm.substring(0, "sha".length()) + "-" + algorithm.substring("sha".length());
+    }
   }
 
   public byte[] computeHmac(byte[] key, String string) throws InvalidKeyException {
