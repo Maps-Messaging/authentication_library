@@ -50,13 +50,13 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
       String token = new String(password);
       JwkProvider provider = new UrlJwkProvider("https://" + domain + "/");
       DecodedJWT jwt = JWT.decode(token);
-      // Get the kid from received JWT token
       Jwk jwk = provider.get(jwt.getKeyId());
       Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
       JWTVerifier verifier = JWT.require(algorithm)
           .withIssuer("https://" + domain + "/")
           .build();
       verifier.verify(token);
+      // Need to add token information into the subject
       userPrincipal = new AnonymousPrincipal(username);
       return true;
     } catch (JwkException e) {
