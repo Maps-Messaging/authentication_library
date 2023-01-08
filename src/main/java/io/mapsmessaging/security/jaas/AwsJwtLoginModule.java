@@ -19,6 +19,7 @@ package io.mapsmessaging.security.jaas;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
 import java.io.IOException;
 import java.util.Map;
@@ -46,6 +47,19 @@ public class AwsJwtLoginModule extends BaseLoginModule {
     region = (String) options.get("region");
     poolId = (String) options.get("poolId");
     clientId = (String) options.get("clientId");
+  }
+
+  @Override
+  protected boolean validate(String username, char[] password) throws LoginException {
+    String token = new String(password);
+    RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider(region, poolId);
+    Algorithm algorithm = Algorithm.RSA256(keyProvider);
+    JWTVerifier jwtVerifier = JWT.require(algorithm)
+        .withAudience(clientId)
+        .build();
+    DecodedJWT decodedJWT = jwtVerifier.verify(token);
+    // Need to validate
+    return true;
   }
 
   @Override

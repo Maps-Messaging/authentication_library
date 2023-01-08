@@ -20,10 +20,15 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
 import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
@@ -54,6 +59,48 @@ public abstract class BaseLoginModule implements LoginModule {
 
     // initialize any configured options
     debug = "true".equalsIgnoreCase((String) options.get("debug"));
+  }
+
+  protected abstract boolean validate(String username, char[] password) throws LoginException;
+
+  @Override
+  public boolean login() throws LoginException {
+
+    // prompt for a username and password
+    if (callbackHandler == null) {
+      throw new LoginException("Error: no CallbackHandler available to garner authentication information from the user");
+    }
+
+    Callback[] callbacks = new Callback[2];
+    callbacks[0] = new NameCallback("user name: ");
+    callbacks[1] = new PasswordCallback("password: ", false);
+
+    try {
+      callbackHandler.handle(callbacks);
+      username = ((NameCallback) callbacks[0]).getName();
+      char[] tmpPassword = ((PasswordCallback) callbacks[1]).getPassword();
+      if (tmpPassword == null) {
+        // treat a NULL password as an empty password
+        tmpPassword = new char[0];
+      }
+      char[] password = new char[tmpPassword.length];
+      System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
+      if (!validate(username, password)) {
+        throw new LoginException("Username or password is invalid");
+      }
+      ((PasswordCallback) callbacks[1]).clearPassword();
+    } catch (IOException ioe) {
+      throw new LoginException(ioe.toString());
+    } catch (UnsupportedCallbackException uce) {
+      throw new LoginException(
+          "Error: "
+              + uce.getCallback().toString()
+              + " not available to garner authentication information "
+              + "from the user");
+    }
+    userPrincipal = new AnonymousPrincipal(username);
+    succeeded = true;
+    return true;
   }
 
   public boolean abort() throws LoginException {

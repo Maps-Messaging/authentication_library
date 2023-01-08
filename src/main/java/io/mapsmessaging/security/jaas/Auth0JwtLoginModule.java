@@ -24,15 +24,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
-import java.io.IOException;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
 public class Auth0JwtLoginModule extends BaseLoginModule {
@@ -50,50 +45,24 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
   }
 
   @Override
-  public boolean login() throws LoginException {
-    succeeded = false;
-    // prompt for a user name and password
-    if (callbackHandler == null) {
-      throw new LoginException("Error: no CallbackHandler available to garner authentication information from the user");
-    }
-
-    Callback[] callbacks = new Callback[2];
-    callbacks[0] = new NameCallback("user name: ");
-    callbacks[1] = new PasswordCallback("password: ", false);
-
+  protected boolean validate(String username, char[] password) throws LoginException {
     try {
-      callbackHandler.handle(callbacks);
-      username = ((NameCallback) callbacks[0]).getName();
-      char[] tmpPassword = ((PasswordCallback) callbacks[1]).getPassword();
-      if (tmpPassword == null) {
-        tmpPassword = new char[0];
-      }
-      String token = new String(tmpPassword);
-      ((PasswordCallback) callbacks[1]).clearPassword();
-      // Password should be a valid JWT
+      String token = new String(password);
       JwkProvider provider = new UrlJwkProvider("https://" + domain + "/");
       DecodedJWT jwt = JWT.decode(token);
       // Get the kid from received JWT token
       Jwk jwk = provider.get(jwt.getKeyId());
-
       Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
-
       JWTVerifier verifier = JWT.require(algorithm)
           .withIssuer("https://" + domain + "/")
           .build();
-
       verifier.verify(token);
       userPrincipal = new AnonymousPrincipal(username);
-      succeeded = true;
-    } catch (JwkException | IOException ioe) {
-      throw new LoginException(ioe.toString());
-    } catch (UnsupportedCallbackException uce) {
-      throw new LoginException(
-          "Error: "
-              + uce.getCallback().toString()
-              + " not available to garner authentication information "
-              + "from the user");
+      return true;
+    } catch (JwkException e) {
+      LoginException loginException = new LoginException("Java web token exception");
+      loginException.initCause(e);
+      throw loginException;
     }
-    return succeeded;
   }
 }

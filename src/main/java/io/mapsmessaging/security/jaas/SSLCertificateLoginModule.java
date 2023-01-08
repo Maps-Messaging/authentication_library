@@ -22,8 +22,6 @@ import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
@@ -41,31 +39,12 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
   }
 
   @Override
-  public boolean login() throws LoginException {
-
-    // prompt for a username and password
-    if (callbackHandler == null) {
-      throw new LoginException(
-          "Error: no CallbackHandler available to garner authentication information from the user");
-    }
-
-    Callback[] callbacks = new Callback[3];
-    callbacks[0] = new NameCallback("user name: ");
-    callbacks[1] = new PrincipalCallback();
-    callbacks[2] = new PasswordCallback("password: ", false);
-
+  protected boolean validate(String username, char[] password) throws LoginException {
+    Callback[] callbacks = new Callback[1];
+    callbacks[0] = new PrincipalCallback();
     try {
       callbackHandler.handle(callbacks);
-      username = ((NameCallback) callbacks[0]).getName();
-      userPrincipal = ((PrincipalCallback) callbacks[1]).getPrincipal();
-      char[] tmpPassword = ((PasswordCallback) callbacks[2]).getPassword();
-      if (tmpPassword == null) {
-        // treat a NULL password as an empty password
-        tmpPassword = new char[0];
-      }
-      char[] password = new char[tmpPassword.length];
-      System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
-      ((PasswordCallback) callbacks[2]).clearPassword();
+      userPrincipal = ((PrincipalCallback) callbacks[0]).getPrincipal();
     } catch (IOException ioe) {
       throw new LoginException(ioe.toString());
     } catch (UnsupportedCallbackException uce) {
@@ -74,8 +53,6 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
               + uce.getCallback().toString()
               + " not available to garner authentication information from the user");
     }
-
-    succeeded = true;
     return true;
   }
 }

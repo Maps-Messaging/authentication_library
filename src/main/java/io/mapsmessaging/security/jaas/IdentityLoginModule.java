@@ -21,17 +21,13 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
+import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
 public class IdentityLoginModule extends BaseLoginModule {
@@ -52,40 +48,17 @@ public class IdentityLoginModule extends BaseLoginModule {
   }
 
   @Override
-  public boolean login() throws LoginException {
-    if (identityLookup == null) {
-      throw new LoginException("No such identity lookup mechanism loaded");
-    }
-
-    // prompt for a username and password
-    if (callbackHandler == null) {
-      throw new LoginException("Error: no CallbackHandler available to garner authentication information from the user");
-    }
-
-    Callback[] callbacks = new Callback[2];
-    callbacks[0] = new NameCallback("user name: ");
-    callbacks[1] = new PasswordCallback("password: ", false);
-
+  protected boolean validate(String username, char[] password) throws LoginException {
     try {
-      callbackHandler.handle(callbacks);
-      username = ((NameCallback) callbacks[0]).getName();
       char[] lookup = identityLookup.getPasswordHash(username);
       if (lookup == null) {
         logger.log(NO_SUCH_USER_FOUND, username);
         throw new LoginException("No such user");
       }
-
-      char[] tmpPassword = ((PasswordCallback) callbacks[1]).getPassword();
-      ((PasswordCallback) callbacks[1]).clearPassword();
-
-      if (tmpPassword == null) {
-        // treat a NULL password as an empty password
-        tmpPassword = new char[0];
-      }
-      String rawPassword = new String(tmpPassword);
       String lookupPassword = new String(lookup);
       PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(lookupPassword);
 
+      String rawPassword = new String(password);
       // This would be done on the client side of this
       byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
       if (!Arrays.equals(hash, lookupPassword.getBytes())) {
@@ -97,14 +70,10 @@ public class IdentityLoginModule extends BaseLoginModule {
         logger.log(USER_LOGGED_IN, username);
       }
       return true;
-    } catch (IOException ioe) {
-      throw new LoginException(ioe.toString());
-    } catch (UnsupportedCallbackException uce) {
-      throw new LoginException(
-          "Error: "
-              + uce.getCallback().toString()
-              + " not available to garner authentication information "
-              + "from the user");
+    } catch (NoSuchUserFoundException e) {
+      LoginException loginException = new LoginException("Login failed");
+      loginException.initCause(e);
+      throw loginException;
     }
   }
 }
