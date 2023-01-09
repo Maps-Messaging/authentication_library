@@ -21,6 +21,18 @@ import java.security.Security;
 
 public class MapsSecurityProvider extends Provider {
 
+  public static void register(){
+    Provider[] providers = Security.getProviders();
+    boolean found = false;
+    for(Provider provider:providers){
+      if(provider instanceof MapsSecurityProvider) {
+        found = true;
+        break;
+      }
+    }
+    if(!found) Security.insertProviderAt(new MapsSecurityProvider(), 1);
+  }
+
   private static final String CLIENT_FACTORY = "io.mapsmessaging.security.sasl.provider.MapsSaslClientFactory";
   private static final String SERVER_FACTORY = "io.mapsmessaging.security.sasl.provider.MapsSaslServerFactory";
 
