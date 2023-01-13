@@ -33,6 +33,7 @@ public class BaseSasl {
 
   @BeforeAll
   static void register() {
+    System.setProperty("sasl.debug", "true");
     Security.insertProviderAt(new MapsSecurityProvider(), 1);
   }
 

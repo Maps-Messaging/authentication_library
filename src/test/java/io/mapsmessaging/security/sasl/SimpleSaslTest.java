@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -37,6 +38,13 @@ class SimpleSaslTest extends BaseSasl {
   private static final String PROTOCOL = "amqp";
   private static final String AUTHORIZATION_ID = null;
   private static final String QOP_LEVEL = "auth";
+
+  @Test
+  void simpleDebugTest() throws SaslException {
+    Sha1PasswordParser passwordParser = new Sha1PasswordParser();
+    byte[] password = passwordParser.computeHash("This is a random password".getBytes(), null, 0);
+    testMechanism("MAPS-DEBUG-10", "fred2@google.com", new String(password));
+  }
 
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})

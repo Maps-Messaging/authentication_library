@@ -42,7 +42,7 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
   @Override
   public String getMechanismName() {
-    return null;
+    return "SCRAM";
   }
 
   @Override

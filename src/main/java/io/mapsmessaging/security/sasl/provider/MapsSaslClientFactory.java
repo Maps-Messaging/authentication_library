@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider;
 
+import io.mapsmessaging.security.sasl.provider.debug.DebugSaslClient;
 import io.mapsmessaging.security.sasl.provider.scram.client.ScramSaslClient;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -40,6 +41,10 @@ public class MapsSaslClientFactory implements SaslClientFactory {
           saslException.initCause(e);
           throw saslException;
         }
+      }
+      if (mech.startsWith("maps-debug") &&
+          Boolean.parseBoolean(System.getProperty("sasl.debug", "false"))) {
+        return new DebugSaslClient(mech);
       }
     }
     throw new SaslException("Unknown mechanism " + mechanisms);

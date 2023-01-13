@@ -56,6 +56,9 @@ public class MapsSecurityProvider extends Provider {
         }
       }
     }
+    if (Boolean.parseBoolean(System.getProperty("sasl.debug", "false"))) {
+      put("SaslClientFactory.MAPS-DEBUG-10", CLIENT_FACTORY);
+      put("SaslServerFactory.MAPS-DEBUG-10", SERVER_FACTORY);
+    }
   }
-
 }

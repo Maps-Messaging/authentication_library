@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider;
 
+import io.mapsmessaging.security.sasl.provider.debug.DebugSaslServer;
 import io.mapsmessaging.security.sasl.provider.scram.server.ScramSaslServer;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
@@ -31,6 +32,10 @@ public class MapsSaslServerFactory implements SaslServerFactory {
     if (mech.startsWith("scram")) {
       String algorithm = mech.substring("scram-".length());
       return new ScramSaslServer(algorithm, protocol, serverName, props, cbh);
+    }
+    if (mech.startsWith("maps-debug") &&
+        Boolean.parseBoolean(System.getProperty("sasl.debug", "false"))) {
+      return new DebugSaslServer(mech);
     }
     throw new SaslException("Unknown mechanism " + mechanism);
   }
