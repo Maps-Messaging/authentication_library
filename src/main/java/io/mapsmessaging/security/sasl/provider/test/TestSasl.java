@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.provider.debug;
+package io.mapsmessaging.security.sasl.provider.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,7 +24,7 @@ import java.util.Base64;
 import java.util.Properties;
 import javax.security.sasl.SaslException;
 
-public class DebugSasl {
+public class TestSasl {
 
   private static final int RANDOM_SIZE = 128;
 
@@ -32,7 +32,7 @@ public class DebugSasl {
   protected int loopCount;
   protected int state;
 
-  protected DebugSasl() {
+  protected TestSasl() {
     secureRandom = new SecureRandom();
   }
 

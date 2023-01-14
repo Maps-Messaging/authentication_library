@@ -14,37 +14,37 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.sasl.provider.debug;
+package io.mapsmessaging.security.sasl.provider.test;
 
+import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
-import javax.security.sasl.SaslServer;
 
-public class DebugSaslServer extends DebugSasl implements SaslServer {
+public class TestSaslClient extends TestSasl implements SaslClient {
 
-
-  public DebugSaslServer(String algorithm) {
+  public TestSaslClient(String algorithm) {
     String count = algorithm.substring("MAPS-DEBUG-".length());
     loopCount = Integer.parseInt(count);
   }
 
   @Override
   public String getMechanismName() {
-    return "maps";
+    return "Maps Debug";
   }
 
   @Override
-  public byte[] evaluateResponse(byte[] response) throws SaslException {
-    return handleServerChallenge(response);
+  public boolean hasInitialResponse() {
+    return false;
+  }
+
+  @Override
+  public byte[] evaluateChallenge(byte[] challenge) throws SaslException {
+    return handleClientChallenge(challenge);
   }
 
   @Override
   public boolean isComplete() {
     return loopCount == 0;
-  }
-
-  @Override
-  public String getAuthorizationID() {
-    return null;
   }
 
   @Override
@@ -59,6 +59,9 @@ public class DebugSaslServer extends DebugSasl implements SaslServer {
 
   @Override
   public Object getNegotiatedProperty(String propName) {
+    if (propName.equals(Sasl.QOP)) {
+      return "auth";
+    }
     return null;
   }
 

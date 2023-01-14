@@ -41,9 +41,7 @@ class SimpleSaslTest extends BaseSasl {
 
   @Test
   void simpleDebugTest() throws SaslException {
-    Sha1PasswordParser passwordParser = new Sha1PasswordParser();
-    byte[] password = passwordParser.computeHash("This is a random password".getBytes(), null, 0);
-    testMechanism("MAPS-DEBUG-10", "fred2@google.com", new String(password));
+    testMechanism("MAPS-TEST-10", "", "");
   }
 
   @ParameterizedTest
