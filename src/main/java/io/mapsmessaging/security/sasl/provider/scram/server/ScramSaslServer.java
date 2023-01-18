@@ -55,7 +55,7 @@ public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   @Override
   public String getAuthorizationID() {
-    return null;
+    return context.getUsername();
   }
 
   @Override

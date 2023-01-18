@@ -90,10 +90,10 @@ class SimpleSaslTest extends BaseSasl {
         SERVER_NAME,
         props
     );
-    simpleValidation();
+    simpleValidation(user);
   }
 
-  void simpleValidation() throws SaslException {
+  void simpleValidation(String user) throws SaslException {
     assertNotNull(saslServer, "This should not be null");
     assertNotNull(saslClient, "This should not be null");
     runAuth();
@@ -101,6 +101,7 @@ class SimpleSaslTest extends BaseSasl {
     assertTrue(saslClient.isComplete());
 
     String qop = (String) saslClient.getNegotiatedProperty(Sasl.QOP);
+    Assertions.assertEquals(saslServer.getAuthorizationID(), user);
     Assertions.assertTrue(qop.startsWith("auth"), "We should have an authorised SASL session");
   }
 }
