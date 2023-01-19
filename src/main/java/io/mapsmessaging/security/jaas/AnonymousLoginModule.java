@@ -18,13 +18,22 @@ package io.mapsmessaging.security.jaas;
 
 import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
 
+import com.sun.security.auth.UserPrincipal;
 import javax.security.auth.login.LoginException;
 
 public class AnonymousLoginModule  extends BaseLoginModule {
 
   public AnonymousLoginModule(){
     super();
+    username = "anonymous";
     logger.log(DO_NOT_USE_IN_PRODUCTION);
+  }
+
+  @Override
+  public boolean login() {
+    userPrincipal = new UserPrincipal(username);
+    succeeded = true;
+    return true;
   }
 
   @Override
