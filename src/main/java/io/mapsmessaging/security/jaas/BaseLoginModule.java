@@ -18,6 +18,7 @@ package io.mapsmessaging.security.jaas;
 
 import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 
+import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import java.io.IOException;
@@ -85,7 +86,7 @@ public abstract class BaseLoginModule implements LoginModule {
       }
       char[] password = new char[tmpPassword.length];
       System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
-      userPrincipal = new AnonymousPrincipal(username);
+      userPrincipal = new UserPrincipal(username);
       if (!validate(username, password)) {
         throw new LoginException("Username or password is invalid");
       }
