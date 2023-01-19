@@ -17,11 +17,13 @@
 package io.mapsmessaging.security.jaas;
 
 
+import com.sun.security.auth.UserPrincipal;
 import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
@@ -39,20 +41,47 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
   }
 
   @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    Callback[] callbacks = new Callback[1];
-    callbacks[0] = new PrincipalCallback();
+  public boolean login() throws LoginException {
+    // prompt for a username and password
+    if (callbackHandler == null) {
+      throw new LoginException("Error: no CallbackHandler available to garner authentication information from the user");
+    }
+
+    Callback[] callbacks = new Callback[2];
+    callbacks[0] = new NameCallback("user name: ");
+    callbacks[1] = new PrincipalCallback();
+
     try {
       callbackHandler.handle(callbacks);
-      userPrincipal = ((PrincipalCallback) callbacks[0]).getPrincipal();
+      username = ((NameCallback) callbacks[0]).getName();
+      userPrincipal = ((PrincipalCallback) callbacks[1]).getPrincipal();
     } catch (IOException ioe) {
       throw new LoginException(ioe.toString());
     } catch (UnsupportedCallbackException uce) {
       throw new LoginException(
           "Error: "
               + uce.getCallback().toString()
-              + " not available to garner authentication information from the user");
+              + " not available to garner authentication information "
+              + "from the user");
     }
+    succeeded = true;
+    return true;
+  }
+
+  @Override
+  public boolean commit() {
+    if(super.commit()){
+      if(username != null){
+        subject.getPrincipals().add(new UserPrincipal(username));
+      }
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  protected boolean validate(String username, char[] password) {
+    // Not called in this instance
     return true;
   }
 }
