@@ -38,17 +38,28 @@ public class BaseScramSasl {
     }
   }
 
-  @SuppressWarnings("java:S1172") // this is a place holder function
   public byte[] unwrap(byte[] incoming, int offset, int len) {
-    return new byte[0];
+    return xorBuffer(incoming, offset, len);
   }
 
-  @SuppressWarnings("java:S1172") // this is a place holder function
   public byte[] wrap(byte[] outgoing, int offset, int len) {
-    return new byte[0];
+    return xorBuffer(outgoing, offset, len);
   }
 
   public void dispose() {
-    // this is a place holder
+    context.reset();
+  }
+
+  private byte[] xorBuffer(byte[] incoming, int offset, int len) {
+    byte[] buf = new byte[len];
+    int x = offset;
+    int proofIndex = 0;
+    byte[] proof = context.getClientKey();
+    for (int y = 0; y < buf.length; y++) {
+      buf[y] = (byte) (incoming[x] ^ proof[proofIndex]);
+      proofIndex = (proofIndex + 1) % proof.length;
+      x++;
+    }
+    return buf;
   }
 }

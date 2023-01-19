@@ -40,9 +40,14 @@ public class TestSasl {
     try {
       Properties properties = new Properties();
       if (state == 0) {
+        byte[] data = new byte[RANDOM_SIZE];
         byte[] initialRandom = new byte[RANDOM_SIZE];
         secureRandom.nextBytes(initialRandom);
-        properties.put("Client", Base64.getEncoder().encodeToString(initialRandom));
+        for (int x = 0; x < RANDOM_SIZE; x++) {
+          data[x] = (byte) x;
+        }
+        properties.put("Random", Base64.getEncoder().encodeToString(initialRandom));
+        properties.put("Data", Base64.getEncoder().encodeToString(data));
       } else {
         Properties challengeProp = new Properties();
         challengeProp.load(new ByteArrayInputStream(challenge));
@@ -83,5 +88,13 @@ public class TestSasl {
     } catch (IOException e) {
       throw new SaslException(e.getMessage());
     }
+  }
+
+  private byte[] xor(byte[] random, byte[] data) {
+    byte[] response = new byte[data.length];
+    for (int x = 0; x < data.length; x++) {
+      response[x] = (byte) (random[x] ^ data[x]);
+    }
+    return response;
   }
 }

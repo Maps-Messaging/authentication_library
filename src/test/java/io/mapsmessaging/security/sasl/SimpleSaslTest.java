@@ -103,5 +103,19 @@ class SimpleSaslTest extends BaseSasl {
     String qop = (String) saslClient.getNegotiatedProperty(Sasl.QOP);
     Assertions.assertEquals(saslServer.getAuthorizationID(), user);
     Assertions.assertTrue(qop.startsWith("auth"), "We should have an authorised SASL session");
+
+    if (qop.equalsIgnoreCase("auth-conf")) {
+      byte[] testBuffer = new byte[2048];
+      for (int x = 0; x < testBuffer.length; x++) {
+        testBuffer[x] = ((byte) (x & 0xff));
+      }
+      byte[] wrapped = saslClient.wrap(testBuffer, 0, testBuffer.length);
+      byte[] unwrapped = saslServer.unwrap(wrapped, 0, wrapped.length);
+      Assertions.assertArrayEquals(testBuffer, unwrapped);
+
+      wrapped = saslServer.wrap(unwrapped, 0, unwrapped.length);
+      unwrapped = saslClient.unwrap(wrapped, 0, wrapped.length);
+      Assertions.assertArrayEquals(testBuffer, unwrapped);
+    }
   }
 }
