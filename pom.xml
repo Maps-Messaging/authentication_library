@@ -231,27 +231,12 @@
     </plugins>
   </build>
 
-  <repositories>
-    <repository>
-      <id>mapsmessaging.io</id>
-      <name>artifactory-releases</name>
-      <url>https://mapsmessaging.jfrog.io/artifactory/mapsmessaging-mvn-prod</url>
-    </repository>
-
-    <repository>
-      <id>snaphsot.mapsmessaging.io</id>
-      <name>artifactory-snapshot</name>
-      <url>https://mapsmessaging.jfrog.io/artifactory/mapsmessaging-mvn-snapshot</url>
-    </repository>
-  </repositories>
-
-
   <dependencies>
 
     <dependency>
       <groupId>io.mapsmessaging</groupId>
       <artifactId>Simple_Logging</artifactId>
-      <version>2.0.6</version>
+      <version>2.0.7</version>
     </dependency>
 
     <dependency>
