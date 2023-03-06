@@ -11,6 +11,8 @@ public class BaseScramSasl {
 
   protected final Logger logger = LoggerFactory.getLogger(BaseScramSasl.class);
   protected final SessionContext context;
+  private XorStream inStream;
+  private XorStream outStream;
 
   public BaseScramSasl() {
     this.context = new SessionContext();
@@ -27,6 +29,10 @@ public class BaseScramSasl {
         context.getState().handeResponse(new ChallengeResponse(challenge), context);
       }
       ChallengeResponse challengeResponse = context.getState().produceChallenge(context);
+      if (context.getState().isComplete()) {
+        inStream = new XorStream(context.getClientKey());
+        outStream = new XorStream(context.getClientKey());
+      }
       if (challengeResponse != null) {
         return challengeResponse.toString().getBytes();
       }
@@ -38,17 +44,16 @@ public class BaseScramSasl {
     }
   }
 
-  @SuppressWarnings("java:S1172") // this is a place holder function
   public byte[] unwrap(byte[] incoming, int offset, int len) {
-    return new byte[0];
+    return inStream.xorBuffer(incoming, offset, len);
   }
 
-  @SuppressWarnings("java:S1172") // this is a place holder function
   public byte[] wrap(byte[] outgoing, int offset, int len) {
-    return new byte[0];
+    return outStream.xorBuffer(outgoing, offset, len);
   }
 
   public void dispose() {
-    // this is a place holder
+    context.reset();
   }
+
 }

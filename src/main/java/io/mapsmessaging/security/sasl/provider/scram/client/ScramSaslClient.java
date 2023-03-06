@@ -53,7 +53,7 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
   @Override
   public Object getNegotiatedProperty(String propName) {
     if (propName.equals(Sasl.QOP)) {
-      return "auth";
+      return "auth-conf";
     }
     return null;
   }

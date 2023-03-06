@@ -60,7 +60,7 @@ public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   @Override
   public Object getNegotiatedProperty(String propName) {
-    return null;
+    return "auth-conf";
   }
 
 }

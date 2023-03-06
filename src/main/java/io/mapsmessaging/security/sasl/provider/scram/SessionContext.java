@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.sasl.SaslException;
@@ -91,6 +92,27 @@ public class SessionContext {
 
   @Getter
   private byte[] serverSignature;
+
+  public void reset() {
+    mac.reset();
+
+    state = null;
+    mac = null;
+    passwordParser = null;
+
+    username = "";
+    passwordSalt = "";
+    clientNonce = "";
+    serverNonce = "";
+    initialServerChallenge = "";
+    algorithm = "";
+    prepPassword = "";
+
+    Arrays.fill(clientKey, (byte) 0);
+    Arrays.fill(clientSignature, (byte) 0);
+    Arrays.fill(storedKey, (byte) 0);
+    Arrays.fill(serverSignature, (byte) 0);
+  }
 
   public void setServerNonce(String nonce) throws SaslException {
     if (!nonce.startsWith(clientNonce)) {
