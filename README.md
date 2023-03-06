@@ -9,23 +9,16 @@ JAAS Login module support for HtPassword files
 
 # pom.xml setup
 
-Add the repository configuration into the pom.xml
-``` xml
-    <!-- MapsMessaging jfrog server --> 
-    <repository>
-      <id>mapsmessaging.io</id>
-      <name>artifactory-releases</name>
-      <url>https://mapsmessaging.jfrog.io/artifactory/mapsmessaging-mvn-prod</url>
-    </repository>
-```    
+All MapsMessaging libraries are hosted on the [maven central server.](https://central.sonatype.com/search?smo=true&q=mapsmessaging)
 
-Then include the dependency
+Include the dependency
+
 ``` xml
-     <!-- Non Blocking Task Queue module -->
+     <!-- Authentication module -->
     <dependency>
       <groupId>io.mapsmessaging</groupId>
       <artifactId>AuthenticationLibrary</artifactId>
-      <version>0.2.2</version>
+      <version>0.2.6</version>
     </dependency>
 ```   
 
