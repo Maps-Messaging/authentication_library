@@ -16,3 +16,4 @@
 
 io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager
 io.mapsmessaging.security.identity.impl.shadow.ShadowFileManager
+io.mapsmessaging.security.identity.impl.ldap.LdapManager
