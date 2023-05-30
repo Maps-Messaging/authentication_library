@@ -17,11 +17,14 @@
 package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 
 public class LdapEntry extends IdentityEntry {
 
   public LdapEntry(String username, char[] password) {
     super.username = username;
     super.password = new String(password);
+    super.passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
   }
+
 }

@@ -20,6 +20,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.naming.Context;
@@ -39,6 +40,7 @@ public class LdapManager implements IdentityLookup {
   private final String searchFilter;
   private final String passwordName;
   private final SearchControls searchControls;
+  private final Map<String, LdapEntry> userMap;
 
   public LdapManager() {
     directoryContext = null;
@@ -46,6 +48,7 @@ public class LdapManager implements IdentityLookup {
     searchBase = "";
     searchFilter = "";
     passwordName = "";
+    userMap = new LinkedHashMap<>();
   }
 
   public LdapManager(Map<String, ?> config) throws NamingException {
@@ -53,13 +56,14 @@ public class LdapManager implements IdentityLookup {
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
     }
+    userMap = new LinkedHashMap<>();
     directoryContext = new InitialDirContext(map);
-    ;
     searchBase = config.get("searchBase").toString();
     searchFilter = config.get("searchFilter").toString();
     passwordName = config.get("passwordKeyName").toString();
     searchControls = new SearchControls();
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    load();
   }
 
   @Override
@@ -69,27 +73,37 @@ public class LdapManager implements IdentityLookup {
 
   @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+    LdapEntry entry = userMap.get(username);
+    if (entry != null) {
+      return entry.getPasswordParser().getFullPasswordHash();
+    }
+    throw new NoSuchUserFoundException("Password entry for " + username + " not found");
+  }
+
+  private void load() {
     try {
       NamingEnumeration<SearchResult> results = directoryContext.search(searchBase, searchFilter, searchControls);
       // Iterate over the search results and print the user information
       while (results.hasMore()) {
         SearchResult result = results.next();
         Attributes attrs = result.getAttributes();
-        Attribute attribute = attrs.get(passwordName);
-        if (attribute != null) {
-          Object v = attribute.get();
+        Attribute user = attrs.get("cn");
+        String userString = user.get().toString();
+        Attribute password = attrs.get(passwordName);
+        if (password != null) {
+          Object v = password.get();
           if (v instanceof byte[]) {
             String s = new String((byte[]) v);
-            return s.toCharArray();
+            if (s.toLowerCase().startsWith("{crypt}")) {
+              s = s.substring("{crypt}".length());
+            }
+            userMap.put(userString, new LdapEntry(userString, s.toCharArray()));
           }
         }
       }
     } catch (NamingException e) {
-      NoSuchUserFoundException noSuchUserFoundException = new NoSuchUserFoundException("Error looking up for " + username);
-      noSuchUserFoundException.initCause(e);
-      throw noSuchUserFoundException;
+      e.printStackTrace();
     }
-    throw new NoSuchUserFoundException("No such user found for " + username);
   }
 
   @Override
