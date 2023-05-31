@@ -16,6 +16,10 @@
 
 package io.mapsmessaging.security.identity;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_LOADED;
+
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import java.util.Map;
 import java.util.ServiceLoader;
 
@@ -23,9 +27,13 @@ public class IdentityLookupFactory {
 
   private static final IdentityLookupFactory instance = new IdentityLookupFactory();
   private final ServiceLoader<IdentityLookup> identityLookups;
+  private final Logger logger = LoggerFactory.getLogger(IdentityLookupFactory.class);
 
   private IdentityLookupFactory() {
     identityLookups = ServiceLoader.load(IdentityLookup.class);
+    for(IdentityLookup identityLookup:identityLookups){
+      logger.log(IDENTITY_LOOKUP_LOADED, identityLookup.getName());
+    }
   }
 
   public static IdentityLookupFactory getInstance() {

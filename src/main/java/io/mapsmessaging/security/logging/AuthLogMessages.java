@@ -25,16 +25,25 @@ public enum AuthLogMessages implements LogMessage {
 
   //-------------------------------------------------------------------------------------------------------------
 
-  // <editor-fold desc="Generic messages">
+  // <editor-fold desc="SCRAM messages">
   SCRAM_SERVER_INITIAL_PHASE(LEVEL.INFO, Auth_Category.AUTHENTICATION, "SCRAM server initialising using algorithm {}"),
   SCRAM_SERVER_STATE_CHANGE(LEVEL.INFO, Auth_Category.AUTHENTICATION, "SCRAM server state changed to {}"),
+  // </editor-fold>
+
+  // <editor-fold desc="Password parser messages">
+  PASSWORD_PARSER_LOADED(LEVEL.WARN, Auth_Category.AUTHENTICATION, "Loaded parser for {} with hash key {}"),
+  IDENTITY_LOOKUP_LOADED(LEVEL.WARN, Auth_Category.AUTHENTICATION, "Loaded identity lookup supporting {}"),
+  // </editor-fold>
 
 
+  // <editor-fold desc="Generic messages">
   DO_NOT_USE_IN_PRODUCTION(LEVEL.AUTH, Auth_Category.AUTHENTICATION, "Warning !!!, Not to be used in a production environment"),
   USER_LOGGED_IN(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged in"),
   NO_SUCH_USER_FOUND(LEVEL.INFO, Auth_Category.AUTHENTICATION, "User {} not found"),
   USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out"),
+  // </editor-fold>
 
+  // <editor-fold desc="Password file messages">
   PASSWORD_FILE_LOADED(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Successfully loaded {} entries for {}"),
   PASSWORD_FILE_LOAD_EXCEPTION(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Password load failed for {}"),
   PASSWORD_FILE_CHANGE_DETECTED(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Password file change detected on {}"),
