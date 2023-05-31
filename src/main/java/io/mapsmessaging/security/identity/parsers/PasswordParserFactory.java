@@ -20,6 +20,7 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_PARSER_
 
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.security.identity.parsers.plain.PlainPasswordParser;
 import java.util.ServiceLoader;
 
 public class PasswordParserFactory {
