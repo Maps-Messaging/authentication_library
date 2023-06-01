@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -97,7 +97,7 @@ public class LdapManager implements IdentityLookup {
             if (s.toLowerCase().startsWith("{crypt}")) {
               s = s.substring("{crypt}".length());
             }
-            userMap.put(userString, new LdapEntry(userString, s.toCharArray()));
+            userMap.put(userString, new LdapEntry(userString, s.toCharArray(), attrs));
           }
         }
       }
@@ -106,15 +106,10 @@ public class LdapManager implements IdentityLookup {
     }
   }
 
+
   @Override
   public IdentityEntry findEntry(String username) {
-    try {
-      char[] pass = getPasswordHash(username);
-      return new LdapEntry(username, pass);
-    } catch (NoSuchUserFoundException e) {
-      // ignore
-    }
-    return null;
+    return userMap.get(username);
   }
 
   @Override
