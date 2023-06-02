@@ -21,7 +21,9 @@ import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.security.auth.Subject;
@@ -38,18 +40,22 @@ public class IdentityEntry {
   @Getter
   protected String password;
 
-  protected final Set<String> groupList = new TreeSet<>();
+  protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
 
   public boolean isInGroup(String group){
-    return groupList.contains(group);
+    return groupList.containsKey(group);
   }
 
-  protected void addGroup(String group){
-    groupList.add(group);
+  public void addGroup(GroupEntry group){
+    groupList.put(group.name, group);
   }
 
-  public List<String> getGroups(){
-    return new ArrayList<>(groupList);
+  public void clearGroups(){
+    groupList.clear();
+  }
+
+  public List<GroupEntry> getGroups(){
+    return new ArrayList<>(groupList.values());
   }
 
   public Subject getSubject(){
@@ -61,8 +67,8 @@ public class IdentityEntry {
     principals.add(new UserPrincipal(username));
 
 
-    for(String group:groupList){
-      principals.add(new GroupPrincipal(group));
+    for(GroupEntry group:groupList.values()){
+      principals.add(new GroupPrincipal(group.getName()));
     }
     return principals;
   }

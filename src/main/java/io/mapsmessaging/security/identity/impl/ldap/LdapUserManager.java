@@ -17,13 +17,11 @@
 package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -33,7 +31,7 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-public class LdapManager implements IdentityLookup {
+public class LdapUserManager {
 
   private final DirContext directoryContext;
   private final String searchBase;
@@ -42,7 +40,7 @@ public class LdapManager implements IdentityLookup {
   private final SearchControls searchControls;
   private final Map<String, LdapEntry> userMap;
 
-  public LdapManager() {
+  public LdapUserManager() {
     directoryContext = null;
     searchControls = null;
     searchBase = "";
@@ -51,7 +49,7 @@ public class LdapManager implements IdentityLookup {
     userMap = new LinkedHashMap<>();
   }
 
-  public LdapManager(Map<String, ?> config) throws NamingException {
+  public LdapUserManager(Map<String, ?> config) throws NamingException {
     Hashtable<String, String> map = new Hashtable<>();
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
@@ -66,12 +64,6 @@ public class LdapManager implements IdentityLookup {
     load();
   }
 
-  @Override
-  public String getName() {
-    return "ldapPasswordManager";
-  }
-
-  @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     LdapEntry entry = userMap.get(username);
     if (entry != null) {
@@ -107,20 +99,8 @@ public class LdapManager implements IdentityLookup {
   }
 
 
-  @Override
   public IdentityEntry findEntry(String username) {
     return userMap.get(username);
   }
 
-  @Override
-  public IdentityLookup create(Map<String, ?> config) {
-    if (config.containsKey(Context.PROVIDER_URL)) {
-      try {
-        return new LdapManager(config);
-      } catch (NamingException e) {
-        return null;
-      }
-    }
-    return null;
-  }
 }

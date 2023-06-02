@@ -17,38 +17,19 @@
 package io.mapsmessaging.security.identity.impl.htpasswd;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.impl.base.FileBasedAuth;
-import java.util.Map;
+import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 
-public class HtPasswdFileManager extends FileBasedAuth {
+public class HtPasswdFileManager extends FileBaseIdentities {
 
-
-  public HtPasswdFileManager() {
-    super();
-  }
 
   public HtPasswdFileManager(String filepath) {
     super(filepath);
+    load();
   }
 
   @Override
   protected IdentityEntry load(String line) {
     return new HtPasswdEntry(line);
-  }
-
-  @Override
-  public String getName() {
-    return "htpassword";
-  }
-
-  @Override
-  public IdentityLookup create(Map<String, ?> config) {
-    if (config.containsKey("passwordFile")) {
-      String filePath = config.get("passwordFile").toString();
-      return new HtPasswdFileManager(filePath);
-    }
-    return null;
   }
 
 }

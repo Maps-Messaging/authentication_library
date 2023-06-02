@@ -20,7 +20,8 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.impl.shadow.ShadowFileManager;
+import io.mapsmessaging.security.identity.impl.unix.ShadowFileManager;
+import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
@@ -34,9 +35,9 @@ class ShadowIdentifierTest {
   @Test
   void simpleLoad() throws NoSuchUserFoundException {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("passwordFile", "./src/test/resources/shadow");
-    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
-    Assertions.assertEquals(lookup.getClass(), ShadowFileManager.class);
+    map.put("configDirectory", "./src/test/resources/nix");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
+    Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
     char[] hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
@@ -49,8 +50,8 @@ class ShadowIdentifierTest {
   @Test
   void simpleEntryTest() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("passwordFile", "./src/test/resources/shadow");
-    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
+    map.put("configDirectory", "./src/test/resources/nix");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", entry.toString());
@@ -61,9 +62,9 @@ class ShadowIdentifierTest {
   @Test
   void noUser() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("passwordFile", "./src/test/resources/shadow");
-    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("shadow", map);
-    Assertions.assertEquals(lookup.getClass(), ShadowFileManager.class);
+    map.put("configDirectory", "./src/test/resources/nix");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
+    Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
     Assertions.assertThrowsExactly(NoSuchUserFoundException.class, () -> lookup.getPasswordHash("noSuchUser"));
   }
 

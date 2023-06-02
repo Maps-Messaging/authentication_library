@@ -105,6 +105,9 @@ public abstract class BaseLoginModule implements LoginModule {
   }
 
   public boolean abort() throws LoginException {
+    subject.getPrincipals().clear();
+    subject.getPrivateCredentials().clear();
+    subject.getPublicCredentials().clear();
     if (!succeeded) {
       return false;
     } else if (!commitSucceeded) {
@@ -134,6 +137,9 @@ public abstract class BaseLoginModule implements LoginModule {
   @Override
   public boolean commit() {
     if (!succeeded) {
+      subject.getPrincipals().clear();
+      subject.getPrivateCredentials().clear();
+      subject.getPublicCredentials().clear();
       return false;
     } else {
       subject.getPrincipals().add(userPrincipal);

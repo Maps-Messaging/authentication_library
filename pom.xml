@@ -306,6 +306,13 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/com.ongres.scram/client -->
+    <dependency>
+      <artifactId>client</artifactId>
+      <groupId>com.ongres.scram</groupId>
+      <scope>test</scope>
+      <version>2.1</version>
+    </dependency>
 
   </dependencies>
 </project>

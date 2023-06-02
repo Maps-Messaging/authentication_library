@@ -14,33 +14,20 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity;
+package io.mapsmessaging.security.identity.impl.unix;
 
-import java.util.Set;
-import java.util.TreeSet;
-import lombok.Getter;
+import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 
-public class GroupEntry implements Comparable<GroupEntry>{
+public class ShadowEntry extends IdentityEntry {
 
-  protected final Set<String> userSet;
-  @Getter
-  protected String name;
-
-  public GroupEntry(){
-    userSet = new TreeSet<>();
+  public ShadowEntry(String line) {
+    int usernamePos = line.indexOf(":");
+    username = line.substring(0, usernamePos);
+    line = line.substring(usernamePos + 1);
+    int endOfPassword = line.indexOf(":");
+    password = line.substring(0, endOfPassword);
+    passwordParser = PasswordParserFactory.getInstance().parse(password);
   }
 
-  public GroupEntry(String name){
-    this.name = name;
-    userSet = new TreeSet<>();
-  }
-
-  public boolean isInGroup(String user){
-    return userSet.contains(user);
-  }
-
-  @Override
-  public int compareTo(GroupEntry o) {
-    return name.compareTo(o.name);
-  }
 }

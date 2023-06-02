@@ -16,12 +16,11 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
 import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
-import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import java.util.Arrays;
@@ -49,29 +48,36 @@ public class IdentityLoginModule extends BaseLoginModule {
 
   @Override
   protected boolean validate(String username, char[] password) throws LoginException {
-    try {
-      char[] lookup = identityLookup.getPasswordHash(username);
-      if (lookup == null) {
-        logger.log(NO_SUCH_USER_FOUND, username);
-        throw new LoginException("No such user");
-      }
-      String lookupPassword = new String(lookup);
-      PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(lookupPassword);
+    IdentityEntry identityEntry = identityLookup.findEntry(username);
+    if(identityEntry == null){
+      throw new LoginException("Login failed: No such user");
+    }
+    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
+    String rawPassword = new String(password);
+    byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
+    if (!Arrays.equals(hash, identityEntry.getPassword().getBytes())) {
+      throw new LoginException("Invalid password");
+    }
+    succeeded = true;
+    if (debug) {
+      logger.log(USER_LOGGED_IN, username);
+    }
+    return true;
+  }
 
-      String rawPassword = new String(password);
-      byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
-      if (!Arrays.equals(hash, lookupPassword.getBytes())) {
-        throw new LoginException("Invalid password");
-      }
-      succeeded = true;
-      if (debug) {
-        logger.log(USER_LOGGED_IN, username);
-      }
+  @Override
+  public boolean commit() {
+    if (!succeeded) {
+      return false;
+    } else {
+      IdentityEntry identityEntry = identityLookup.findEntry(username);
+      Subject subject1 = identityEntry.getSubject();
+      subject.getPrincipals().addAll(subject1.getPrincipals());
+      subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
+      subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
+
+      commitSucceeded = true;
       return true;
-    } catch (NoSuchUserFoundException e) {
-      LoginException loginException = new LoginException("Login failed");
-      loginException.initCause(e);
-      throw loginException;
     }
   }
 }

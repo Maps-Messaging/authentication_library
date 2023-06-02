@@ -16,31 +16,17 @@
 
 package io.mapsmessaging.security.identity;
 
-import java.util.Set;
-import java.util.TreeSet;
-import lombok.Getter;
+import java.io.IOException;
 
-public class GroupEntry implements Comparable<GroupEntry>{
+public class IllegalFormatException extends IOException {
 
-  protected final Set<String> userSet;
-  @Getter
-  protected String name;
 
-  public GroupEntry(){
-    userSet = new TreeSet<>();
+  public IllegalFormatException(){
+    super();
   }
 
-  public GroupEntry(String name){
-    this.name = name;
-    userSet = new TreeSet<>();
-  }
 
-  public boolean isInGroup(String user){
-    return userSet.contains(user);
-  }
-
-  @Override
-  public int compareTo(GroupEntry o) {
-    return name.compareTo(o.name);
+  public IllegalFormatException(String reason){
+    super(reason);
   }
 }

@@ -20,6 +20,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.identity.impl.htpasswd.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
@@ -34,9 +35,9 @@ class HtPasswordIdentifierTest {
   @Test
   void simpleLoad() throws NoSuchUserFoundException {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("passwordFile", "./src/test/resources/.htpassword");
-    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
-    Assertions.assertEquals(lookup.getClass(), HtPasswdFileManager.class);
+    map.put("configDirectory", "./src/test/resources/apache");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
+    Assertions.assertEquals(lookup.getClass(), ApacheBasicAuth.class);
     char[] hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
@@ -49,8 +50,8 @@ class HtPasswordIdentifierTest {
   @Test
   void simpleEntryTest() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("passwordFile", "./src/test/resources/.htpassword");
-    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
+    map.put("configDirectory", "./src/test/resources/apache");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", entry.toString());
@@ -58,11 +59,21 @@ class HtPasswordIdentifierTest {
   }
 
   @Test
+  void simpleGroupTest() {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("configDirectory", "./src/test/resources/apache");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
+    IdentityEntry entry = lookup.findEntry("test");
+    Assertions.assertNotNull(entry);
+    Assertions.assertTrue(entry.isInGroup("user"));
+  }
+
+  @Test
   void noUser() {
     Map<String, String> map = new LinkedHashMap<>();
-    map.put("passwordFile", "./src/test/resources/.htpassword");
-    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("htpassword", map);
-    Assertions.assertEquals(lookup.getClass(), HtPasswdFileManager.class);
+    map.put("configDirectory", "./src/test/resources/apache");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
+    Assertions.assertEquals(lookup.getClass(), ApacheBasicAuth.class);
     Assertions.assertThrowsExactly(NoSuchUserFoundException.class, () -> lookup.getPasswordHash("noSuchUser"));
   }
 }

@@ -14,39 +14,50 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.shadow;
+package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.impl.base.FileBasedAuth;
+import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.util.Map;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
-public class ShadowFileManager extends FileBasedAuth {
+public class LdapAuth  implements IdentityLookup {
 
-  public ShadowFileManager() {
-    super();
-  }
+  private LdapUserManager ldapUserManager;
 
-  public ShadowFileManager(String filepath) {
-    super(filepath);
-  }
+  public LdapAuth(){}
 
-  @Override
-  protected IdentityEntry load(String line) {
-    return new ShadowPasswdEntry(line);
+  public LdapAuth(Map<String, ?> config) throws NamingException{
+    ldapUserManager = new LdapUserManager(config);
   }
 
   @Override
   public String getName() {
-    return "shadow";
+    return "ldap";
+  }
+
+  @Override
+  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+    return ldapUserManager.getPasswordHash(username);
+  }
+
+  @Override
+  public IdentityEntry findEntry(String username) {
+    return ldapUserManager.findEntry(username);
   }
 
   @Override
   public IdentityLookup create(Map<String, ?> config) {
-    if (config.containsKey("passwordFile")) {
-      String filePath = config.get("passwordFile").toString();
-      return new ShadowFileManager(filePath);
+    if (config.containsKey(Context.PROVIDER_URL)) {
+      try {
+        return new LdapAuth(config);
+      } catch (NamingException e) {
+        return null;
+      }
     }
     return null;
   }
+
 }

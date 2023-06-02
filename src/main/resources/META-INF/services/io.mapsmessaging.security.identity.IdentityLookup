@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager
-io.mapsmessaging.security.identity.impl.shadow.ShadowFileManager
-io.mapsmessaging.security.identity.impl.ldap.LdapManager
+io.mapsmessaging.security.identity.impl.htpasswd.ApacheBasicAuth
+io.mapsmessaging.security.identity.impl.ldap.LdapAuth
+io.mapsmessaging.security.identity.impl.unix.UnixAuth
