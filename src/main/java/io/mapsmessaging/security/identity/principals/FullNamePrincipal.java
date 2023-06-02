@@ -14,30 +14,20 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.identity.principals;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.security.Principal;
 
-class ShadowLoginTest extends BaseIdentity {
+public class FullNamePrincipal implements Principal {
 
+  private final String fullName;
 
-  Map<String, String> getOptions() {
-    Map<String, String> options = new LinkedHashMap<>();
-    options.put("identityName", "unix");
-    options.put("configDirectory", "./src/test/resources/nix");
-    return options;
-  }
-
-
-  @Override
-  String getUser() {
-    return "test";
+  public FullNamePrincipal(String fullName) {
+    this.fullName = fullName;
   }
 
   @Override
-  String getPassword() {
-    return "onewordpassword";
+  public String getName() {
+    return fullName;
   }
-
 }

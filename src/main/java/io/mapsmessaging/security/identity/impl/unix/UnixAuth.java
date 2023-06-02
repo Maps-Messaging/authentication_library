@@ -28,14 +28,18 @@ public class UnixAuth implements IdentityLookup {
 
   private FileBaseIdentities passwordFileIdentities;
   private GroupFileManager groupFileManager;
-  private PasswordFileManager passwordFileManager;
+  private PasswordFileManager userDetailsManager;
 
   public UnixAuth(){}
 
   public UnixAuth(String shadowPath, String passwordPath, String groupPath){
     passwordFileIdentities = new ShadowFileManager(shadowPath);
-    groupFileManager = new GroupFileManager(groupPath);
-    passwordFileManager = new PasswordFileManager(passwordPath);
+    if(groupPath != null){
+      groupFileManager = new GroupFileManager(groupPath);
+    }
+    if(passwordPath != null){
+      userDetailsManager = new PasswordFileManager(passwordPath);
+    }
   }
 
   @Override
@@ -51,10 +55,11 @@ public class UnixAuth implements IdentityLookup {
   @Override
   public IdentityEntry findEntry(String username) {
     IdentityEntry identityEntry = passwordFileIdentities.findEntry(username);
-    if(identityEntry != null){
-      PasswordEntry passwordEntry = passwordFileManager.findUser(username);
+    if(identityEntry != null && userDetailsManager != null && groupFileManager != null){
+      PasswordEntry passwordEntry = userDetailsManager.findUser(username);
       if(passwordEntry != null){
         int groupId = passwordEntry.getGroupId();
+        ((ShadowEntry)identityEntry).setPasswordEntry(passwordEntry);
         GroupEntry groupEntry = groupFileManager.findGroup(groupId);
         identityEntry.clearGroups();
         if(groupEntry != null){
@@ -68,9 +73,9 @@ public class UnixAuth implements IdentityLookup {
   @Override
   public IdentityLookup create(Map<String, ?> config) {
     if (config.containsKey("passwordFile")) {
-      String filePath = config.get("passwordFile").toString();
-      String groupFile = config.get("groupFile").toString();
-      String passwordFile = config.get("passwd").toString();
+      String filePath = (String)config.get("passwordFile");
+      String groupFile = (String)config.get("groupFile");
+      String passwordFile = (String)config.get("passwd");
 
       return new UnixAuth(filePath, passwordFile, groupFile);
     }

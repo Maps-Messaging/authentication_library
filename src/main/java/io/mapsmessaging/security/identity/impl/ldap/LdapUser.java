@@ -24,11 +24,11 @@ import java.util.Set;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 
-public class LdapEntry extends IdentityEntry {
+public class LdapUser extends IdentityEntry {
 
   private final Attributes attrs;
 
-  public LdapEntry(String username, char[] password, Attributes attrs) {
+  public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
     super.password = new String(password);
     super.passwordParser = PasswordParserFactory.getInstance().parse(new String(password));

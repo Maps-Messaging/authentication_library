@@ -26,11 +26,13 @@ import javax.naming.NamingException;
 public class LdapAuth  implements IdentityLookup {
 
   private LdapUserManager ldapUserManager;
+  private LdapGroupManager ldapGroupManager;
 
   public LdapAuth(){}
 
   public LdapAuth(Map<String, ?> config) throws NamingException{
     ldapUserManager = new LdapUserManager(config);
+    ldapGroupManager = new LdapGroupManager(config);
   }
 
   @Override

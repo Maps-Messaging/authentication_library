@@ -14,30 +14,8 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.identity.impl.ldap;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-class ShadowLoginTest extends BaseIdentity {
-
-
-  Map<String, String> getOptions() {
-    Map<String, String> options = new LinkedHashMap<>();
-    options.put("identityName", "unix");
-    options.put("configDirectory", "./src/test/resources/nix");
-    return options;
-  }
-
-
-  @Override
-  String getUser() {
-    return "test";
-  }
-
-  @Override
-  String getPassword() {
-    return "onewordpassword";
-  }
+public class LdapGroup {
 
 }

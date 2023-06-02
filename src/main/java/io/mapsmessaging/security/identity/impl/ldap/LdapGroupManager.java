@@ -16,8 +16,8 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
-import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,36 +31,24 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-public class LdapUserManager {
+public class LdapGroupManager {
 
   private final DirContext directoryContext;
   private final String searchBase;
   private final String searchFilter;
-  private final String passwordName;
   private final SearchControls searchControls;
-  private final Map<String, LdapUser> userMap;
 
-  public LdapUserManager(Map<String, ?> config) throws NamingException {
+  public LdapGroupManager(Map<String, ?> config) throws NamingException {
     Hashtable<String, String> map = new Hashtable<>();
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
     }
-    userMap = new LinkedHashMap<>();
     directoryContext = new InitialDirContext(map);
     searchBase = config.get("searchBase").toString();
     searchFilter = config.get("searchFilter").toString();
-    passwordName = config.get("passwordKeyName").toString();
     searchControls = new SearchControls();
     searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     load();
-  }
-
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
-    LdapUser entry = userMap.get(username);
-    if (entry != null) {
-      return entry.getPasswordParser().getFullPasswordHash();
-    }
-    throw new NoSuchUserFoundException("Password entry for " + username + " not found");
   }
 
   private void load() {
@@ -70,28 +58,14 @@ public class LdapUserManager {
       while (results.hasMore()) {
         SearchResult result = results.next();
         Attributes attrs = result.getAttributes();
-        Attribute user = attrs.get("cn");
-        String userString = user.get().toString();
-        Attribute password = attrs.get(passwordName);
-        if (password != null) {
-          Object v = password.get();
-          if (v instanceof byte[]) {
-            String s = new String((byte[]) v);
-            if (s.toLowerCase().startsWith("{crypt}")) {
-              s = s.substring("{crypt}".length());
-            }
-            userMap.put(userString, new LdapUser(userString, s.toCharArray(), attrs));
-          }
+        NamingEnumeration<? extends Attribute> enumeration = attrs.getAll();
+        while(enumeration.hasMoreElements()){
+          System.err.println(enumeration.nextElement().toString());
         }
       }
     } catch (NamingException e) {
       e.printStackTrace();
     }
-  }
-
-
-  public IdentityEntry findEntry(String username) {
-    return userMap.get(username);
   }
 
 }

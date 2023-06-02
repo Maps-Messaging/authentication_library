@@ -18,6 +18,7 @@ package io.mapsmessaging.security.identity;
 
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -76,19 +77,6 @@ public class IdentityEntry {
   @Override
   public String toString() {
     return username + ":" + password;
-  }
-
-  static class GroupPrincipal implements Principal {
-    private final String name;
-
-    GroupPrincipal(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public String getName() {
-      return name;
-    }
   }
 
 }

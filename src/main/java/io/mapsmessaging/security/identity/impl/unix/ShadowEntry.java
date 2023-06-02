@@ -16,10 +16,23 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
+import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
+import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
+import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ShadowEntry extends IdentityEntry {
+
+  @Getter
+  @Setter
+  private PasswordEntry passwordEntry;
 
   public ShadowEntry(String line) {
     int usernamePos = line.indexOf(":");
@@ -29,5 +42,16 @@ public class ShadowEntry extends IdentityEntry {
     password = line.substring(0, endOfPassword);
     passwordParser = PasswordParserFactory.getInstance().parse(password);
   }
+
+  @Override
+  protected Set<Principal> getPrincipals(){
+    Set<Principal> principals = super.getPrincipals();
+    if(passwordEntry != null){
+      principals.add(new FullNamePrincipal(passwordEntry.getDescription()));
+      principals.add(new HomeDirectoryPrinicipal(passwordEntry.getHomeDirectory()));
+    }
+    return principals;
+  }
+
 
 }
