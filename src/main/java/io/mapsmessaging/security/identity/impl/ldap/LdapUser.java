@@ -70,6 +70,8 @@ public class LdapUser extends IdentityEntry {
     if(description != null){
       principals.add(new FullNamePrincipal(description));
     }
+
+
     Enumeration<? extends Attribute> enumeration= attrs.getAll();
     while(enumeration.hasMoreElements()){
       Attribute attribute = enumeration.nextElement();
