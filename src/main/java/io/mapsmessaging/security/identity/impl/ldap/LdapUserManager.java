@@ -16,12 +16,15 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
+import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -33,26 +36,35 @@ import javax.naming.directory.SearchResult;
 
 public class LdapUserManager {
 
-  private final DirContext directoryContext;
+  private final String passwordName;
+
   private final String searchBase;
   private final String searchFilter;
-  private final String passwordName;
-  private final SearchControls searchControls;
+
+  private final String groupSearchBase;
+  private final String groupSearchFilter;
+
   private final Map<String, LdapUser> userMap;
+  private final Map<String, GroupEntry> groupList;
+
+  private DirContext directoryContext;
+  private SearchControls searchControls;
 
   public LdapUserManager(Map<String, ?> config) throws NamingException {
     Hashtable<String, String> map = new Hashtable<>();
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
     }
+    passwordName = config.get("passwordKeyName").toString();
+
     userMap = new LinkedHashMap<>();
-    directoryContext = new InitialDirContext(map);
+    groupList = new LinkedHashMap<>();
     searchBase = config.get("searchBase").toString();
     searchFilter = config.get("searchFilter").toString();
-    passwordName = config.get("passwordKeyName").toString();
-    searchControls = new SearchControls();
-    searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-    load();
+    groupSearchBase = config.get("groupSearchBase").toString();
+    groupSearchFilter = config.get("groupSearchFilter").toString();
+
+    load(map);
   }
 
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
@@ -63,7 +75,19 @@ public class LdapUserManager {
     throw new NoSuchUserFoundException("Password entry for " + username + " not found");
   }
 
-  private void load() {
+  private void load( Hashtable<String, String> map) throws NamingException {
+    searchControls = new SearchControls();
+    String[] returnedAtts = {"sn", "cn", "givenName", "gecos", "homeDirectory", passwordName};
+    searchControls.setReturningAttributes(returnedAtts);
+    searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+    directoryContext = new InitialDirContext(map);
+    getGroup();
+    loadUsers();
+    directoryContext.close();
+  }
+
+  private void loadUsers(){
     try {
       NamingEnumeration<SearchResult> results = directoryContext.search(searchBase, searchFilter, searchControls);
       // Iterate over the search results and print the user information
@@ -71,7 +95,7 @@ public class LdapUserManager {
         SearchResult result = results.next();
         Attributes attrs = result.getAttributes();
         Attribute user = attrs.get("cn");
-        String userString = user.get().toString();
+        String userString = (String)user.get();
         Attribute password = attrs.get(passwordName);
         if (password != null) {
           Object v = password.get();
@@ -80,7 +104,14 @@ public class LdapUserManager {
             if (s.toLowerCase().startsWith("{crypt}")) {
               s = s.substring("{crypt}".length());
             }
-            userMap.put(userString, new LdapUser(userString, s.toCharArray(), attrs));
+            LdapUser ldapUser = new LdapUser(userString, s.toCharArray(), attrs);
+            for(GroupEntry ldapGroup:groupList.values()){
+              if(ldapGroup.isInGroup(ldapUser.getUsername())){
+                ldapUser.addGroup(ldapGroup);
+              }
+            }
+
+            userMap.put(ldapUser.getUsername(), ldapUser);
           }
         }
       }
@@ -89,6 +120,33 @@ public class LdapUserManager {
     }
   }
 
+  private void getGroup() throws NamingException {
+    String[] attributes = {"cn","memberuid"};
+
+    SearchControls groupSearchControls = new SearchControls();
+    groupSearchControls.setReturningAttributes(attributes);
+    groupSearchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+
+    // Perform LDAP search
+    NamingEnumeration<SearchResult> searchResults = directoryContext.search(groupSearchBase, groupSearchFilter, groupSearchControls);
+    while(searchResults.hasMoreElements()){
+      SearchResult result = searchResults.nextElement();
+      Attributes attrs = result.getAttributes();
+      if(attrs.size() > 0){
+        Attribute groupName = attrs.get("cn");
+        Attribute members = attrs.get("memberUid");
+        if(groupName != null && members != null){
+          Set<String> memberList = new TreeSet<>();
+          NamingEnumeration<?> naming = members.getAll();
+          while(naming.hasMoreElements()){
+            memberList.add((String) naming.nextElement());
+          }
+          GroupEntry group = new GroupEntry((String)groupName.get(), memberList);
+          groupList.put(group.getName(), group);
+        }
+      }
+    }
+  }
 
   public IdentityEntry findEntry(String username) {
     return userMap.get(username);

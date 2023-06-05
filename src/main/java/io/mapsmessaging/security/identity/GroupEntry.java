@@ -35,6 +35,12 @@ public class GroupEntry implements Comparable<GroupEntry>{
     userSet = new TreeSet<>();
   }
 
+  public GroupEntry(String name, Set<String> userSet){
+    this.name = name;
+    this.userSet = userSet;
+  }
+
+
   public boolean isInGroup(String user){
     return userSet.contains(user);
   }

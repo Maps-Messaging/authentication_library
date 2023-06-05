@@ -19,7 +19,7 @@ package io.mapsmessaging.security.jaas;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class ShadowLoginTest extends BaseIdentity {
+class UnixLoginTest extends BaseIdentity {
 
 
   Map<String, String> getOptions() {

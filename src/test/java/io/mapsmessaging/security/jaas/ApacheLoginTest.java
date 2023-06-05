@@ -19,7 +19,7 @@ package io.mapsmessaging.security.jaas;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-class HtPasswordLoginTest extends BaseIdentity {
+class ApacheLoginTest extends BaseIdentity {
 
   Map<String, String> getOptions() {
     Map<String, String> options = new LinkedHashMap<>();

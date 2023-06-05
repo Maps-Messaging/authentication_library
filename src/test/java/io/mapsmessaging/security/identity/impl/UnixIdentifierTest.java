@@ -20,7 +20,6 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.impl.unix.ShadowFileManager;
 import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
@@ -30,7 +29,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ShadowIdentifierTest {
+class UnixIdentifierTest {
 
   @Test
   void simpleLoad() throws NoSuchUserFoundException {

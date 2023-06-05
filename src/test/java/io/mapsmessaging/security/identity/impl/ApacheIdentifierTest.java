@@ -21,7 +21,6 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.htpasswd.ApacheBasicAuth;
-import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.parsers.md5.Md5PasswordParser;
@@ -30,7 +29,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class HtPasswordIdentifierTest {
+class ApacheIdentifierTest {
 
   @Test
   void simpleLoad() throws NoSuchUserFoundException {
