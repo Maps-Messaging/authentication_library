@@ -42,7 +42,6 @@ public class LdapUserManager {
   private final String groupSearchBase;
 
   private final Map<String, LdapUser> userMap;
-  private final Map<String, GroupEntry> groupList;
 
   private final Hashtable<String, String> map;
 
@@ -54,7 +53,6 @@ public class LdapUserManager {
     passwordName = config.get("passwordKeyName").toString();
 
     userMap = new LinkedHashMap<>();
-    groupList = new LinkedHashMap<>();
     searchBase = config.get("searchBase").toString();
     groupSearchBase = config.get("groupSearchBase").toString();
   }
@@ -100,13 +98,7 @@ public class LdapUserManager {
               s = s.substring("{crypt}".length());
             }
             LdapUser ldapUser = new LdapUser(userString, s.toCharArray(), attrs);
-            loadGroups(directoryContext, username);
-            for(GroupEntry ldapGroup:groupList.values()){
-              if(ldapGroup.isInGroup(ldapUser.getUsername())){
-                ldapUser.addGroup(ldapGroup);
-              }
-            }
-
+            loadGroups(ldapUser, directoryContext, username);
             userMap.put(ldapUser.getUsername(), ldapUser);
             return ldapUser;
           }
@@ -127,8 +119,8 @@ public class LdapUserManager {
     return null;
   }
 
-  private void loadGroups(DirContext directoryContext, String userId) throws NamingException {
-    String[] attributes = {"cn","memberuid"};
+  private void loadGroups(LdapUser ldapUser, DirContext directoryContext, String userId) throws NamingException {
+    String[] attributes = {"cn"};
     SearchControls groupSearchControls = new SearchControls();
     groupSearchControls.setReturningAttributes(attributes);
     groupSearchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -140,17 +132,11 @@ public class LdapUserManager {
       Attributes attrs = result.getAttributes();
       if(attrs.size() > 0){
         Attribute groupName = attrs.get("cn");
-        Attribute members = attrs.get("memberUid");
-        if(groupName != null && members != null){
-          if(!groupList.containsKey((String)groupName.get())){
-            Set<String> memberList = new TreeSet<>();
-            NamingEnumeration<?> naming = members.getAll();
-            while(naming.hasMoreElements()){
-              memberList.add((String) naming.nextElement());
-            }
-            GroupEntry group = new GroupEntry((String)groupName.get(), memberList);
-            groupList.put(group.getName(), group);
-          }
+        if(groupName != null ){
+          Set<String> memberList = new TreeSet<>();
+          memberList.add(userId);
+          GroupEntry group = new GroupEntry((String)groupName.get(), memberList);
+          ldapUser.addGroup(group);
         }
       }
     }

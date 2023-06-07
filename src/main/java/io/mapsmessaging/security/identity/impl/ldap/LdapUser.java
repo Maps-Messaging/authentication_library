@@ -63,15 +63,13 @@ public class LdapUser extends IdentityEntry {
 
   @Override
   protected Set<Principal> getPrincipals(){
-    Set<Principal> principals = getPrincipals();
+    Set<Principal> principals = super.getPrincipals();
     if(homeDirectory != null){
       principals.add(new HomeDirectoryPrinicipal(homeDirectory));
     }
     if(description != null){
       principals.add(new FullNamePrincipal(description));
     }
-
-
     Enumeration<? extends Attribute> enumeration= attrs.getAll();
     while(enumeration.hasMoreElements()){
       Attribute attribute = enumeration.nextElement();
