@@ -23,6 +23,7 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
+import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import java.util.Arrays;
 import java.util.Map;
 import javax.security.auth.Subject;
@@ -75,7 +76,7 @@ public class IdentityLoginModule extends BaseLoginModule {
       subject.getPrincipals().addAll(subject1.getPrincipals());
       subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
       subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
-
+      subject.getPrincipals().add(new AuthHandlerPrincipal("Identity:"+identityLookup.getName()));
       commitSucceeded = true;
       return true;
     }

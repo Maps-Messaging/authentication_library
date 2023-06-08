@@ -18,6 +18,7 @@ package io.mapsmessaging.security.jaas;
 
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import java.io.IOException;
 import java.util.Map;
 import javax.security.auth.Subject;
@@ -73,6 +74,7 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
     if(super.commit()){
       if(username != null){
         subject.getPrincipals().add(new UserPrincipal(username));
+        subject.getPrincipals().add(new AuthHandlerPrincipal("SSLCertificate"));
       }
       return true;
     }

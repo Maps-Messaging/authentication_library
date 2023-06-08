@@ -283,6 +283,14 @@
       <version>0.21.2</version>
     </dependency>
 
+    <dependency>
+      <artifactId>cognitoidentityprovider</artifactId>
+      <groupId>software.amazon.awssdk</groupId>
+      <version>2.17.282</version>
+    </dependency>
+
+    <!-- TEST DEPENDENCIES -->
+
     <!-- Junit5 -->
     <dependency>
       <artifactId>junit-jupiter-engine</artifactId>
