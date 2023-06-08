@@ -22,7 +22,7 @@
 
   <groupId>io.mapsmessaging</groupId>
   <artifactId>AuthenticationLibrary</artifactId>
-  <version>0.2.11</version>
+  <version>0.5.1</version>
 
   <packaging>jar</packaging>
 
