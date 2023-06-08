@@ -59,14 +59,19 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
+
+    // Region details and cognito location
+    region = Region.of ((String) options.get("region"));
     userPoolId =(String) options.get("userPoolId");
+
+    // admin Credentials to use
     accessKey = (String) options.get("accessKey");
     accessSecret = (String) options.get("aimSecretKey");
 
+    // Cognito App to use
     clientId = (String) options.get("clientId");
     secretAccessKey = (String) options.get("secretAccessKey");
 
-    region = Region.of ((String) options.get("region"));
   }
 
 
