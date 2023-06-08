@@ -16,10 +16,6 @@
 
 package io.mapsmessaging.security.jaas;
 
-import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -28,56 +24,54 @@ import java.util.Properties;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-class Auth0LoginTest {
+public class CognitoLoginTest {
 
-  private static Properties properties;
-  private static String domain;
+  static Properties properties;
 
   @BeforeAll
   static void loadProperties() throws IOException {
-    properties = PropertiesLoader.getProperties("Auth0.properties");
-    domain = properties.getProperty("auth0Domain");
+    properties  = PropertiesLoader.getProperties("cognito.properties");
+
   }
 
   Map<String, String> getOptions() {
+
     Map<String, String> options = new LinkedHashMap<>();
-    options.put("auth0Domain", domain);
+    options.put("region", properties.getProperty("region"));
+    options.put("userPoolId",  properties.getProperty("userPoolId"));
+
+    // AIM Keys
+    options.put("accessKeyId", properties.getProperty("accessKeyId"));
+    options.put("secretAccessKey",properties.getProperty("secretAccessKey"));
+
+    // Cognito App Access Id
+    options.put("appClientId", properties.getProperty("appClientId"));
+    options.put("appClientSecret", properties.getProperty("appClientSecret"));
+
     return options;
   }
 
   @Test
-  void basicValidation() throws UnirestException, LoginException {
-    if (properties.isEmpty()) {
-      return;
-    }
-    String body = (String) properties.get("requestBody");
-    HttpResponse<String> response =
-        Unirest.post("https://" + domain + "/oauth/token")
-            .header("content-type", "application/json")
-            .body(body)
-            .asString();
-    JSONObject jsonObject = new JSONObject(response.getBody());
-    String access_token = jsonObject.getString("access_token");
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("Auth0", access_token, "");
+  void basicValidation() throws  LoginException {
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "testPassword01!", "");
     Subject subject = new Subject();
-    LoginModule loginModule = new Auth0JwtLoginModule();
+    LoginModule loginModule = new AwsCognitoLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
     Assertions.assertTrue(loginModule.login());
     Assertions.assertTrue(loginModule.commit());
   }
 
   @Test
-  void basicExceptionalidation() {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("Auth0", "BadToken", "");
+  void basicExceptionalidation() throws LoginException {
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "BadToken", "");
     Subject subject = new Subject();
-    LoginModule loginModule = new Auth0JwtLoginModule();
+    LoginModule loginModule = new AwsCognitoLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
-    Assertions.assertThrowsExactly(JWTDecodeException.class, loginModule::login);
+    Assertions.assertThrowsExactly(LoginException.class, loginModule::login);
   }
 
 }

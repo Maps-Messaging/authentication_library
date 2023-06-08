@@ -43,11 +43,11 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.NotAuthoriz
 public class AwsCognitoLoginModule extends BaseLoginModule {
 
   private String userPoolId;
-  private String clientId;
-  private String accessKey;
-  private String accessSecret;
+  private String appClientId;
+  private String accessKeyId;
+  private String accessSecretKey;
 
-  private String secretAccessKey;
+  private String appClientSecret;
   private Region region;
 
   private List<String> groupList;
@@ -65,12 +65,12 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     userPoolId =(String) options.get("userPoolId");
 
     // admin Credentials to use
-    accessKey = (String) options.get("accessKey");
-    accessSecret = (String) options.get("aimSecretKey");
+    accessKeyId = (String) options.get("accessKeyId");
+    accessSecretKey = (String) options.get("secretAccessKey");
 
     // Cognito App to use
-    clientId = (String) options.get("clientId");
-    secretAccessKey = (String) options.get("secretAccessKey");
+    appClientId = (String) options.get("appClientId");
+    appClientSecret = (String) options.get("appClientSecret");
 
   }
 
@@ -78,11 +78,11 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
   public boolean validate(String username, char[] password) throws LoginException {
 
     // Create AWS credentials provider
-    AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKey, accessSecret);
+    AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKeyId, accessSecretKey);
     StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
 
     try (CognitoIdentityProviderClient cognitoClient = CognitoIdentityProviderClient.builder().credentialsProvider(credentialsProvider).region(region).build()) {
-      String secretHash = generateSecretHash(clientId, secretAccessKey, username);
+      String secretHash = generateSecretHash(appClientId, appClientSecret, username);
       String passwordString = new String(password);
 
       // Login based on the JWT being passed in
@@ -93,7 +93,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
       // Login based on user/password
       AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
           .authFlow("ADMIN_NO_SRP_AUTH")
-          .clientId(clientId)
+          .clientId(appClientId)
           .userPoolId(userPoolId)
           .authParameters(
               Map.of(
