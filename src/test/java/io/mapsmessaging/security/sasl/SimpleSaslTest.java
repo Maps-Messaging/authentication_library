@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.impl.htpasswd.HtPasswdFileManager;
+import io.mapsmessaging.security.identity.impl.htpasswd.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.unix.ShadowFileManager;
 import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
 import java.io.ByteArrayOutputStream;
@@ -78,7 +78,7 @@ class SimpleSaslTest extends BaseSasl {
   }
 
   void testMechanism(String mechanism, String user, String password) throws IOException {
-   // testMechanism(new HtPasswdFileManager("./src/test/resources/.htpassword"), mechanism, user, password);
+    testMechanism(new ApacheBasicAuth("./src/test/resources/apache/.htpassword", "./src/test/resources/apache/.htgroups"), mechanism, user, password);
   }
 
   void testMechanism(IdentityLookup identityLookup, String mechanism, String user, String password) throws IOException {
