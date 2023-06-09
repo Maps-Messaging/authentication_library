@@ -322,5 +322,21 @@
       <version>2.1</version>
     </dependency>
 
+    <!-- Java micro benchmarking -->
+    <dependency>
+      <artifactId>jmh-core</artifactId>
+      <groupId>org.openjdk.jmh</groupId>
+      <scope>test</scope>
+      <version>1.36</version>
+    </dependency>
+
+    <dependency>
+      <artifactId>jmh-generator-annprocess</artifactId>
+      <groupId>org.openjdk.jmh</groupId>
+      <scope>test</scope>
+      <version>1.36</version>
+    </dependency>
+
+
   </dependencies>
 </project>
