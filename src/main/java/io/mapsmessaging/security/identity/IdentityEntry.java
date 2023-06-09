@@ -30,6 +30,42 @@ import java.util.TreeSet;
 import javax.security.auth.Subject;
 import lombok.Getter;
 
+/**
+ * Represents an identity entry, which can be a user or a machine-to-machine username.
+ *
+ * <p>The {@code IdentityEntry} class encapsulates the properties and behavior of an identity entry, including the username,
+ * password parser, password, and the associated groups.</p>
+ *
+ * <p>Usage:</p>
+ * <pre>{@code
+ *     // Create a new identity entry
+ *     IdentityEntry identity = new IdentityEntry();
+ *
+ *     // Set the username
+ *     identity.setUsername("user1");
+ *
+ *     // Set the password parser
+ *     identity.setPasswordParser(passwordParser);
+ *
+ *     // Set the password
+ *     identity.setPassword("password123");
+ *
+ *     // Add a group to the identity
+ *     identity.addGroup(groupEntry);
+ *
+ *     // Check if the identity is in a specific group
+ *     boolean isInGroup = identity.isInGroup("group1");
+ *
+ *     // Get the list of groups associated with the identity
+ *     List<GroupEntry> groups = identity.getGroups();
+ *
+ *     // Get the subject representing the identity
+ *     Subject subject = identity.getSubject();
+ * }</pre>
+ *
+ * @see GroupEntry
+ * @see Subject
+ */
 public class IdentityEntry {
 
   @Getter
@@ -42,6 +78,7 @@ public class IdentityEntry {
   protected String password;
 
   protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
+
 
   public boolean isInGroup(String group){
     return groupList.containsKey(group);
@@ -71,6 +108,7 @@ public class IdentityEntry {
     for(GroupEntry group:groupList.values()){
       principals.add(new GroupPrincipal(group.getName()));
     }
+    principals.add(new GroupPrincipal("everyone"));
     return principals;
   }
 

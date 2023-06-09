@@ -19,19 +19,47 @@ package io.mapsmessaging.security.identity;
 import java.util.Set;
 import java.util.TreeSet;
 import lombok.Getter;
+/**
+ * Represents a group in the context of authentication.
+ *
+ * <p>A group is a collection of users who share common access rights or permissions within an authentication system.
+ * It provides a way to organize and manage users based on their roles, privileges, or other criteria.</p>
+ *
+ * <p>The {@code GroupEntry} class encapsulates the properties and behavior of a group, including the group name and the set of users
+ * belonging to the group.</p>
+ *
+ * <p>The {@code GroupEntry} class implements the {@link Comparable} interface, allowing groups to be compared and sorted based on their names.</p>
+ *
+ * <p>Usage:</p>
+ * <pre>{@code
+ *     // Create a new group
+ *     Set<String> userSet = new TreeSet();
+ *     // Add users to the group
+ *     userSet.add("user1");
+ *     userSet.add("user2");
+ *
+ *     GroupEntry group = new GroupEntry("Group1", userSet);
+ *
+ *
+ *     // Check if a user is in the group
+ *     boolean isInGroup = group.isInGroup("user1");
+ *
+ *     // Get the group name
+ *     String groupName = group.getName();
+ * }</pre>
+ *
+ * @see Comparable
+ */
 
-public class GroupEntry implements Comparable<GroupEntry>{
+ public class GroupEntry implements Comparable<GroupEntry>{
 
   protected final Set<String> userSet;
+
   @Getter
   protected String name;
 
   public GroupEntry(){
-    userSet = new TreeSet<>();
-  }
-
-  public GroupEntry(String name){
-    this.name = name;
+    name = "";
     userSet = new TreeSet<>();
   }
 
