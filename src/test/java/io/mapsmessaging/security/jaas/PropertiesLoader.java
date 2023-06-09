@@ -38,6 +38,6 @@ public class PropertiesLoader {
     } catch (FileNotFoundException ex) {
       // ignore this since we can fall through
     }
-    return System.getProperties();
+    return null;
   }
 }

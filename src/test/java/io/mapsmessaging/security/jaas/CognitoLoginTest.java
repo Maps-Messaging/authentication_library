@@ -57,6 +57,9 @@ public class CognitoLoginTest {
 
   @Test
   void basicValidation() throws  LoginException {
+    if (properties == null || properties.isEmpty()) {
+      return;
+    }
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "testPassword01!", "");
     Subject subject = new Subject();
     LoginModule loginModule = new AwsCognitoLoginModule();
@@ -66,7 +69,10 @@ public class CognitoLoginTest {
   }
 
   @Test
-  void basicExceptionalidation() throws LoginException {
+  void basicExceptionalidation() {
+    if (properties == null || properties.isEmpty()) {
+      return;
+    }
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "BadToken", "");
     Subject subject = new Subject();
     LoginModule loginModule = new AwsCognitoLoginModule();

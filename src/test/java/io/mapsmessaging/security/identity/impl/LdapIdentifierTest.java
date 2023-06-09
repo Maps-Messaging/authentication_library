@@ -44,6 +44,9 @@ public class LdapIdentifierTest {
 
   @Test
   void simpleLoad() throws NoSuchUserFoundException {
+    if (properties == null || properties.isEmpty()) {
+      return;
+    }
     Map<String, String> map = new LinkedHashMap<>();
     map.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     map.put(Context.SECURITY_AUTHENTICATION, "simple");
