@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.impl.htpasswd.ApacheBasicAuth;
+import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.unix.ShadowFileManager;
 import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
 import java.io.ByteArrayOutputStream;
