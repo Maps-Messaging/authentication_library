@@ -63,7 +63,7 @@ class Auth0LoginTest {
             .asString();
     JSONObject jsonObject = new JSONObject(response.getBody());
     String access_token = jsonObject.getString("access_token");
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("Auth0", access_token, "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("oNnOEXu8CsIYYxpu56ADpfm4Ma8Z1GNt", access_token, "");
     Subject subject = new Subject();
     LoginModule loginModule = new Auth0JwtLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());

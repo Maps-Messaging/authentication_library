@@ -20,7 +20,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.impl.htpasswd.ApacheBasicAuth;
+import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.parsers.md5.Md5PasswordParser;
