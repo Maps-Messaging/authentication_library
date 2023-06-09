@@ -95,7 +95,7 @@ public abstract class BaseIdentity {
   }
 
   @Test
-  void simpleFailedLoginTest() throws LoginException {
+  void simpleFailedLoginTest() {
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getInvalidUser(), getPassword(), "");
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertThrowsExactly(LoginException.class, module::login);
