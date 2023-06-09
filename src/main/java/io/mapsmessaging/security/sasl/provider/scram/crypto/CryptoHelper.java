@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.crypto;
+package io.mapsmessaging.security.sasl.provider.scram.crypto;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

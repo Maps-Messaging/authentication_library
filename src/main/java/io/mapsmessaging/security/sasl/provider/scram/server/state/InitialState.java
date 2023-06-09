@@ -17,7 +17,7 @@
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
-import io.mapsmessaging.security.crypto.CryptoHelper;
+import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.logging.AuthLogMessages;
@@ -56,7 +56,7 @@ public class InitialState extends State {
     }
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
-    response.put(ChallengeResponse.ITERATION_COUNT, "" + context.getInterations());
+    response.put(ChallengeResponse.ITERATION_COUNT, String.valueOf(context.getInterations()));
     response.put(ChallengeResponse.SALT, context.getPasswordSalt());
     context.setState(new ValidationState(this));
     context.setInitialServerChallenge(response.toString());

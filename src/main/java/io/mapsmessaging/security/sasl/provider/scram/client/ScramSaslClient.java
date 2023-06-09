@@ -16,7 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
-import io.mapsmessaging.security.crypto.CryptoHelper;
+import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;

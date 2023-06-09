@@ -16,7 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server;
 
-import io.mapsmessaging.security.crypto.CryptoHelper;
+import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.server.state.InitialState;
