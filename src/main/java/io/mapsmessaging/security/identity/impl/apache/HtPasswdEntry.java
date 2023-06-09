@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.htpasswd;
+package io.mapsmessaging.security.identity.impl.apache;
 
-import io.mapsmessaging.security.identity.GroupEntry;
-import io.mapsmessaging.security.identity.IllegalFormatException;
-import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
+import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 
-public class HtGroupFileManager extends FileBaseGroups {
+public class HtPasswdEntry extends IdentityEntry {
 
-  public HtGroupFileManager(String filename){
-    super(filename);
-    load();
-  }
-
-  @Override
-  protected GroupEntry load(String line) throws IllegalFormatException {
-    return new HtGroupEntry(line);
+  public HtPasswdEntry(String line) {
+    int usernamePos = line.indexOf(":");
+    username = line.substring(0, usernamePos);
+    line = line.substring(usernamePos + 1);
+    password = line;
+    passwordParser = PasswordParserFactory.getInstance().parse(password);
   }
 
 }

@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.htpasswd;
+package io.mapsmessaging.security.identity.impl.apache;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
+import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 
-public class HtPasswdEntry extends IdentityEntry {
+public class HtPasswdFileManager extends FileBaseIdentities {
 
-  public HtPasswdEntry(String line) {
-    int usernamePos = line.indexOf(":");
-    username = line.substring(0, usernamePos);
-    line = line.substring(usernamePos + 1);
-    password = line;
-    passwordParser = PasswordParserFactory.getInstance().parse(password);
+
+  public HtPasswdFileManager(String filepath) {
+    super(filepath);
+    load();
+  }
+
+  @Override
+  protected IdentityEntry load(String line) {
+    return new HtPasswdEntry(line);
   }
 
 }

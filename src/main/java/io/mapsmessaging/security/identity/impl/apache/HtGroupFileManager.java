@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.htpasswd;
+package io.mapsmessaging.security.identity.impl.apache;
 
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
-import java.util.StringTokenizer;
+import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 
-public class HtGroupEntry extends GroupEntry {
+public class HtGroupFileManager extends FileBaseGroups {
 
-  public HtGroupEntry(String line) throws IllegalFormatException{
-    super();
-    int index = line.indexOf(":");
-    if(index == -1){
-      throw new IllegalFormatException("Expected format, groupName: user name list");
-    }
-    super.name = line.substring(0, index);
-    String userList = line.substring(index+1);
-    StringTokenizer stringTokenizer = new StringTokenizer(userList, " ");
-    while(stringTokenizer.hasMoreElements()){
-      String user = stringTokenizer.nextElement().toString();
-      userSet.add(user);
-    }
+  public HtGroupFileManager(String filename){
+    super(filename);
+    load();
+  }
+
+  @Override
+  protected GroupEntry load(String line) throws IllegalFormatException {
+    return new HtGroupEntry(line);
   }
 
 }

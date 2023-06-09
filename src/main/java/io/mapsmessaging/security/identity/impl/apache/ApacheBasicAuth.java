@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.htpasswd;
+package io.mapsmessaging.security.identity.impl.apache;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
