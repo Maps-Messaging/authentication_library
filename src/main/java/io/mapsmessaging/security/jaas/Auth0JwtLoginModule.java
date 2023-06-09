@@ -24,6 +24,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.sun.security.auth.UserPrincipal;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import javax.security.auth.Subject;
@@ -57,8 +58,15 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
           .build();
       verifier.verify(token);
       // Need to add token information into the subject
-      userPrincipal = new AnonymousPrincipal(username);
-      return true;
+      String tokenUser = jwt.getSubject();
+      if(tokenUser.contains("@")){
+        tokenUser = tokenUser.substring(0, tokenUser.indexOf("@"));
+      }
+      if(username.equals(tokenUser)){
+        userPrincipal = new UserPrincipal(username);
+        return true;
+      }
+      return false;
     } catch (JwkException e) {
       LoginException loginException = new LoginException("Java web token exception");
       loginException.initCause(e);
