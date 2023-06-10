@@ -69,7 +69,7 @@ public class AccessControlJHMTest {
     List<String> aclEntries = generateAclEntries(numEntries);
 
     // Create the AccessControlList
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
+    acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
 
     // Create the subjects for testing
     subjects = new Subject[numIterations];
