@@ -51,6 +51,13 @@ public class AccessControlListTest {
     // Create a Subject without remote host
     Subject subjectWithoutRemoteHost = createSubject("username", "group1", null);
 
+    long test = acl.getSubjectAccess(subjectWithRemoteHost);
+    Assertions.assertTrue((test & CustomAccessControlMapping.READ_VALUE) != 0);
+    Assertions.assertTrue((test & CustomAccessControlMapping.WRITE_VALUE) != 0);
+    Assertions.assertTrue((test & CustomAccessControlMapping.DELETE_VALUE) != 0);
+    Assertions.assertTrue(test == 11);
+
+    System.err.println(test);
     // Test the ACL functionality
     Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.READ_VALUE));
     Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.WRITE_VALUE));

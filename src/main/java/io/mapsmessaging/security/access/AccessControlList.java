@@ -38,6 +38,31 @@ public class AccessControlList {
     this.aclEntries = new ArrayList<>(aclEntries);
   }
 
+  public long getSubjectAccess(Subject subject) {
+    long mask = 0;
+    if (subject != null) {
+      String username = getUsername(subject);
+      String remoteHost = getRemoteHost(subject);
+
+      for (AclEntry aclEntry : aclEntries) {
+        if (aclEntry.matches(username, remoteHost)) {
+          mask = mask | aclEntry.getAccessBitset();
+        }
+      }
+
+      // Scan the groups for access
+      for (Principal group : subject.getPrincipals().stream().filter(principal -> principal instanceof GroupEntry).collect(Collectors.toList())) {
+        for (AclEntry aclEntry : aclEntries) {
+          if (aclEntry.matches(group.getName(), remoteHost)) {
+            mask = mask | aclEntry.getAccessBitset();
+          }
+        }
+      }
+    }
+    return mask;
+  }
+
+
   public boolean canAccess(Subject subject, long requestedAccess) {
     if (subject == null || requestedAccess == 0) {
       return false;
