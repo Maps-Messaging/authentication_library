@@ -19,11 +19,11 @@ package io.mapsmessaging.security.access;
 public abstract class AclEntry {
 
   private final String identifier;
-  private final long accessBitset;
+  private final long permissions;
 
-  public AclEntry(String identifier, long accessBitset) {
+  public AclEntry(String identifier, long permissions) {
     this.identifier = identifier;
-    this.accessBitset = accessBitset;
+    this.permissions = permissions;
   }
 
   public abstract boolean matches(String username, String remoteHost);
@@ -32,7 +32,7 @@ public abstract class AclEntry {
     return identifier;
   }
 
-  public long getAccessBitset() {
-    return accessBitset;
+  public long getPermissions() {
+    return permissions;
   }
 }

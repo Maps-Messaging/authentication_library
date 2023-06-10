@@ -33,13 +33,13 @@ import java.util.List;
  * {@code @See} AccessControlMapping
  */
 
-public class AccessControlListManager {
+public class AccessControlListParser {
 
-  private final AccessControlMapping accessControlMapping;
+  public AccessControlListParser() {
 
-  public AccessControlListManager(AccessControlMapping accessControlMapping) {
-    this.accessControlMapping = accessControlMapping;
   }
+
+  ;
 
   /**
    * Creates an Access Control List (ACL) based on the provided list of ACL entries.
@@ -47,29 +47,29 @@ public class AccessControlListManager {
    * @param aclEntries the list of ACL entries in the format "identifier = access"
    * @return the created AccessControlList object
    */
-  public AccessControlList createAccessControlList(List<String> aclEntries) {
+  public List<AclEntry> createList(AccessControlMapping accessControlMapping, List<String> aclEntries) {
     List<AclEntry> aclEntryList = new ArrayList<>();
 
     for (String aclEntry : aclEntries) {
-      AclEntry entry = parseAclEntry(aclEntry);
+      AclEntry entry = parseAclEntry(accessControlMapping, aclEntry);
       if (entry != null) {
         aclEntryList.add(entry);
       }
     }
-    return new AccessControlList(aclEntryList);
+    return aclEntryList;
   }
 
-  private AclEntry parseAclEntry(String aclEntry) {
+  private AclEntry parseAclEntry(AccessControlMapping accessControlMapping, String aclEntry) {
     String[] parts = aclEntry.split("=");
     if (parts.length == 2) {
       String identifier = parts[0].trim();
-      long accessBitset = parseAccessBitset(parts[1].trim());
+      long accessBitset = parseAccessBitset(accessControlMapping, parts[1].trim());
       return createAclEntry(identifier, accessBitset);
     }
     return null;
   }
 
-  private long parseAccessBitset(String accessControl) {
+  private long parseAccessBitset(AccessControlMapping accessControlMapping, String accessControl) {
     long accessBitset = 0;
     String[] accessControls = accessControl.split("\\|");
     for (String access : accessControls) {

@@ -33,17 +33,12 @@ public class AccessControlListTest {
   @Test
   public void testAccessControlListCreation() {
     // Create the AccessControlList
-    AccessControlListManager manager = new AccessControlListManager(new CustomAccessControlMapping());
-
-    // Define the ACL entries
     List<String> aclEntries = new ArrayList<>();
     aclEntries.add("username = Read|Write");
     aclEntries.add("group1 = Read");
     aclEntries.add("group2@localhost = Write|Create");
     aclEntries.add("username@remotehost = Delete");
-
-    // Create the AccessControlList
-    AccessControlList acl = manager.createAccessControlList(aclEntries);
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
 
     // Create a Subject with remote host
     Subject subjectWithRemoteHost = createSubject("username", "group1", "remotehost");

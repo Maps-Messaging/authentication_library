@@ -37,10 +37,7 @@ public class PerformanceTest {
     List<String> aclEntries = generateAclEntries(1000);
 
     // Create an instance of AccessControlListManager
-    AccessControlListManager manager = new AccessControlListManager(new CustomAccessControlMapping());
-
-    // Create the AccessControlList
-    AccessControlList acl = manager.createAccessControlList(aclEntries);
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
 
     // Perform the performance test
     long startTime = System.currentTimeMillis();
