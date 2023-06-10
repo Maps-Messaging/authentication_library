@@ -26,7 +26,7 @@ public abstract class AclEntry {
     this.permissions = permissions;
   }
 
-  public abstract boolean matches(String username, String remoteHost);
+  public abstract boolean matches(String authDomain, String username, String remoteHost);
 
   public String getIdentifier() {
     return identifier;

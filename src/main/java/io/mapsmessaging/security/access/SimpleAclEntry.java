@@ -18,12 +18,17 @@ package io.mapsmessaging.security.access;
 
 
 public class SimpleAclEntry extends AclEntry {
+
   public SimpleAclEntry(String identifier, long accessBitset) {
     super(identifier, accessBitset);
   }
 
   @Override
-  public boolean matches(String username, String remoteHost) {
-    return getIdentifier().equals(username);
+  public boolean matches(String authDomain, String username, String remoteHost) {
+    String identifier = getIdentifier();
+    if (identifier.contains(":") && authDomain != null) {
+      return identifier.equals(authDomain + ":" + username);
+    }
+    return identifier.equals(username);
   }
 }

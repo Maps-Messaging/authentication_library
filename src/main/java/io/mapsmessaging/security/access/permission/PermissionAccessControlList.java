@@ -22,6 +22,7 @@ import io.mapsmessaging.security.access.AccessControlListParser;
 import io.mapsmessaging.security.access.AccessControlMapping;
 import io.mapsmessaging.security.access.AclEntry;
 import io.mapsmessaging.security.identity.GroupEntry;
+import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -57,9 +58,10 @@ public class PermissionAccessControlList implements AccessControlList {
     if (subject != null) {
       String username = getUsername(subject);
       String remoteHost = getRemoteHost(subject);
+      String authDomain = getAuthDomain(subject);
 
       for (AclEntry aclEntry : aclEntries) {
-        if (aclEntry.matches(username, remoteHost)) {
+        if (aclEntry.matches(authDomain, username, remoteHost)) {
           mask = mask | aclEntry.getPermissions();
         }
       }
@@ -67,7 +69,7 @@ public class PermissionAccessControlList implements AccessControlList {
       // Scan the groups for access
       for (Principal group : subject.getPrincipals().stream().filter(principal -> principal instanceof GroupEntry).collect(Collectors.toList())) {
         for (AclEntry aclEntry : aclEntries) {
-          if (aclEntry.matches(group.getName(), remoteHost)) {
+          if (aclEntry.matches(authDomain, group.getName(), remoteHost)) {
             mask = mask | aclEntry.getPermissions();
           }
         }
@@ -83,10 +85,12 @@ public class PermissionAccessControlList implements AccessControlList {
 
     String username = getUsername(subject);
     String remoteHost = getRemoteHost(subject);
+    String authDomain = getAuthDomain(subject);
 
     // Scan for username / host for access
     for (AclEntry aclEntry : aclEntries) {
-      if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess && aclEntry.matches(username, remoteHost)) {
+      if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess &&
+          aclEntry.matches(authDomain, username, remoteHost)) {
         return true;
       }
     }
@@ -94,7 +98,8 @@ public class PermissionAccessControlList implements AccessControlList {
     // Scan the groups for access
     for (Principal group : subject.getPrincipals().stream().filter(principal -> principal instanceof GroupEntry).collect(Collectors.toList())) {
       for (AclEntry aclEntry : aclEntries) {
-        if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess && aclEntry.matches(group.getName(), remoteHost)) {
+        if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess &&
+            aclEntry.matches(authDomain, group.getName(), remoteHost)) {
           return true;
         }
       }
@@ -112,5 +117,10 @@ public class PermissionAccessControlList implements AccessControlList {
   private String getRemoteHost(Subject subject) {
     RemoteHostPrincipal remoteHostPrincipal = subject.getPrincipals(RemoteHostPrincipal.class).stream().findFirst().orElse(null);
     return (remoteHostPrincipal != null) ? remoteHostPrincipal.getName() : null;
+  }
+
+  private String getAuthDomain(Subject subject) {
+    AuthHandlerPrincipal authHandlerPrincipal = subject.getPrincipals(AuthHandlerPrincipal.class).stream().findFirst().orElse(null);
+    return (authHandlerPrincipal != null) ? authHandlerPrincipal.getName() : null;
   }
 }

@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.access;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import java.security.Principal;
@@ -35,6 +36,7 @@ public class AccessControlListTest {
     // Create the AccessControlList
     List<String> aclEntries = new ArrayList<>();
     aclEntries.add("username = Read|Write");
+    aclEntries.add("unix:username2 = Read|Write");
     aclEntries.add("group1 = Read");
     aclEntries.add("group2@localhost = Write|Create");
     aclEntries.add("username@remotehost = Delete");
@@ -46,14 +48,19 @@ public class AccessControlListTest {
     // Create a Subject without remote host
     Subject subjectWithoutRemoteHost = createSubject("username", "group1", null);
 
+    Subject subjectWithAuthDomain = createSubject("username2", "group1", "remotehost");
+    subjectWithAuthDomain.getPrincipals().add(new AuthHandlerPrincipal("unix"));
+
     long test = acl.getSubjectAccess(subjectWithRemoteHost);
     Assertions.assertTrue((test & CustomAccessControlMapping.READ_VALUE) != 0);
     Assertions.assertTrue((test & CustomAccessControlMapping.WRITE_VALUE) != 0);
     Assertions.assertTrue((test & CustomAccessControlMapping.DELETE_VALUE) != 0);
-    Assertions.assertTrue(test == 11);
+    Assertions.assertEquals(11, test);
 
-    System.err.println(test);
     // Test the ACL functionality
+    Assertions.assertTrue(acl.canAccess(subjectWithAuthDomain, CustomAccessControlMapping.READ_VALUE));
+    Assertions.assertFalse(acl.canAccess(subjectWithAuthDomain, CustomAccessControlMapping.DELETE_VALUE));
+
     Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.READ_VALUE));
     Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.WRITE_VALUE));
     Assertions.assertFalse(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.CREATE_VALUE));
@@ -73,7 +80,7 @@ public class AccessControlListTest {
       principals.add(new RemoteHostPrincipal(remoteHost));
     }
 
-    return new Subject(true, principals, new HashSet<>(), new HashSet<>());
+    return new Subject(false, principals, new HashSet<>(), new HashSet<>());
   }
 
   // Custom AccessControlMapping implementation

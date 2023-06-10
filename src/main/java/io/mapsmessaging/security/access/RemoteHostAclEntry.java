@@ -28,7 +28,10 @@ public class RemoteHostAclEntry extends AclEntry {
   }
 
   @Override
-  public boolean matches(String username, String remoteHost) {
+  public boolean matches(String authDomain, String username, String remoteHost) {
+    if (requestedUsername.contains(":") && authDomain != null) {
+      return requestedUsername.equals(authDomain + ":" + username) && requestedHost.equals(remoteHost);
+    }
     return requestedUsername.equals(username) && requestedHost.equals(remoteHost);
   }
 }
