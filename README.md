@@ -23,6 +23,57 @@ and new features added on a regular basis.
 If you're looking for a robust and flexible SASL authentication library for your Java project, with support for the latest SCRAM mechanisms and multiple identity backends, give
 this library a try!
 
+# Access Control List (ACL) Entry Format
+
+ACL entry strings follow the format "identifier = access" where:
+
+- The identifier represents a username or group name with an optional `[authDomain:]username[remoteHost]` specifier.
+    - The `[authDomain:]` prefix represents an optional authentication domain.
+    - The `username` component represents the username.
+    - The `[remoteHost]` suffix represents an optional remote host specification enclosed in square brackets.
+- The access control string specifies the allowed actions using keywords determined by the provided AccessControlMapping implementation.
+    - Multiple access control keywords can be separated by the `|` (pipe) character.
+
+## Identifier Format
+
+The identifier follows the syntax `[authDomain:]username[remoteHost]`, where:
+
+- `[authDomain:]` (optional): Represents an authentication domain. Use a colon (":") to separate the authDomain from the username.
+- `username`: Represents the username component. It can include alphanumeric characters and special characters.
+- `[remoteHost]` (optional): Represents the remote host specification. Enclose the remote host in square brackets ("[]").
+
+### Examples
+
+- `john.doe`: Represents a username without any authentication domain or remote host.
+- `ldap:john.doe`: Represents a username with the "ldap" authentication domain and no remote host.
+- `unix:admin[localhost]`: Represents a username with the "unix" authentication domain and a remote host specified as "localhost".
+
+## Access Control String
+
+The access control string specifies the allowed actions using keywords determined by the provided AccessControlMapping implementation. Multiple access control keywords can be
+separated by the `|` (pipe) character.
+
+### Examples
+
+- `Read`: Allows the "Read" action.
+- `Write|Create`: Allows both "Write" and "Create" actions.
+
+## ACL Entry Example
+
+Here's an example ACL entry string:
+
+> ldap:john.doe[localhost] = Read|Write|Create
+
+In this example, the identifier represents a username with the "ldap" authentication domain and a remote host specified as "localhost". The access control string allows the "
+Read", "Write", and "Create" actions.
+
+
+---
+
+By following the ACL entry format described above, you can define access control rules for your application based on the provided AccessControlMapping implementation.
+
+Please refer to the documentation of the AccessControlMapping class for the specific access control keywords used in your implementation.
+
 # pom.xml setup
 
 All MapsMessaging libraries are hosted on the [maven central server.](https://central.sonatype.com/search?smo=true&q=mapsmessaging)
@@ -34,7 +85,7 @@ Include the dependency
     <dependency>
       <groupId>io.mapsmessaging</groupId>
       <artifactId>AuthenticationLibrary</artifactId>
-      <version>0.2.6</version>
+      <version>1.0.2</version>
     </dependency>
 ```   
 
