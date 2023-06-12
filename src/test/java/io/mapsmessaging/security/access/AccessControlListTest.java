@@ -38,8 +38,9 @@ public class AccessControlListTest {
     aclEntries.add("username = Read|Write");
     aclEntries.add("unix:username2 = Read|Write");
     aclEntries.add("group1 = Read");
-    aclEntries.add("group2@localhost = Write|Create");
-    aclEntries.add("username@remotehost = Delete");
+    aclEntries.add("group2[localhost] = Write|Create");
+    aclEntries.add("username[remotehost] = Delete");
+    aclEntries.add("ldap:fred[remotehost2] = Write|Read|Delete");
     AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
 
     // Create a Subject with remote host

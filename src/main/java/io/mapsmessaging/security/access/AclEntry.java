@@ -18,21 +18,22 @@ package io.mapsmessaging.security.access;
 
 public abstract class AclEntry {
 
-  private final String identifier;
+  private final String username;
   private final long permissions;
 
-  public AclEntry(String identifier, long permissions) {
-    this.identifier = identifier;
+  public AclEntry(String username, long permissions) {
+    this.username = username;
     this.permissions = permissions;
   }
 
   public abstract boolean matches(String authDomain, String username, String remoteHost);
 
-  public String getIdentifier() {
-    return identifier;
+  public String getUsername() {
+    return username;
   }
 
   public long getPermissions() {
     return permissions;
   }
+
 }
