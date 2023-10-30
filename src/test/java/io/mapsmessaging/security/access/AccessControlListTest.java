@@ -22,6 +22,7 @@ import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,6 +74,77 @@ public class AccessControlListTest {
     Assertions.assertFalse(acl.canAccess(subjectWithoutRemoteHost, CustomAccessControlMapping.DELETE_VALUE));
   }
 
+  @Test
+  void testCanAccess_ValidAccess_ReturnsTrue() {
+    // Create a subject with necessary principals
+    Subject subject = new Subject();
+    subject.getPrincipals().add(new UserPrincipal("user1"));
+    subject.getPrincipals().add(new GroupPrincipal("group1"));
+    // Set up the access control list with the necessary ACL entries
+    List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
+
+    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
+    // Requested access that should be allowed
+    long requestedAccess = accessControlMapping.getAccessValue("Read");
+
+    // Verify that the subject can access with the requested access
+    Assertions.assertTrue(acl.canAccess(subject, requestedAccess));
+  }
+
+  @Test
+  void testCanAccess_NullSubject_ReturnsFalse() {
+    // Null subject
+    Subject subject = null;
+    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), new ArrayList<>());
+
+    // Requested access
+    long requestedAccess = accessControlMapping.getAccessValue("Read");
+
+    // Verify that the null subject is not allowed to access
+    Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
+  }
+
+  @Test
+  void testCanAccess_NullAccess_ReturnsFalse() {
+    // Create a subject with necessary principals
+    Subject subject = new Subject();
+    subject.getPrincipals().add(new UserPrincipal("user1"));
+    subject.getPrincipals().add(new GroupPrincipal("group1"));
+
+    // Set up the access control list with the necessary ACL entries
+    List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
+    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), new ArrayList<>());
+
+    // Null requested access
+    long requestedAccess = accessControlMapping.getAccessValue(null);
+
+    // Verify that the subject is not allowed to access with null access
+    Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
+  }
+
+  @Test
+  void testCanAccess_InvalidEntry_ReturnsFalse() {
+    // Create a subject with necessary principals
+    Subject subject = new Subject();
+    subject.getPrincipals().add(new UserPrincipal("user1"));
+    subject.getPrincipals().add(new GroupPrincipal("group1"));
+
+    // Set up the access control list with invalid ACL entry
+    List<String> aclEntries = Collections.singletonList("invalidEntry");
+    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), new ArrayList<>());
+
+
+    // Requested access
+    long requestedAccess = accessControlMapping.getAccessValue("Read");
+
+    // Verify that the subject is not allowed to access with invalid ACL entry
+    Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
+  }
+
   private Subject createSubject(String username, String groupName, String remoteHost) {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(username));
@@ -99,6 +171,9 @@ public class AccessControlListTest {
 
     @Override
     public Long getAccessValue(String accessControl) {
+      if(accessControl == null){
+        return 0L;
+      }
       switch (accessControl.toLowerCase()) {
         case READ:
           return READ_VALUE;
