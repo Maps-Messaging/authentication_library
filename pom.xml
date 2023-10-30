@@ -21,7 +21,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>io.mapsmessaging</groupId>
-  <artifactId>AuthenticationLibrary</artifactId>
+  <artifactId>authentication_library</artifactId>
   <version>1.0.4-SNAPSHOT</version>
 
   <packaging>jar</packaging>
@@ -57,7 +57,7 @@
   </licenses>
 
   <scm>
-    <url>https://github.com/Maps-Messaging/Authentication-Library.git</url>
+    <url>https://github.com/Maps-Messaging/authentication_library.git</url>
   </scm>
 
   <properties>
@@ -135,16 +135,18 @@
     </profile>
   </profiles>
 
+
   <distributionManagement>
     <snapshotRepository>
-      <id>mapsmessaging.io</id>
-      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/Maps-Messaging/authentication_library</url>
     </snapshotRepository>
     <repository>
-      <id>mapsmessaging.io</id>
+      <id>ossrh</id>
       <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
+
 
   <build>
     <plugins>
