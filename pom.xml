@@ -22,7 +22,7 @@
 
   <groupId>io.mapsmessaging</groupId>
   <artifactId>authentication_library</artifactId>
-  <version>1.0.4-SNAPSHOT</version>
+  <version>1.0.4</version>
 
   <packaging>jar</packaging>
 
@@ -330,7 +330,7 @@
     <dependency>
       <artifactId>cognitoidentityprovider</artifactId>
       <groupId>software.amazon.awssdk</groupId>
-      <version>2.21.10</version>
+      <version>2.21.15</version>
     </dependency>
 
     <!-- TEST DEPENDENCIES -->
@@ -340,13 +340,13 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <groupId>org.junit.jupiter</groupId>
       <scope>test</scope>
-      <version>5.10.0</version>
+      <version>5.10.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.10.0</version>
+      <version>5.10.1</version>
       <scope>test</scope>
     </dependency>
 
