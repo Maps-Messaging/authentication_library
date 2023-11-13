@@ -85,7 +85,7 @@ Include the dependency
     <dependency>
       <groupId>io.mapsmessaging</groupId>
       <artifactId>AuthenticationLibrary</artifactId>
-      <version>1.0.2</version>
+      <version>1.0.4</version>
     </dependency>
 ```   
 
