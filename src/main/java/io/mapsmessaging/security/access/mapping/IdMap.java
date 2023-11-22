@@ -14,20 +14,27 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.principals;
+package io.mapsmessaging.security.access.mapping;
 
-import java.security.Principal;
 import java.util.UUID;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
-@Getter
-public class GroupPrincipal implements Principal {
+@Data
+@ToString
+@EqualsAndHashCode
+public abstract class IdMap {
 
-  private final String name;
-  private final UUID uuid;
+  protected final UUID authId;
 
-  public GroupPrincipal(String name, UUID uuid) {
-    this.name = name;
-    this.uuid = uuid;
+  protected IdMap(UUID authId) {
+    this.authId = authId;
   }
+
+  protected IdMap() {
+    authId = UUID.randomUUID();
+  }
+
+  protected abstract String getKey();
 }

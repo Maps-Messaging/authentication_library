@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.principals;
+package io.mapsmessaging.security.access.expiry;
 
-import java.security.Principal;
-import java.util.UUID;
-import lombok.Getter;
+public class FixedExpiryPolicy extends AccessEntryExpiryPolicy {
 
-@Getter
-public class GroupPrincipal implements Principal {
+  private final long expiryTime;
 
-  private final String name;
-  private final UUID uuid;
+  public FixedExpiryPolicy(long expiryTime) {
+    this.expiryTime = expiryTime;
+  }
 
-  public GroupPrincipal(String name, UUID uuid) {
-    this.name = name;
-    this.uuid = uuid;
+  @Override
+  public boolean hasExpired(long time) {
+    return (expiryTime < time);
   }
 }

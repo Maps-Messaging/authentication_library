@@ -26,6 +26,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
@@ -127,7 +128,8 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     if(res && groupList != null){
       // Add known groups here
       for(String group:groupList){
-        subject.getPrincipals().add(new GroupPrincipal(group));
+        // ToDo
+        subject.getPrincipals().add(new GroupPrincipal(group, UUID.randomUUID()));
       }
       subject.getPrincipals().add(new AuthHandlerPrincipal("Aws:Cognito"));
     }

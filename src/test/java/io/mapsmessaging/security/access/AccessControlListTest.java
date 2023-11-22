@@ -17,15 +17,13 @@
 package io.mapsmessaging.security.access;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.identity.IdentityAuthorisationManager;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
+import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.security.auth.Subject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +32,8 @@ public class AccessControlListTest {
 
   @Test
   public void testAccessControlListCreation() {
+    IdentityAuthorisationManager identityAuthorisationManager = new IdentityAuthorisationManager();
+
     // Create the AccessControlList
     List<String> aclEntries = new ArrayList<>();
     aclEntries.add("username = Read|Write");
@@ -46,12 +46,18 @@ public class AccessControlListTest {
 
     // Create a Subject with remote host
     Subject subjectWithRemoteHost = createSubject("username", "group1", "remotehost");
+    subjectWithRemoteHost.getPrincipals().add(new UniqueIdentifierPrincipal(UUID.randomUUID()));
+    identityAuthorisationManager.setAuthId(subjectWithRemoteHost);
 
     // Create a Subject without remote host
     Subject subjectWithoutRemoteHost = createSubject("username", "group1", null);
+    subjectWithoutRemoteHost.getPrincipals().add(new UniqueIdentifierPrincipal(UUID.randomUUID()));
+    identityAuthorisationManager.setAuthId(subjectWithoutRemoteHost);
 
     Subject subjectWithAuthDomain = createSubject("username2", "group1", "remotehost");
     subjectWithAuthDomain.getPrincipals().add(new AuthHandlerPrincipal("unix"));
+    subjectWithAuthDomain.getPrincipals().add(new UniqueIdentifierPrincipal(UUID.randomUUID()));
+    identityAuthorisationManager.setAuthId(subjectWithAuthDomain);
 
     long test = acl.getSubjectAccess(subjectWithRemoteHost);
     Assertions.assertTrue((test & CustomAccessControlMapping.READ_VALUE) != 0);
@@ -79,7 +85,7 @@ public class AccessControlListTest {
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
-    subject.getPrincipals().add(new GroupPrincipal("group1"));
+    subject.getPrincipals().add(new GroupPrincipal("group1", UUID.randomUUID()));
     // Set up the access control list with the necessary ACL entries
     List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
 
@@ -111,7 +117,7 @@ public class AccessControlListTest {
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
-    subject.getPrincipals().add(new GroupPrincipal("group1"));
+    subject.getPrincipals().add(new GroupPrincipal("group1", UUID.randomUUID()));
 
     // Set up the access control list with the necessary ACL entries
     List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
@@ -130,7 +136,7 @@ public class AccessControlListTest {
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
-    subject.getPrincipals().add(new GroupPrincipal("group1"));
+    subject.getPrincipals().add(new GroupPrincipal("group1", UUID.randomUUID()));
 
     // Set up the access control list with invalid ACL entry
     List<String> aclEntries = Collections.singletonList("invalidEntry");
@@ -148,7 +154,7 @@ public class AccessControlListTest {
   private Subject createSubject(String username, String groupName, String remoteHost) {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(username));
-    principals.add(new GroupPrincipal(groupName));
+    principals.add(new GroupPrincipal(groupName, UUID.randomUUID()));
     if (remoteHost != null) {
       principals.add(new RemoteHostPrincipal(remoteHost));
     }

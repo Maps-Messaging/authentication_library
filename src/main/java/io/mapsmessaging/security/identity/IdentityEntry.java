@@ -20,13 +20,7 @@ import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import javax.security.auth.Subject;
 import lombok.Getter;
 
@@ -103,12 +97,11 @@ public class IdentityEntry {
   protected Set<Principal> getPrincipals(){
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(username));
-
-
     for(GroupEntry group:groupList.values()){
-      principals.add(new GroupPrincipal(group.getName()));
+      principals.add(new GroupPrincipal(group.getName(), group.getUuid()));
     }
-    principals.add(new GroupPrincipal("everyone"));
+    principals.add(
+        new GroupPrincipal("everyone", UUID.fromString("00000000-0000-0000-0000-000000000000")));
     return principals;
   }
 

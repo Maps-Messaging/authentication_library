@@ -16,24 +16,30 @@
 
 package io.mapsmessaging.security.access;
 
-public abstract class AclEntry {
+import io.mapsmessaging.security.access.expiry.AccessEntryExpiryPolicy;
+import io.mapsmessaging.security.access.expiry.NoExpiryPolicy;
+import java.util.UUID;
+import lombok.Data;
 
-  private final String username;
+@Data
+public class AclEntry {
+
+  private final UUID authId;
   private final long permissions;
+  private final AccessEntryExpiryPolicy expiryPolicy;
 
-  public AclEntry(String username, long permissions) {
-    this.username = username;
+  public AclEntry(UUID authId, long permissions) {
+    this(authId, permissions, new NoExpiryPolicy());
+  }
+
+  public AclEntry(UUID authId, long permissions, AccessEntryExpiryPolicy expiryPolicy) {
+    this.authId = authId;
     this.permissions = permissions;
+    this.expiryPolicy = expiryPolicy;
   }
 
-  public abstract boolean matches(String authDomain, String username, String remoteHost);
-
-  public String getUsername() {
-    return username;
-  }
-
-  public long getPermissions() {
-    return permissions;
+  public boolean matches(UUID authId) {
+    return this.authId.equals(authId);
   }
 
 }

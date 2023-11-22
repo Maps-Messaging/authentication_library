@@ -16,9 +16,12 @@
 
 package io.mapsmessaging.security.identity.impl.apache;
 
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import java.util.StringTokenizer;
+import java.util.UUID;
 
 public class HtGroupEntry extends GroupEntry {
 
@@ -31,9 +34,15 @@ public class HtGroupEntry extends GroupEntry {
     super.name = line.substring(0, index);
     String userList = line.substring(index+1);
     StringTokenizer stringTokenizer = new StringTokenizer(userList, " ");
+    UserMapManagement userMapManagement = UserMapManagement.getGlobalInstance();
     while(stringTokenizer.hasMoreElements()){
       String user = stringTokenizer.nextElement().toString();
-      userSet.add(user);
+      UserIdMap userIdMap = userMapManagement.get("apache:" + user);
+      if (userIdMap == null) {
+        userIdMap = new UserIdMap(UUID.randomUUID(), "apache", user, "");
+        userMapManagement.add(userIdMap);
+      }
+      userSet.add(userIdMap.getAuthId());
     }
   }
 

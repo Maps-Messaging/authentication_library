@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.principals;
+package io.mapsmessaging.security.access.mapping;
 
-import java.security.Principal;
-import java.util.UUID;
-import lombok.Getter;
+public class UserMapManagement extends MapManagement<UserIdMap> {
 
-@Getter
-public class GroupPrincipal implements Principal {
+  private static final UserMapManagement INSTANCE = new UserMapManagement("usermap.txt");
 
-  private final String name;
-  private final UUID uuid;
+  public UserMapManagement(String filename) {
+    super(filename, new UserMapParser());
+  }
 
-  public GroupPrincipal(String name, UUID uuid) {
-    this.name = name;
-    this.uuid = uuid;
+  public static UserMapManagement getGlobalInstance() {
+    return INSTANCE;
   }
 }

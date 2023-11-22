@@ -28,6 +28,11 @@ public class HtGroupFileManager extends FileBaseGroups {
   }
 
   @Override
+  protected String getDomain() {
+    return "apache";
+  }
+
+  @Override
   protected GroupEntry load(String line) throws IllegalFormatException {
     return new HtGroupEntry(line);
   }

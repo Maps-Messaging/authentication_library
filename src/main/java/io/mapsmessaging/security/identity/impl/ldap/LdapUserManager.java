@@ -16,7 +16,6 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
-import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.util.Hashtable;
@@ -135,8 +134,9 @@ public class LdapUserManager {
         if(groupName != null ){
           Set<String> memberList = new TreeSet<>();
           memberList.add(userId);
-          GroupEntry group = new GroupEntry((String)groupName.get(), memberList);
-          ldapUser.addGroup(group);
+          // ToDo
+          // GroupEntry group = new GroupEntry((String)groupName.get(), memberList);
+          // ldapUser.addGroup(group);
         }
       }
     }

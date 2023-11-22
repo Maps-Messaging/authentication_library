@@ -16,11 +16,16 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
+import io.mapsmessaging.security.access.mapping.GroupMapManagement;
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public abstract class FileBaseGroups extends FileLoader {
 
@@ -30,6 +35,8 @@ public abstract class FileBaseGroups extends FileLoader {
     super(filename);
     groups = new LinkedHashMap<>();
   }
+
+  protected abstract String getDomain();
 
   protected abstract GroupEntry load(String line) throws IllegalFormatException;
 
@@ -44,8 +51,20 @@ public abstract class FileBaseGroups extends FileLoader {
 
   public void loadGroups(IdentityEntry identityEntry) {
     identityEntry.clearGroups();
+    UserMapManagement userMapManagement = UserMapManagement.getGlobalInstance();
+    GroupMapManagement groupMapManagement = GroupMapManagement.getGlobalInstance();
     for(GroupEntry groupEntry:groups.values()){
-      if(groupEntry.isInGroup(identityEntry.getUsername())){
+      UserIdMap userIdMap = userMapManagement.get(getDomain() + ":" + identityEntry.getUsername());
+      if (userIdMap == null) {
+        userIdMap = new UserIdMap(UUID.randomUUID(), getDomain(), identityEntry.getUsername(), "");
+        userMapManagement.add(userIdMap);
+      }
+      if (groupMapManagement.get(groupEntry.getName()) == null) {
+        GroupIdMap groupIdMap =
+            new GroupIdMap(UUID.randomUUID(), groupEntry.getName(), getDomain());
+        groupMapManagement.add(groupIdMap);
+      }
+      if (groupEntry.isInGroup(userIdMap.getAuthId())) {
         identityEntry.addGroup(groupEntry);
       }
     }

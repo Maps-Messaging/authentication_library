@@ -14,20 +14,32 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.principals;
+package io.mapsmessaging.security.access.mapping;
 
-import java.security.Principal;
 import java.util.UUID;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
-public class GroupPrincipal implements Principal {
+@EqualsAndHashCode(callSuper = true)
+@ToString
+public class UserIdMap extends IdMap {
 
-  private final String name;
-  private final UUID uuid;
+  private final String authDomain;
+  private final String remoteHost;
+  private final String username;
 
-  public GroupPrincipal(String name, UUID uuid) {
-    this.name = name;
-    this.uuid = uuid;
+  public UserIdMap(UUID authId, String username, String authDomain, String remoteHost) {
+    super(authId);
+    this.username = username;
+    this.authDomain = authDomain;
+    this.remoteHost = remoteHost;
+  }
+
+  @Override
+  protected String getKey() {
+    String tmp = remoteHost != null ? "[" + remoteHost + "]" : "";
+    return authDomain + ":" + username + "[" + tmp + "]";
   }
 }

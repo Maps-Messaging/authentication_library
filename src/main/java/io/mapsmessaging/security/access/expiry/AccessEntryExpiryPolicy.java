@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.access.expiry;
 
-public class RemoteHostAclEntry extends SimpleAclEntry {
+public abstract class AccessEntryExpiryPolicy {
 
-  private final String remoteHost;
-
-  public RemoteHostAclEntry(String username, String remoteHost, long accessBitset) {
-    super(username, accessBitset);
-    this.remoteHost = remoteHost;
-  }
-
-  @Override
-  public boolean matches(String authDomain, String username, String remoteHost) {
-    return super.matches(authDomain, username, remoteHost) &&
-        this.remoteHost.equals(remoteHost);
-  }
+  public abstract boolean hasExpired(long time);
 }

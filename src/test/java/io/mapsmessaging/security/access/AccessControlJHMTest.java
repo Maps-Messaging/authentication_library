@@ -108,7 +108,7 @@ public class AccessControlJHMTest {
   private Subject createSubject(String username, String groupName, String remoteHost) {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(username));
-    principals.add(new GroupPrincipal(groupName));
+    principals.add(new GroupPrincipal(groupName, java.util.UUID.randomUUID()));
     if (remoteHost != null) {
       principals.add(new RemoteHostPrincipal(remoteHost));
     }

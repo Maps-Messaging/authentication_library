@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,18 +16,16 @@
 
 package io.mapsmessaging.security.access.permission;
 
-import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.AccessControlList;
 import io.mapsmessaging.security.access.AccessControlListParser;
 import io.mapsmessaging.security.access.AccessControlMapping;
 import io.mapsmessaging.security.access.AclEntry;
-import io.mapsmessaging.security.identity.GroupEntry;
-import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
-import java.security.Principal;
+import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.UUID;
 import javax.security.auth.Subject;
 
 public class PermissionAccessControlList implements AccessControlList {
@@ -56,20 +54,19 @@ public class PermissionAccessControlList implements AccessControlList {
   public long getSubjectAccess(Subject subject) {
     long mask = 0;
     if (subject != null) {
-      String username = getUsername(subject);
-      String remoteHost = getRemoteHost(subject);
-      String authDomain = getAuthDomain(subject);
-
+      long time = System.currentTimeMillis();
+      UUID authId = SubjectHelper.getUniqueId(subject);
       for (AclEntry aclEntry : aclEntries) {
-        if (aclEntry.matches(authDomain, username, remoteHost)) {
+        if (!aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(authId)) {
           mask = mask | aclEntry.getPermissions();
         }
       }
 
       // Scan the groups for access
-      for (Principal group : subject.getPrincipals().stream().filter(principal -> principal instanceof GroupEntry).collect(Collectors.toList())) {
+      Set<GroupPrincipal> groups = subject.getPrincipals(GroupPrincipal.class);
+      for (GroupPrincipal group : groups) {
         for (AclEntry aclEntry : aclEntries) {
-          if (aclEntry.matches(authDomain, group.getName(), remoteHost)) {
+          if (!aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(group.getUuid())) {
             mask = mask | aclEntry.getPermissions();
           }
         }
@@ -82,45 +79,27 @@ public class PermissionAccessControlList implements AccessControlList {
     if (subject == null || requestedAccess == 0) {
       return false;
     }
+    UUID authId = SubjectHelper.getUniqueId(subject);
 
-    String username = getUsername(subject);
-    String remoteHost = getRemoteHost(subject);
-    String authDomain = getAuthDomain(subject);
-
-    // Scan for username / host for access
+    // Scan for authId for access
     for (AclEntry aclEntry : aclEntries) {
-      if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess &&
-          aclEntry.matches(authDomain, username, remoteHost)) {
+      if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess
+          && aclEntry.matches(authId)) {
         return true;
       }
     }
 
     // Scan the groups for access
-    for (Principal group : subject.getPrincipals().stream().filter(principal -> principal instanceof GroupEntry).collect(Collectors.toList())) {
+    Set<GroupPrincipal> groups = subject.getPrincipals(GroupPrincipal.class);
+    for (GroupPrincipal group : groups) {
       for (AclEntry aclEntry : aclEntries) {
-        if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess &&
-            aclEntry.matches(authDomain, group.getName(), remoteHost)) {
+        if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess
+            && aclEntry.matches(group.getUuid())) {
           return true;
         }
       }
     }
-
     // This means neither user nor group has access
     return false;
-  }
-
-  private String getUsername(Subject subject) {
-    UserPrincipal userPrincipal = subject.getPrincipals(UserPrincipal.class).stream().findFirst().orElse(null);
-    return (userPrincipal != null) ? userPrincipal.getName() : null;
-  }
-
-  private String getRemoteHost(Subject subject) {
-    RemoteHostPrincipal remoteHostPrincipal = subject.getPrincipals(RemoteHostPrincipal.class).stream().findFirst().orElse(null);
-    return (remoteHostPrincipal != null) ? remoteHostPrincipal.getName() : null;
-  }
-
-  private String getAuthDomain(Subject subject) {
-    AuthHandlerPrincipal authHandlerPrincipal = subject.getPrincipals(AuthHandlerPrincipal.class).stream().findFirst().orElse(null);
-    return (authHandlerPrincipal != null) ? authHandlerPrincipal.getName() : null;
   }
 }

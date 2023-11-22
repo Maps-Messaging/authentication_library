@@ -20,11 +20,7 @@ import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import javax.security.auth.Subject;
 import org.junit.jupiter.api.Test;
 
@@ -75,7 +71,7 @@ public class PerformanceTest {
   private Subject createSubject(String username, String groupName, String remoteHost) {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(username));
-    principals.add(new GroupPrincipal(groupName));
+    principals.add(new GroupPrincipal(groupName, UUID.randomUUID()));
     if (remoteHost != null) {
       principals.add(new RemoteHostPrincipal(remoteHost));
     }

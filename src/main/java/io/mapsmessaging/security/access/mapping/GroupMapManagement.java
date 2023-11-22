@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.access.mapping;
 
+public class GroupMapManagement extends MapManagement<GroupIdMap> {
 
-public class SimpleAclEntry extends AclEntry {
+  private static final GroupMapManagement INSTANCE = new GroupMapManagement("groupmap.txt");
 
-  public SimpleAclEntry(String username, long accessBitset) {
-    super(username, accessBitset);
+  public GroupMapManagement(String filename) {
+    super(filename, new GroupMapParser());
   }
 
-  @Override
-  public boolean matches(String authDomain, String username, String remoteHost) {
-    return getUsername().equals(username);
+  public static GroupMapManagement getGlobalInstance() {
+    return INSTANCE;
   }
 }

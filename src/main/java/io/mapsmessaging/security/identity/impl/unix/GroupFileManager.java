@@ -16,12 +16,15 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class GroupFileManager  extends FileBaseGroups {
 
@@ -30,6 +33,11 @@ public class GroupFileManager  extends FileBaseGroups {
   public GroupFileManager(String filename){
     super(filename);
     load();
+  }
+
+  @Override
+  protected String getDomain() {
+    return "unix";
   }
 
   @Override
@@ -44,8 +52,14 @@ public class GroupFileManager  extends FileBaseGroups {
   }
 
   public void loadGroups(IdentityEntry identityEntry) {
+    UserMapManagement userMapManagement = UserMapManagement.getGlobalInstance();
     for(GroupEntry groupEntry:byId.values()){
-      if(groupEntry.isInGroup(identityEntry.getUsername())){
+      UserIdMap userIdMap = userMapManagement.get("unix:" + identityEntry.getUsername());
+      if (userIdMap == null) {
+        userIdMap = new UserIdMap(UUID.randomUUID(), "unix", identityEntry.getUsername(), "");
+        userMapManagement.add(userIdMap);
+      }
+      if (groupEntry.isInGroup(userIdMap.getAuthId())) {
         identityEntry.addGroup(groupEntry);
       }
     }
