@@ -16,10 +16,11 @@
 
 package io.mapsmessaging.security.access.mapping;
 
-import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.util.UUID;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
@@ -39,7 +40,7 @@ public class UserIdMap extends IdMap {
 
   @Override
   protected String getKey() {
-    String tmp = remoteHost != null ? "[" + remoteHost + "]" : "";
-    return authDomain + ":" + username + "[" + tmp + "]";
+    String tmp = remoteHost != null ? remoteHost : "";
+    return authDomain + ":" + username + ": [" + tmp + "]";
   }
 }

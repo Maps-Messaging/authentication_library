@@ -18,7 +18,6 @@ package io.mapsmessaging.security.access.mapping;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public abstract class MapParser<T extends IdMap> {
 
@@ -42,20 +41,14 @@ public abstract class MapParser<T extends IdMap> {
   public List<String> writeToList(List<T> mapping) {
     List<String> dump = new ArrayList<>();
     for (T entry : mapping) {
-      dump.add(entry.getKey() + " = " + entry.getAuthId().toString());
+      dump.add(entry.getAuthId().toString() + " = " + entry.getKey());
     }
     return dump;
   }
 
   public T parse(String aclEntry) {
-    String[] parts = aclEntry.split("=");
-    if (parts.length == 2) {
-      String uuidString = parts[0].trim();
-      String identifier = parts[1].trim();
-      return createMapping(identifier, UUID.fromString(uuidString));
-    }
-    return null;
+    return createMapping(aclEntry);
   }
 
-  protected abstract T createMapping(String identifier, UUID uuid);
+  protected abstract T createMapping(String identifier);
 }

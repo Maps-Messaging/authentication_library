@@ -16,32 +16,31 @@
 
 package io.mapsmessaging.security.access;
 
-import com.sun.security.auth.UserPrincipal;
-import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
-import io.mapsmessaging.security.identity.principals.GroupPrincipal;
-import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import org.junit.jupiter.api.Test;
 
 import javax.security.auth.Subject;
-import java.security.Principal;
-import java.util.*;
+import java.util.List;
 
-public class PerformanceTest {
+public class PerformanceTest extends BaseSecurityTest {
 
   @Test
   public void testAccessControlListPerformance() {
     // Define the number of iterations and ACL entries
     int iterations = 1000000;
-    List<String> aclEntries = generateAclEntries(1000);
+    List<String> aclEntries = generateGroupEntries(1000, GroupMapManagement.getGlobalInstance());
 
     // Create an instance of AccessControlListManager
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
+    AccessControlList acl =
+        AccessControlFactory.getInstance().get(
+            "Permission",
+            new CustomAccessControlMapping(),
+            aclEntries);
 
     // Perform the performance test
     long startTime = System.currentTimeMillis();
     for (int i = 0; i < iterations; i++) {
-      Subject subject = createRandomSubject();
+      Subject subject = createRandomSubject(GroupMapManagement.getGlobalInstance());
       boolean hasAccess = acl.canAccess(subject, CustomAccessControlMapping.READ_VALUE);
       // Optionally, perform assertions or logging based on the hasAccess result
     }
@@ -50,69 +49,5 @@ public class PerformanceTest {
     // Calculate the elapsed time
     long elapsedTime = endTime - startTime;
     System.out.println("Elapsed Time: " + elapsedTime + " ms");
-  }
-
-  private List<String> generateAclEntries(int numEntries) {
-    List<String> aclEntries = new ArrayList<>();
-    GroupMapManagement groupMapManagement = GroupMapManagement.getGlobalInstance();
-    for (int i = 0; i < numEntries; i++) {
-      String groupName = "group" + i;
-      GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), groupName, "test");
-      groupMapManagement.add(groupIdMap);
-      String entry = groupIdMap.getAuthId() + " = Read|Write";
-      aclEntries.add(entry);
-    }
-    return aclEntries;
-  }
-
-  private Subject createRandomSubject() {
-    // Create a random subject for testing purposes
-    Random random = new Random();
-    String username = "user" + random.nextInt(100);
-    String groupName = "group" + random.nextInt(100);
-    String remoteHost = "remotehost" + random.nextInt(10);
-
-    return createSubject(username, groupName, remoteHost);
-  }
-
-  private Subject createSubject(String username, String groupName, String remoteHost) {
-    Set<Principal> principals = new HashSet<>();
-    principals.add(new UserPrincipal(username));
-    GroupIdMap groupIdMap = GroupMapManagement.getGlobalInstance().get("test:" + groupName);
-    if (groupIdMap != null) {
-      principals.add(new GroupPrincipal(groupName, groupIdMap.getAuthId()));
-    }
-    if (remoteHost != null) {
-      principals.add(new RemoteHostPrincipal(remoteHost));
-    }
-
-    return new Subject(true, principals, new HashSet<>(), new HashSet<>());
-  }
-
-  // Custom AccessControlMapping implementation
-  public static class CustomAccessControlMapping implements AccessControlMapping {
-    // Access control keywords and corresponding bitset values
-    public static final String READ = "read";
-    public static final String WRITE = "write";
-
-    public static final long READ_VALUE = 1L;
-    public static final long WRITE_VALUE = 2L;
-
-    @Override
-    public Long getAccessValue(String accessControl) {
-      switch (accessControl.toLowerCase()) {
-        case READ:
-          return READ_VALUE;
-        case WRITE:
-          return WRITE_VALUE;
-        default:
-          return null;
-      }
-    }
-
-    @Override
-    public String getAccessName(long value) {
-      return null;
-    }
   }
 }

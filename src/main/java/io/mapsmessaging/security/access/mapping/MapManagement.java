@@ -37,6 +37,15 @@ public class MapManagement<T extends IdMap> {
     load();
   }
 
+  public void clearAll() {
+    userIdMapByUuid.clear();
+    userIdMapByUser.clear();
+  }
+
+  public List<T> getAll() {
+    return new ArrayList<>(userIdMapByUuid.values());
+  }
+
   public T get(UUID uuid) {
     return userIdMapByUuid.get(uuid);
   }
@@ -51,7 +60,7 @@ public class MapManagement<T extends IdMap> {
     // save();
   }
 
-  private void load() {
+  public void load() {
     try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
       String line;
       while ((line = br.readLine()) != null) {
@@ -66,7 +75,7 @@ public class MapManagement<T extends IdMap> {
     }
   }
 
-  private void save() {
+  public void save() {
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
       List<T> values = new ArrayList<>(userIdMapByUuid.values());
       List<String> linesToWrite = parser.writeToList(values);
@@ -78,4 +87,9 @@ public class MapManagement<T extends IdMap> {
       e.printStackTrace();
     }
   }
+
+  public int size() {
+    return userIdMapByUser.size();
+  }
+
 }

@@ -30,12 +30,12 @@ public class GroupMapParser extends MapParser<GroupIdMap> {
   }
 
   @Override
-  protected GroupIdMap createMapping(String identifier, UUID uuid) {
+  protected GroupIdMap createMapping(String identifier) {
     Matcher matcher = IDENTIFIER_PATTERN.matcher(identifier);
-
     if (matcher.matches()) {
-      String authDomain = matcher.group(1);
-      String groupName = matcher.group(2);
+      UUID uuid = UUID.fromString(matcher.group(1));
+      String authDomain = matcher.group(2);
+      String groupName = matcher.group(3);
       return new GroupIdMap(uuid, groupName, authDomain);
     }
     throw new IllegalArgumentException("Invalid identifier format: " + identifier);
