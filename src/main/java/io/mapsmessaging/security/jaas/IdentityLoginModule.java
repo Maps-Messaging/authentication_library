@@ -48,6 +48,11 @@ public class IdentityLoginModule extends BaseLoginModule {
   }
 
   @Override
+  protected String getDomain() {
+    return identityLookup.getName();
+  }
+
+  @Override
   protected boolean validate(String username, char[] password) throws LoginException {
     IdentityEntry identityEntry = identityLookup.findEntry(username);
     if(identityEntry == null){

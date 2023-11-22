@@ -75,6 +75,10 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
 
   }
 
+  @Override
+  protected String getDomain() {
+    return "cognito";
+  }
 
   public boolean validate(String username, char[] password) throws LoginException {
 

@@ -42,6 +42,11 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
   }
 
   @Override
+  protected String getDomain() {
+    return "cert";
+  }
+
+  @Override
   public boolean login() throws LoginException {
     // prompt for a username and password
     if (callbackHandler == null) {

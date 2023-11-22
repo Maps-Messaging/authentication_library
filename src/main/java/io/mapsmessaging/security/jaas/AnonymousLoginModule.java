@@ -37,6 +37,11 @@ public class AnonymousLoginModule  extends BaseLoginModule {
   }
 
   @Override
+  protected String getDomain() {
+    return "";
+  }
+
+  @Override
   protected boolean validate(String username, char[] password) throws LoginException {
     return true;
   }

@@ -21,9 +21,14 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
+import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -61,6 +66,8 @@ public abstract class BaseLoginModule implements LoginModule {
     // initialize any configured options
     debug = "true".equalsIgnoreCase((String) options.get("debug"));
   }
+
+  protected abstract String getDomain();
 
   protected abstract boolean validate(String username, char[] password) throws LoginException;
 
@@ -142,7 +149,13 @@ public abstract class BaseLoginModule implements LoginModule {
       subject.getPublicCredentials().clear();
       return false;
     } else {
-      subject.getPrincipals().add(userPrincipal);
+      Set<Principal> principalSet = subject.getPrincipals();
+      principalSet.add(userPrincipal);
+      UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get(getDomain() + ":" + username);
+      if (userIdMap == null) {
+        userIdMap = new UserIdMap(UUID.randomUUID(), username, getDomain(), "");
+      }
+      principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
       commitSucceeded = true;
       return true;
     }
