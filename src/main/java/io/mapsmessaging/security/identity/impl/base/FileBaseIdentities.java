@@ -20,10 +20,13 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOU
 
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public abstract class FileBaseIdentities extends FileLoader {
 
@@ -34,6 +37,8 @@ public abstract class FileBaseIdentities extends FileLoader {
     super(filepath);
     usernamePasswordMap = new LinkedHashMap<>();
   }
+
+  public abstract String getDomain();
 
   public IdentityEntry findEntry(String username) {
     return usernamePasswordMap.get(username);
@@ -53,5 +58,10 @@ public abstract class FileBaseIdentities extends FileLoader {
   public void parse(String line) {
     IdentityEntry identityEntry = load(line);
     usernamePasswordMap.put(identityEntry.getUsername(), identityEntry);
+    if (UserMapManagement.getGlobalInstance().get(getDomain() + ":" + identityEntry.getUsername())
+        == null) {
+      UserMapManagement.getGlobalInstance()
+          .add(new UserIdMap(UUID.randomUUID(), identityEntry.getUsername(), getDomain(), ""));
+    }
   }
 }

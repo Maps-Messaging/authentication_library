@@ -16,6 +16,8 @@
 
 package io.mapsmessaging.security.identity.impl;
 
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
@@ -64,6 +66,9 @@ class ApacheIdentifierTest {
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
+    UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get("apache:test");
+    Assertions.assertNotNull(userIdMap);
+    Assertions.assertEquals("test", userIdMap.getUsername());
     Assertions.assertTrue(entry.isInGroup("user"));
   }
 

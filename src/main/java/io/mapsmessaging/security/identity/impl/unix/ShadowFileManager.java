@@ -27,6 +27,11 @@ public class ShadowFileManager extends FileBaseIdentities {
   }
 
   @Override
+  public String getDomain() {
+    return "unix";
+  }
+
+  @Override
   protected IdentityEntry load(String line) {
     return new ShadowEntry(line);
   }

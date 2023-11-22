@@ -36,10 +36,10 @@ public class HtGroupEntry extends GroupEntry {
     StringTokenizer stringTokenizer = new StringTokenizer(userList, " ");
     UserMapManagement userMapManagement = UserMapManagement.getGlobalInstance();
     while(stringTokenizer.hasMoreElements()){
-      String user = stringTokenizer.nextElement().toString();
+      String user = stringTokenizer.nextElement().toString().trim();
       UserIdMap userIdMap = userMapManagement.get("apache:" + user);
       if (userIdMap == null) {
-        userIdMap = new UserIdMap(UUID.randomUUID(), "apache", user, "");
+        userIdMap = new UserIdMap(UUID.randomUUID(), user, "apache", "");
         userMapManagement.add(userIdMap);
       }
       userSet.add(userIdMap.getAuthId());

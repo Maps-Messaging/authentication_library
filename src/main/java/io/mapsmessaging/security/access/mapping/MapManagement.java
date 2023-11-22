@@ -51,13 +51,20 @@ public class MapManagement<T extends IdMap> {
   }
 
   public T get(String username) {
+    if (!username.endsWith(": []")) {
+      username = username + ": []";
+    }
     return userIdMapByUser.get(username);
   }
 
-  public void add(T entry) {
-    userIdMapByUuid.put(entry.getAuthId(), entry);
-    userIdMapByUser.put(entry.getKey(), entry);
-    // save();
+  public boolean add(T entry) {
+    if (!userIdMapByUser.containsKey(entry.getKey())) {
+      userIdMapByUser.put(entry.getKey(), entry);
+      userIdMapByUuid.put(entry.getAuthId(), entry);
+      // save();
+      return true;
+    }
+    return false;
   }
 
   public void load() {

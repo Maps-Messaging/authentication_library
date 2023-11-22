@@ -28,6 +28,11 @@ public class HtPasswdFileManager extends FileBaseIdentities {
   }
 
   @Override
+  public String getDomain() {
+    return "apache";
+  }
+
+  @Override
   protected IdentityEntry load(String line) {
     return new HtPasswdEntry(line);
   }
