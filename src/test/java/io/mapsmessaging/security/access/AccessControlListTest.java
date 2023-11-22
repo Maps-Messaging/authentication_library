@@ -17,16 +17,21 @@
 package io.mapsmessaging.security.access;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
+import io.mapsmessaging.security.access.mapping.GroupMapManagement;
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityAuthorisationManager;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import java.security.Principal;
-import java.util.*;
-import javax.security.auth.Subject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import javax.security.auth.Subject;
+import java.security.Principal;
+import java.util.*;
 
 public class AccessControlListTest {
 
@@ -34,29 +39,44 @@ public class AccessControlListTest {
   public void testAccessControlListCreation() {
     IdentityAuthorisationManager identityAuthorisationManager = new IdentityAuthorisationManager();
 
+    UserIdMap username = new UserIdMap(UUID.randomUUID(), "username", "test", "");
+    UserMapManagement.getGlobalInstance().add(username);
+
+    UserIdMap username2 = new UserIdMap(UUID.randomUUID(), "username2", "test", "");
+    UserMapManagement.getGlobalInstance().add(username2);
+
+    GroupIdMap groupIdMap1 = new GroupIdMap(UUID.randomUUID(), "group1", "test");
+    GroupMapManagement.getGlobalInstance().add(groupIdMap1);
+
+    GroupIdMap groupIdMap2 = new GroupIdMap(UUID.randomUUID(), "group2", "test");
+    GroupMapManagement.getGlobalInstance().add(groupIdMap2);
+
+    UserIdMap usernameLdap = new UserIdMap(UUID.randomUUID(), "fred", "ldap", "remotehost2");
+    UserMapManagement.getGlobalInstance().add(usernameLdap);
+
     // Create the AccessControlList
     List<String> aclEntries = new ArrayList<>();
-    aclEntries.add("username = Read|Write");
-    aclEntries.add("unix:username2 = Read|Write");
-    aclEntries.add("group1 = Read");
-    aclEntries.add("group2[localhost] = Write|Create");
-    aclEntries.add("username[remotehost] = Delete");
-    aclEntries.add("ldap:fred[remotehost2] = Write|Read|Delete");
+    aclEntries.add(username.getAuthId() + " = Read|Write");
+    aclEntries.add(username2.getAuthId() + " = Read|Write");
+    aclEntries.add(groupIdMap2.getAuthId() + " = Read|Delete");
+
+    aclEntries.add(groupIdMap2.getAuthId() + " = Write|Create");
+    aclEntries.add(username.getAuthId() + " = Delete");
+    aclEntries.add(usernameLdap.getAuthId() + " = Write|Read|Delete");
+
     AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
 
     // Create a Subject with remote host
-    Subject subjectWithRemoteHost = createSubject("username", "group1", "remotehost");
-    subjectWithRemoteHost.getPrincipals().add(new UniqueIdentifierPrincipal(UUID.randomUUID()));
+    Subject subjectWithRemoteHost = createSubject(username, groupIdMap1, "remotehost");
     identityAuthorisationManager.setAuthId(subjectWithRemoteHost);
 
     // Create a Subject without remote host
-    Subject subjectWithoutRemoteHost = createSubject("username", "group1", null);
-    subjectWithoutRemoteHost.getPrincipals().add(new UniqueIdentifierPrincipal(UUID.randomUUID()));
+    Subject subjectWithoutRemoteHost = createSubject(username2, groupIdMap1, null);
     identityAuthorisationManager.setAuthId(subjectWithoutRemoteHost);
 
-    Subject subjectWithAuthDomain = createSubject("username2", "group1", "remotehost");
+    Subject subjectWithAuthDomain = createSubject(username2, groupIdMap1, "remotehost");
     subjectWithAuthDomain.getPrincipals().add(new AuthHandlerPrincipal("unix"));
-    subjectWithAuthDomain.getPrincipals().add(new UniqueIdentifierPrincipal(UUID.randomUUID()));
+
     identityAuthorisationManager.setAuthId(subjectWithAuthDomain);
 
     long test = acl.getSubjectAccess(subjectWithRemoteHost);
@@ -82,12 +102,19 @@ public class AccessControlListTest {
 
   @Test
   void testCanAccess_ValidAccess_ReturnsTrue() {
+    UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), "user1", "test", "");
+    UserMapManagement.getGlobalInstance().add(userIdMap);
+
+    GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), "group1", "test");
+    GroupMapManagement.getGlobalInstance().add(groupIdMap);
+
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
-    subject.getPrincipals().add(new GroupPrincipal("group1", UUID.randomUUID()));
+    subject.getPrincipals().add(new GroupPrincipal("group1", groupIdMap.getAuthId()));
+    subject.getPrincipals().add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
     // Set up the access control list with the necessary ACL entries
-    List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
+    List<String> aclEntries = Collections.singletonList(userIdMap.getAuthId() + " = Read|Write");
 
     AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
     AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
@@ -151,10 +178,11 @@ public class AccessControlListTest {
     Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
   }
 
-  private Subject createSubject(String username, String groupName, String remoteHost) {
+  private Subject createSubject(UserIdMap user, GroupIdMap group, String remoteHost) {
     Set<Principal> principals = new HashSet<>();
-    principals.add(new UserPrincipal(username));
-    principals.add(new GroupPrincipal(groupName, UUID.randomUUID()));
+    principals.add(new UserPrincipal(user.getUsername()));
+    principals.add(new UniqueIdentifierPrincipal(user.getAuthId()));
+    principals.add(new GroupPrincipal(group.getGroupName(), group.getAuthId()));
     if (remoteHost != null) {
       principals.add(new RemoteHostPrincipal(remoteHost));
     }

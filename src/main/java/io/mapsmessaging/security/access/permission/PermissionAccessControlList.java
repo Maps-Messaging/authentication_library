@@ -22,11 +22,12 @@ import io.mapsmessaging.security.access.AccessControlListParser;
 import io.mapsmessaging.security.access.AccessControlMapping;
 import io.mapsmessaging.security.access.AclEntry;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
+
+import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import javax.security.auth.Subject;
 
 public class PermissionAccessControlList implements AccessControlList {
 
@@ -57,7 +58,8 @@ public class PermissionAccessControlList implements AccessControlList {
       long time = System.currentTimeMillis();
       UUID authId = SubjectHelper.getUniqueId(subject);
       for (AclEntry aclEntry : aclEntries) {
-        if (!aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(authId)) {
+        if (!aclEntry.getExpiryPolicy().hasExpired(time) &&
+            aclEntry.matches(authId)) {
           mask = mask | aclEntry.getPermissions();
         }
       }
@@ -66,7 +68,8 @@ public class PermissionAccessControlList implements AccessControlList {
       Set<GroupPrincipal> groups = subject.getPrincipals(GroupPrincipal.class);
       for (GroupPrincipal group : groups) {
         for (AclEntry aclEntry : aclEntries) {
-          if (!aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(group.getUuid())) {
+          if (!aclEntry.getExpiryPolicy().hasExpired(time) &&
+              aclEntry.matches(group.getUuid())) {
             mask = mask | aclEntry.getPermissions();
           }
         }

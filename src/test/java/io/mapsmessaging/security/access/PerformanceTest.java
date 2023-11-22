@@ -17,12 +17,15 @@
 package io.mapsmessaging.security.access;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
+import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
+import org.junit.jupiter.api.Test;
+
+import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.*;
-import javax.security.auth.Subject;
-import org.junit.jupiter.api.Test;
 
 public class PerformanceTest {
 
@@ -51,8 +54,12 @@ public class PerformanceTest {
 
   private List<String> generateAclEntries(int numEntries) {
     List<String> aclEntries = new ArrayList<>();
+    GroupMapManagement groupMapManagement = GroupMapManagement.getGlobalInstance();
     for (int i = 0; i < numEntries; i++) {
-      String entry = "group" + i + " = Read|Write";
+      String groupName = "group" + i;
+      GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), groupName, "test");
+      groupMapManagement.add(groupIdMap);
+      String entry = groupIdMap.getAuthId() + " = Read|Write";
       aclEntries.add(entry);
     }
     return aclEntries;
@@ -71,7 +78,10 @@ public class PerformanceTest {
   private Subject createSubject(String username, String groupName, String remoteHost) {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(username));
-    principals.add(new GroupPrincipal(groupName, UUID.randomUUID()));
+    GroupIdMap groupIdMap = GroupMapManagement.getGlobalInstance().get("test:" + groupName);
+    if (groupIdMap != null) {
+      principals.add(new GroupPrincipal(groupName, groupIdMap.getAuthId()));
+    }
     if (remoteHost != null) {
       principals.add(new RemoteHostPrincipal(remoteHost));
     }

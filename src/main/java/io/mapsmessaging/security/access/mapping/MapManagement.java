@@ -62,7 +62,7 @@ public class MapManagement<T extends IdMap> {
         }
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      // e.printStackTrace();
     }
   }
 
