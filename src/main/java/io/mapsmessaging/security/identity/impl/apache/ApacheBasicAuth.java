@@ -46,11 +46,17 @@ public class ApacheBasicAuth implements IdentityLookup {
 
   @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+    if (passwdFileManager == null) {
+      throw new NoSuchUserFoundException(username);
+    }
     return passwdFileManager.getPasswordHash(username);
   }
 
   @Override
   public IdentityEntry findEntry(String username) {
+    if (passwdFileManager == null) {
+      return null;
+    }
     IdentityEntry identityEntry = passwdFileManager.findEntry(username);
     if(identityEntry != null){
       groupFileManager.loadGroups(identityEntry);
@@ -71,6 +77,9 @@ public class ApacheBasicAuth implements IdentityLookup {
     if(config.containsKey("configDirectory")){
       String directory = config.get("configDirectory").toString();
       File file = new File(directory);
+      if (!file.exists()) {
+        file.mkdirs();
+      }
       if(file.isDirectory()){
         return new ApacheBasicAuth(file.getAbsolutePath()+File.separator+".htpassword", file.getAbsolutePath()+File.separator+".htgroups");
       }
