@@ -61,7 +61,7 @@ public class MapManagement<T extends IdMap> {
     if (!userIdMapByUser.containsKey(entry.getKey())) {
       userIdMapByUser.put(entry.getKey(), entry);
       userIdMapByUuid.put(entry.getAuthId(), entry);
-      // save();
+      save();
       return true;
     }
     return false;
