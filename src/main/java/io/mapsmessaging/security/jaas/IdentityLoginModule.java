@@ -55,7 +55,7 @@ public class IdentityLoginModule extends BaseLoginModule {
 
   @Override
   protected String getDomain() {
-    return identityLookup.getName();
+    return identityLookup.getDomain();
   }
 
   @Override
