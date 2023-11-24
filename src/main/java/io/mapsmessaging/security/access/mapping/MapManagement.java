@@ -57,6 +57,19 @@ public class MapManagement<T extends IdMap> {
     return userIdMapByUser.get(username);
   }
 
+  public boolean delete(String name) {
+    if (!name.endsWith(": []")) {
+      name = name + ": []";
+    }
+    T entry = userIdMapByUser.remove(name);
+    if (entry != null) {
+      userIdMapByUuid.remove(entry.getAuthId());
+      save();
+      return true;
+    }
+    return false;
+  }
+
   public boolean add(T entry) {
     if (!userIdMapByUser.containsKey(entry.getKey())) {
       userIdMapByUser.put(entry.getKey(), entry);
