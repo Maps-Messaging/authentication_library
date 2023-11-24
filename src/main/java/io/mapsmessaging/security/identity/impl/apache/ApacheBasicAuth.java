@@ -45,6 +45,11 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
+  public String getDomain() {
+    return "apache";
+  }
+
+  @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     if (passwdFileManager == null) {
       throw new NoSuchUserFoundException(username);

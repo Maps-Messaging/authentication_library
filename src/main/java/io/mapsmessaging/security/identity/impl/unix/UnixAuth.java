@@ -48,6 +48,11 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
+  public String getDomain() {
+    return getName();
+  }
+
+  @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     return passwordFileIdentities.getPasswordHash(username);
   }

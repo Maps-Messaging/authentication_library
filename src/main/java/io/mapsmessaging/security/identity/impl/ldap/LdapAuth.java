@@ -39,6 +39,11 @@ public class LdapAuth  implements IdentityLookup {
   }
 
   @Override
+  public String getDomain() {
+    return getName();
+  }
+
+  @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     return ldapUserManager.getPasswordHash(username);
   }

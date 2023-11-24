@@ -22,6 +22,8 @@ public interface IdentityLookup {
 
   String getName();
 
+  String getDomain();
+
   char[] getPasswordHash(String username) throws NoSuchUserFoundException;
 
   IdentityEntry findEntry(String username);
