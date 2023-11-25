@@ -19,9 +19,14 @@ package io.mapsmessaging.security.identity.impl.ldap;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import java.util.Map;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import org.apache.commons.lang3.NotImplementedException;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class LdapAuth  implements IdentityLookup {
 
@@ -44,8 +49,18 @@ public class LdapAuth  implements IdentityLookup {
   }
 
   @Override
+  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
+    throw new NotImplementedException("Unable to add users to an LDAP server");
+  }
+
+  @Override
   public IdentityEntry findEntry(String username) {
     return ldapUserManager.findEntry(username);
+  }
+
+  @Override
+  public List<IdentityEntry> getEntries() {
+    return new ArrayList<>();
   }
 
   @Override

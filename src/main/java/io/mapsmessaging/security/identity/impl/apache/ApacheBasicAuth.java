@@ -19,9 +19,13 @@ package io.mapsmessaging.security.identity.impl.apache;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 public class ApacheBasicAuth implements IdentityLookup {
@@ -50,12 +54,30 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
+  public boolean createUser(String username, String password, PasswordParser passwordParser) {
+    String salt = PasswordGenerator.generateSalt(16);
+    byte[] hash = passwordParser.computeHash(password.getBytes(), salt.getBytes(), 12);
+    if (passwdFileManager != null) {
+      passwdFileManager.addEntry(username, new String(hash));
+    }
+    return false;
+  }
+
+  @Override
   public IdentityEntry findEntry(String username) {
+    if (passwdFileManager == null || groupFileManager == null) {
+      return null;
+    }
     IdentityEntry identityEntry = passwdFileManager.findEntry(username);
     if(identityEntry != null){
       groupFileManager.loadGroups(identityEntry);
     }
     return identityEntry;
+  }
+
+  @Override
+  public List<IdentityEntry> getEntries() {
+    return passwdFileManager.getEntries();
   }
 
   @Override

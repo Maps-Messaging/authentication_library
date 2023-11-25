@@ -21,7 +21,11 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import org.apache.commons.lang3.NotImplementedException;
+
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 
 public class UnixAuth implements IdentityLookup {
@@ -53,6 +57,11 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
+  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
+    throw new NotImplementedException("Unale to add users to a unix system");
+  }
+
+  @Override
   public IdentityEntry findEntry(String username) {
     IdentityEntry identityEntry = passwordFileIdentities.findEntry(username);
     if(identityEntry != null && userDetailsManager != null && groupFileManager != null){
@@ -68,6 +77,11 @@ public class UnixAuth implements IdentityLookup {
       }
     }
     return identityEntry;
+  }
+
+  @Override
+  public List<IdentityEntry> getEntries() {
+    return passwordFileIdentities.getEntries();
   }
 
   @Override

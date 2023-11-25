@@ -21,6 +21,12 @@ import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 
 public class HtPasswdEntry extends IdentityEntry {
 
+  public HtPasswdEntry(String username, String password) {
+    this.username = username;
+    this.password = password;
+    passwordParser = PasswordParserFactory.getInstance().parse(password);
+  }
+
   public HtPasswdEntry(String line) {
     int usernamePos = line.indexOf(":");
     username = line.substring(0, usernamePos);
