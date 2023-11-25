@@ -18,6 +18,7 @@ package io.mapsmessaging.security.identity;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public interface IdentityLookup {
 
   char[] getPasswordHash(String username) throws NoSuchUserFoundException;
 
-  boolean createUser(String username, String passwordHash, PasswordParser passwordParser);
+  boolean createUser(String username, String passwordHash, PasswordParser passwordParser) throws IOException;
 
   IdentityEntry findEntry(String username);
 

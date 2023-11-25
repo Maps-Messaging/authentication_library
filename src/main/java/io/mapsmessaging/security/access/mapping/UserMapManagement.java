@@ -27,4 +27,5 @@ public class UserMapManagement extends MapManagement<UserIdMap> {
   public static UserMapManagement getGlobalInstance() {
     return INSTANCE;
   }
+
 }

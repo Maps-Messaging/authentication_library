@@ -95,6 +95,17 @@ public class MapManagement<T extends IdMap> {
     }
   }
 
+  public boolean remove(String username) {
+    T entry = userIdMapByUser.remove(username);
+    if (!userIdMapByUser.containsKey(username)) {
+      userIdMapByUser.put(entry.getKey(), entry);
+      userIdMapByUuid.put(entry.getAuthId(), entry);
+      save();
+      return true;
+    }
+    return false;
+  }
+
   public int size() {
     return userIdMapByUser.size();
   }

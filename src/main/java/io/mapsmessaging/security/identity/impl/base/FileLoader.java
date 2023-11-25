@@ -16,26 +16,24 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.CHECKING_PASSWORD_STORE;
-import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_FILE_CHANGE_DETECTED;
-import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_FILE_LOAD_EXCEPTION;
-
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IllegalFormatException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.*;
 
 public abstract class FileLoader {
 
   private final Logger logger = LoggerFactory.getLogger(FileLoader.class);
   private final String filePath;
+  private final File file;
   private long lastModified;
 
   protected FileLoader(String filepath) {
     filePath = filepath;
+    file = new File(filePath);
     lastModified = 0;
   }
 
@@ -56,6 +54,41 @@ public abstract class FileLoader {
       } catch (IOException e) {
         logger.log(PASSWORD_FILE_LOAD_EXCEPTION, filePath, e);
       }
+    }
+  }
+
+  protected void add(String line) throws IOException {
+    if (!file.exists()) {
+      file.createNewFile();
+    }
+    try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
+      bw.write(line);
+      bw.newLine(); // Add a newline character after each line
+    }
+  }
+
+  protected void delete(String name) throws IOException {
+    File tempFile = new File(file.getAbsolutePath() + ".tmp");
+
+    try (BufferedReader reader = new BufferedReader(new FileReader(file));
+         BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+
+      String lineToRemove = name + ":";
+      String currentLine;
+
+      while ((currentLine = reader.readLine()) != null) {
+        if (!currentLine.startsWith(lineToRemove)) {
+          writer.write(currentLine + System.lineSeparator());
+        }
+      }
+    }
+
+    if (!file.delete()) {
+      throw new IOException("Could not delete original file");
+    }
+
+    if (!tempFile.renameTo(file)) {
+      throw new IOException("Could not rename temporary file");
     }
   }
 }
