@@ -28,7 +28,8 @@ public class PerformanceTest extends BaseSecurityTest {
   public void testAccessControlListPerformance() {
     // Define the number of iterations and ACL entries
     int iterations = 1000000;
-    List<String> aclEntries = generateGroupEntries(1000, GroupMapManagement.getGlobalInstance());
+    GroupMapManagement groupMapManagement = new GroupMapManagement("./src/test/resources/groups.txt");
+    List<String> aclEntries = generateGroupEntries(1000, groupMapManagement);
 
     // Create an instance of AccessControlListManager
     AccessControlList acl =
@@ -40,7 +41,7 @@ public class PerformanceTest extends BaseSecurityTest {
     // Perform the performance test
     long startTime = System.currentTimeMillis();
     for (int i = 0; i < iterations; i++) {
-      Subject subject = createRandomSubject(GroupMapManagement.getGlobalInstance());
+      Subject subject = createRandomSubject(groupMapManagement);
       boolean hasAccess = acl.canAccess(subject, CustomAccessControlMapping.READ_VALUE);
       // Optionally, perform assertions or logging based on the hasAccess result
     }

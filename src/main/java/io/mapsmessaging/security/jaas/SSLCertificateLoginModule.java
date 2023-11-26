@@ -19,14 +19,15 @@ package io.mapsmessaging.security.jaas;
 
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-import java.io.IOException;
-import java.util.Map;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.util.Map;
 
 public class SSLCertificateLoginModule extends BaseLoginModule {
 
@@ -71,8 +72,8 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
 
   @Override
   public boolean commit() {
-    if(super.commit()){
-      if(username != null){
+    if (super.commit()) {
+      if (username != null) {
         subject.getPrincipals().add(new UserPrincipal(username));
         subject.getPrincipals().add(new AuthHandlerPrincipal("SSLCertificate"));
       }

@@ -32,7 +32,7 @@ public class AnonymousPrincipal implements Principal {
   }
 
   @Override
-  public String toString(){
-    return "AnonymousPrincipal User:"+name;
+  public String toString() {
+    return "AnonymousPrincipal User:" + name;
   }
 }

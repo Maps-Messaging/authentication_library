@@ -16,13 +16,12 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
-import java.util.StringTokenizer;
-import java.util.UUID;
 import lombok.Getter;
+
+import java.util.Collections;
+import java.util.StringTokenizer;
 
 public class GroupFileEntry extends GroupEntry {
 
@@ -32,26 +31,17 @@ public class GroupFileEntry extends GroupEntry {
   public GroupFileEntry(String line) throws IllegalFormatException {
     super();
     int index = line.indexOf(":");
-    if(index == -1){
+    if (index == -1) {
       throw new IllegalFormatException("Expected format to be a : delimited list");
     }
     StringTokenizer stringTokenizer = new StringTokenizer(line, ":");
     name = stringTokenizer.nextElement().toString(); //
     stringTokenizer.nextElement();// drop
     groupId = Integer.parseInt(stringTokenizer.nextElement().toString().trim());
-    if(stringTokenizer.hasMoreElements()){
+    if (stringTokenizer.hasMoreElements()) {
       String groups = stringTokenizer.nextElement().toString();
       if (!groups.trim().isEmpty()) {
-        UserMapManagement userMapManagement = UserMapManagement.getGlobalInstance();
-
-        for (String user : groups.split(",")) {
-          UserIdMap userIdMap = userMapManagement.get("unix:" + user);
-          if (userIdMap == null) {
-            userIdMap = new UserIdMap(UUID.randomUUID(), "unix", user, "");
-            userMapManagement.add(userIdMap);
-          }
-          userSet.add(userIdMap.getAuthId());
-        }
+        Collections.addAll(userSet, groups.split(","));
       }
     }
   }

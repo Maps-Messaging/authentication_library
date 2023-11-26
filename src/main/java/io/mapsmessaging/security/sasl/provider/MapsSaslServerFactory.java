@@ -18,11 +18,12 @@ package io.mapsmessaging.security.sasl.provider;
 
 import io.mapsmessaging.security.sasl.provider.scram.server.ScramSaslServer;
 import io.mapsmessaging.security.sasl.provider.test.TestSaslServer;
-import java.util.Map;
+
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
+import java.util.Map;
 
 public class MapsSaslServerFactory implements SaslServerFactory {
 

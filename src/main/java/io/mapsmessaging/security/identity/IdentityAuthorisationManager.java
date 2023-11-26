@@ -17,10 +17,11 @@
 package io.mapsmessaging.security.identity;
 
 import io.mapsmessaging.security.SubjectHelper;
+
+import javax.security.auth.Subject;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.security.auth.Subject;
 
 public class IdentityAuthorisationManager {
 

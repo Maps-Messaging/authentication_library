@@ -18,13 +18,8 @@ package io.mapsmessaging.security.access.mapping;
 
 public class GroupMapManagement extends MapManagement<GroupIdMap> {
 
-  private static final GroupMapManagement INSTANCE = new GroupMapManagement("groupmap.txt");
-
   public GroupMapManagement(String filename) {
     super(filename, new GroupMapParser());
   }
 
-  public static GroupMapManagement getGlobalInstance() {
-    return INSTANCE;
-  }
 }

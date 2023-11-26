@@ -16,16 +16,17 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
-import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.client.state.InitialState;
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
+import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
+
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 

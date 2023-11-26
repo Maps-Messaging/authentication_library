@@ -21,12 +21,12 @@ import java.io.IOException;
 public class IllegalFormatException extends IOException {
 
 
-  public IllegalFormatException(){
+  public IllegalFormatException() {
     super();
   }
 
 
-  public IllegalFormatException(String reason){
+  public IllegalFormatException(String reason) {
     super(reason);
   }
 }

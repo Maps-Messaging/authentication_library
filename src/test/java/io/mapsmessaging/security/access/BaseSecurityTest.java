@@ -76,7 +76,7 @@ public class BaseSecurityTest {
     principals.add(new UserPrincipal(username));
     GroupIdMap groupIdMap = groupMapManagement.get("test:" + groupName);
     if (groupIdMap != null) {
-      principals.add(new GroupPrincipal(groupName, groupIdMap.getAuthId()));
+      principals.add(new GroupPrincipal(groupName));
     }
     if (remoteHost != null) {
       principals.add(new RemoteHostPrincipal(remoteHost));

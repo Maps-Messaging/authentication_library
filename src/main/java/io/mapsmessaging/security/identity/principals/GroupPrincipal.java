@@ -16,18 +16,16 @@
 
 package io.mapsmessaging.security.identity.principals;
 
-import java.security.Principal;
-import java.util.UUID;
 import lombok.Getter;
+
+import java.security.Principal;
 
 @Getter
 public class GroupPrincipal implements Principal {
 
   private final String name;
-  private final UUID uuid;
 
-  public GroupPrincipal(String name, UUID uuid) {
+  public GroupPrincipal(String name) {
     this.name = name;
-    this.uuid = uuid;
   }
 }

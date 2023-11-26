@@ -18,8 +18,9 @@ package io.mapsmessaging.security.access;
 
 import io.mapsmessaging.security.access.expiry.AccessEntryExpiryPolicy;
 import io.mapsmessaging.security.access.expiry.NoExpiryPolicy;
-import java.util.UUID;
 import lombok.Data;
+
+import java.util.UUID;
 
 @Data
 public class AclEntry {

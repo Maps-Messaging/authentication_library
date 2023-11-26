@@ -18,14 +18,8 @@ package io.mapsmessaging.security.access.mapping;
 
 public class UserMapManagement extends MapManagement<UserIdMap> {
 
-  private static final UserMapManagement INSTANCE = new UserMapManagement("usermap.txt");
-
   public UserMapManagement(String filename) {
     super(filename, new UserMapParser());
-  }
-
-  public static UserMapManagement getGlobalInstance() {
-    return INSTANCE;
   }
 
 }

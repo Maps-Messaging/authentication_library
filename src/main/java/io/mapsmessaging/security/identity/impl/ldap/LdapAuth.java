@@ -28,13 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class LdapAuth  implements IdentityLookup {
+public class LdapAuth implements IdentityLookup {
 
   private LdapUserManager ldapUserManager;
 
-  public LdapAuth(){}
+  public LdapAuth() {
+  }
 
-  public LdapAuth(Map<String, ?> config) throws NamingException{
+  public LdapAuth(Map<String, ?> config) throws NamingException {
     ldapUserManager = new LdapUserManager(config);
   }
 

@@ -22,7 +22,7 @@ import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 
 public class HtGroupFileManager extends FileBaseGroups {
 
-  public HtGroupFileManager(String filename){
+  public HtGroupFileManager(String filename) {
     super(filename);
     load();
   }

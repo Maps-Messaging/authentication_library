@@ -16,9 +16,10 @@
 
 package io.mapsmessaging.security.identity.principals;
 
+import lombok.Data;
+
 import java.security.Principal;
 import java.util.UUID;
-import lombok.Data;
 
 @Data
 public class UniqueIdentifierPrincipal implements Principal {

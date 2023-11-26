@@ -34,12 +34,12 @@ public class ApacheBasicAuth implements IdentityLookup {
   private final FileBaseIdentities passwdFileManager;
   private final FileBaseGroups groupFileManager;
 
-  public ApacheBasicAuth(){
+  public ApacheBasicAuth() {
     passwdFileManager = null;
     groupFileManager = null;
   }
 
-  public ApacheBasicAuth(String passwordFile, String groupFile){
+  public ApacheBasicAuth(String passwordFile, String groupFile) {
     passwdFileManager = new HtPasswdFileManager(passwordFile);
     groupFileManager = new HtGroupFileManager(groupFile);
   }
@@ -70,7 +70,7 @@ public class ApacheBasicAuth implements IdentityLookup {
       return null;
     }
     IdentityEntry identityEntry = passwdFileManager.findEntry(username);
-    if(identityEntry != null){
+    if (identityEntry != null) {
       groupFileManager.loadGroups(identityEntry);
     }
     return identityEntry;
@@ -86,16 +86,16 @@ public class ApacheBasicAuth implements IdentityLookup {
     if (config.containsKey("passwordFile")) {
       String filePath = config.get("passwordFile").toString();
       String groupFile = "";
-      if(config.containsKey("groupFile")){
+      if (config.containsKey("groupFile")) {
         groupFile = config.get("groupFile").toString();
       }
       return new ApacheBasicAuth(filePath, groupFile);
     }
-    if(config.containsKey("configDirectory")){
+    if (config.containsKey("configDirectory")) {
       String directory = config.get("configDirectory").toString();
       File file = new File(directory);
-      if(file.isDirectory()){
-        return new ApacheBasicAuth(file.getAbsolutePath()+File.separator+".htpassword", file.getAbsolutePath()+File.separator+".htgroups");
+      if (file.isDirectory()) {
+        return new ApacheBasicAuth(file.getAbsolutePath() + File.separator + ".htpassword", file.getAbsolutePath() + File.separator + ".htgroups");
       }
     }
     return null;

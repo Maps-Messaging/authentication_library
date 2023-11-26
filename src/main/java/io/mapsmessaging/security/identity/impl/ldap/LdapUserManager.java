@@ -18,20 +18,12 @@ package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
+import javax.naming.directory.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class LdapUserManager {
 
@@ -58,7 +50,7 @@ public class LdapUserManager {
 
   public IdentityEntry findEntry(String username) {
     LdapUser entry = userMap.get(username);
-    if(entry == null){
+    if (entry == null) {
       entry = findUser(username);
     }
     return entry;
@@ -72,7 +64,7 @@ public class LdapUserManager {
     throw new NoSuchUserFoundException("Password entry for " + username + " not found");
   }
 
-  private LdapUser findUser(String username){
+  private LdapUser findUser(String username) {
     SearchControls searchControls = new SearchControls();
     String[] returnedAtts = {"cn", "givenName", "gecos", "homeDirectory", "gidNumber", passwordName};
     searchControls.setReturningAttributes(returnedAtts);
@@ -87,7 +79,7 @@ public class LdapUserManager {
         Attributes attrs = result.getAttributes();
 
         Attribute user = attrs.get("cn");
-        String userString = (String)user.get();
+        String userString = (String) user.get();
         Attribute password = attrs.get(passwordName);
         if (password != null) {
           Object v = password.get();
@@ -105,9 +97,8 @@ public class LdapUserManager {
       }
     } catch (NamingException e) {
       throw new RuntimeException(e);
-    }
-    finally{
-      if(directoryContext != null){
+    } finally {
+      if (directoryContext != null) {
         try {
           directoryContext.close();
         } catch (NamingException e) {
@@ -126,12 +117,12 @@ public class LdapUserManager {
 
     // Perform LDAP search
     NamingEnumeration<SearchResult> searchResults = directoryContext.search(groupSearchBase, "(memberUid=" + userId + ")", groupSearchControls);
-    while(searchResults.hasMoreElements()){
+    while (searchResults.hasMoreElements()) {
       SearchResult result = searchResults.nextElement();
       Attributes attrs = result.getAttributes();
-      if(attrs.size() > 0){
+      if (attrs.size() > 0) {
         Attribute groupName = attrs.get("cn");
-        if(groupName != null ){
+        if (groupName != null) {
           Set<String> memberList = new TreeSet<>();
           memberList.add(userId);
           // ToDo

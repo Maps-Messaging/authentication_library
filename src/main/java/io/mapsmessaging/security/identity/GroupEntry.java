@@ -16,10 +16,10 @@
 
 package io.mapsmessaging.security.identity;
 
+import lombok.Getter;
+
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
-import lombok.Getter;
 
 /**
  * Represents a group in the context of authentication.
@@ -57,31 +57,27 @@ import lombok.Getter;
  */
 public class GroupEntry implements Comparable<GroupEntry> {
 
-  protected final Set<UUID> userSet;
+  protected final Set<String> userSet;
 
   @Getter
   protected String name;
 
-  @Getter protected UUID uuid;
-
-  public GroupEntry(){
+  public GroupEntry() {
     name = "";
-    uuid = UUID.randomUUID();
     userSet = new TreeSet<>();
   }
 
-  public GroupEntry(String name, UUID uuid, Set<UUID> userSet) {
+  public GroupEntry(String name, Set<String> userSet) {
     this.name = name;
     this.userSet = userSet;
-    this.uuid = uuid;
   }
 
-  public boolean isInGroup(UUID authId) {
-    return userSet.contains(authId);
+  public boolean isInGroup(String check) {
+    return userSet.contains(check);
   }
 
   @Override
   public int compareTo(GroupEntry o) {
-    return uuid.compareTo(o.uuid);
+    return name.compareTo(o.name);
   }
 }

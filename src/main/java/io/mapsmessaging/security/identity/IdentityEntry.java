@@ -19,10 +19,11 @@ package io.mapsmessaging.security.identity;
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
+import lombok.Getter;
+
+import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.*;
-import javax.security.auth.Subject;
-import lombok.Getter;
 
 /**
  * Represents an identity entry, which can be a user or a machine-to-machine username.
@@ -62,46 +63,41 @@ import lombok.Getter;
  */
 public class IdentityEntry {
 
+  protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
   @Getter
   protected String username;
-
   @Getter
   protected PasswordParser passwordParser;
-
   @Getter
   protected String password;
 
-  protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
-
-
-  public boolean isInGroup(String group){
+  public boolean isInGroup(String group) {
     return groupList.containsKey(group);
   }
 
-  public void addGroup(GroupEntry group){
+  public void addGroup(GroupEntry group) {
     groupList.put(group.name, group);
   }
 
-  public void clearGroups(){
+  public void clearGroups() {
     groupList.clear();
   }
 
-  public List<GroupEntry> getGroups(){
+  public List<GroupEntry> getGroups() {
     return new ArrayList<>(groupList.values());
   }
 
-  public Subject getSubject(){
+  public Subject getSubject() {
     return new Subject(true, getPrincipals(), new TreeSet<>(), new TreeSet<>());
   }
 
-  protected Set<Principal> getPrincipals(){
+  protected Set<Principal> getPrincipals() {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(username));
-    for(GroupEntry group:groupList.values()){
-      principals.add(new GroupPrincipal(group.getName(), group.getUuid()));
+    for (GroupEntry group : groupList.values()) {
+      principals.add(new GroupPrincipal(group.getName()));
     }
-    principals.add(
-        new GroupPrincipal("everyone", UUID.fromString("00000000-0000-0000-0000-000000000000")));
+    principals.add(new GroupPrincipal("everyone"));
     return principals;
   }
 

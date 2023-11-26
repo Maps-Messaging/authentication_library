@@ -16,8 +16,6 @@
 
 package io.mapsmessaging.security.identity.impl;
 
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
@@ -26,10 +24,11 @@ import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.parsers.md5.Md5PasswordParser;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 class ApacheIdentifierTest {
 
@@ -66,9 +65,9 @@ class ApacheIdentifierTest {
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
-    UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get("apache:test");
-    Assertions.assertNotNull(userIdMap);
-    Assertions.assertEquals("test", userIdMap.getUsername());
+//    UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get("apache:test");
+//    Assertions.assertNotNull(userIdMap);
+//    Assertions.assertEquals("test", userIdMap.getUsername());
     Assertions.assertTrue(entry.isInGroup("user"));
   }
 

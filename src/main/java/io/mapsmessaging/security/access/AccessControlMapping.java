@@ -15,10 +15,11 @@
  */
 
 package io.mapsmessaging.security.access;
+
 /**
  * An interface for mapping between access control strings and corresponding bitset values.
  * Implementations of this interface define the access control keywords and their corresponding bitset values.
- *
+ * <p>
  * Example implementation:
  * An implementation can define a set of access control keywords and their corresponding bitset values.
  * For example, consider the following access control keywords:
@@ -26,7 +27,7 @@ package io.mapsmessaging.security.access;
  * - "Write": grants write access (bitset value 2)
  * - "Create": grants create access (bitset value 4)
  * - "Delete": grants delete access (bitset value 8)
- *
+ * <p>
  * An implementation can map these access control keywords to their respective bitset values.
  */
 public interface AccessControlMapping {
@@ -37,6 +38,7 @@ public interface AccessControlMapping {
    * @return the bitset value, or null if not found
    */
   Long getAccessValue(String accessControl);
+
   /**
    * Retrieves the String value associated with the given access value.
    *
