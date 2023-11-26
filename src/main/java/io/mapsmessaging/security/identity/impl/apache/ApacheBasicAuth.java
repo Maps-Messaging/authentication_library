@@ -16,10 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.apache;
 
-import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.PasswordGenerator;
+import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
@@ -69,6 +66,17 @@ public class ApacheBasicAuth implements IdentityLookup {
       groupFileManager.loadGroups(identityEntry);
     }
     return identityEntry;
+  }
+
+  @Override
+  public GroupEntry findGroup(String groupName) {
+    return groupFileManager.findGroup(groupName);
+  }
+
+  @Override
+  public void updateGroup(GroupEntry groupEntry) throws IOException {
+    groupFileManager.deleteEntry(groupEntry.getName());
+    groupFileManager.addEntry(groupEntry.toString());
   }
 
   @Override

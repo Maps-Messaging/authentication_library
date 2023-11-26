@@ -139,6 +139,49 @@ public class IdentityAccessManager {
     return false;
   }
 
+  public boolean addUserToGroup(String username, String group) throws IOException {
+    IdentityEntry identityEntry = identityLookup.findEntry(username);
+    if (identityEntry == null) {
+      return false;
+    }
+    GroupEntry groupEntry = identityLookup.findGroup(group);
+    if (groupEntry == null) {
+      return false;
+    }
+    if (identityEntry.isInGroup(groupEntry.getName())) {
+      return false;
+    }
+    identityEntry.addGroup(groupEntry);
+    groupEntry.addUser(username);
+    identityLookup.updateGroup(groupEntry);
+    return true;
+  }
+
+  public boolean removeUserFromGroup(String username, String group) throws IOException {
+    IdentityEntry identityEntry = identityLookup.findEntry(username);
+    if (identityEntry == null) {
+      return false;
+    }
+    GroupEntry groupEntry = identityLookup.findGroup(group);
+    if (groupEntry == null) {
+      return false;
+    }
+    if (!identityEntry.isInGroup(groupEntry.getName())) {
+      return false;
+    }
+    identityEntry.removeGroup(groupEntry);
+    groupEntry.removeUser(username);
+    identityLookup.updateGroup(groupEntry);
+    if (groupEntry.getUserCount() == 0) {
+      identityLookup.deleteGroup(groupEntry.getName());
+      groupMapManagement.remove(groupEntry.getName());
+      groupMapManagement.save();
+    }
+    return true;
+
+  }
+
+
   private UserIdMap mapUser(IdentityEntry entry) {
     UserIdMap userIdMap = null;
     if (userMapManagement.get(entry.getUsername()) == null) {

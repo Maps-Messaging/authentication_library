@@ -106,4 +106,7 @@ public class IdentityEntry {
     return username + ":" + password;
   }
 
+  public void removeGroup(GroupEntry groupEntry) {
+    groupList.remove(groupEntry.getName());
+  }
 }

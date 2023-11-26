@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
+import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
@@ -45,6 +46,11 @@ public class LdapAuth implements IdentityLookup {
   @Override
   public String getDomain() {
     return "ldap";
+  }
+
+  @Override
+  public GroupEntry findGroup(String groupName) {
+    return null;//ldapUserManager.findGroup(groupName);
   }
 
   @Override

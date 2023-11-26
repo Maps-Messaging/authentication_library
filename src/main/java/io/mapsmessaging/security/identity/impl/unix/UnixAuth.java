@@ -79,6 +79,11 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
+  public GroupEntry findGroup(String groupName) {
+    return groupFileManager.findGroup(groupName);
+  }
+
+  @Override
   public List<IdentityEntry> getEntries() {
     return passwordFileIdentities.getEntries();
   }

@@ -33,6 +33,8 @@ public interface IdentityLookup {
 
   IdentityEntry findEntry(String username);
 
+  GroupEntry findGroup(String groupName);
+
   List<IdentityEntry> getEntries();
 
   IdentityLookup create(Map<String, ?> config);
@@ -50,6 +52,10 @@ public interface IdentityLookup {
   }
 
   default boolean deleteUser(String username) throws IOException {
+    throw new NotImplementedException("Unable to delete users to an LDAP server");
+  }
+
+  default void updateGroup(GroupEntry groupEntry) throws IOException {
     throw new NotImplementedException("Unable to delete users to an LDAP server");
   }
 }

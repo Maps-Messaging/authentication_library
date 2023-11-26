@@ -72,6 +72,10 @@ public class GroupEntry implements Comparable<GroupEntry> {
     this.userSet = userSet;
   }
 
+  public void addUser(String user) {
+    userSet.add(user);
+  }
+
   public boolean isInGroup(String check) {
     return userSet.contains(check);
   }
@@ -79,5 +83,13 @@ public class GroupEntry implements Comparable<GroupEntry> {
   @Override
   public int compareTo(GroupEntry o) {
     return name.compareTo(o.name);
+  }
+
+  public void removeUser(String username) {
+    userSet.remove(username);
+  }
+
+  public int getUserCount() {
+    return userSet.size();
   }
 }
