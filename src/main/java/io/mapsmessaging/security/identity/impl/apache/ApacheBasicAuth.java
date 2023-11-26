@@ -50,6 +50,11 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
+  public String getDomain() {
+    return "apache";
+  }
+
+  @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     return passwdFileManager.getPasswordHash(username);
   }
@@ -99,6 +104,13 @@ public class ApacheBasicAuth implements IdentityLookup {
       }
     }
     return null;
+  }
+
+  @Override
+  public void deleteUser(String username) throws IOException {
+    if (passwdFileManager != null) {
+      passwdFileManager.deleteEntry(username);
+    }
   }
 
 }

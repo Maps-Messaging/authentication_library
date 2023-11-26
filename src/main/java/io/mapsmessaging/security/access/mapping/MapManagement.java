@@ -28,6 +28,7 @@ public class MapManagement<T extends IdMap> {
   private final MapParser<T> parser;
   private final Map<UUID, T> userIdMapByUuid;
   private final Map<String, T> userIdMapByUser;
+  private boolean hasChanged;
 
   public MapManagement(String filename, MapParser<T> parser) {
     userIdMapByUuid = new ConcurrentHashMap<>();
@@ -35,6 +36,7 @@ public class MapManagement<T extends IdMap> {
     this.fileName = filename;
     this.parser = parser;
     load();
+    hasChanged = false;
   }
 
   public void clearAll() {
@@ -61,7 +63,7 @@ public class MapManagement<T extends IdMap> {
     if (!userIdMapByUser.containsKey(entry.getKey())) {
       userIdMapByUser.put(entry.getKey(), entry);
       userIdMapByUuid.put(entry.getAuthId(), entry);
-      // save();
+      hasChanged = true;
       return true;
     }
     return false;
@@ -83,15 +85,18 @@ public class MapManagement<T extends IdMap> {
   }
 
   public void save() {
-    try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
-      List<T> values = new ArrayList<>(userIdMapByUuid.values());
-      List<String> linesToWrite = parser.writeToList(values);
-      for (String line : linesToWrite) {
-        bw.write(line);
-        bw.newLine(); // Add a newline character after each line
+    if (hasChanged) {
+      try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+        List<T> values = new ArrayList<>(userIdMapByUuid.values());
+        List<String> linesToWrite = parser.writeToList(values);
+        for (String line : linesToWrite) {
+          bw.write(line);
+          bw.newLine(); // Add a newline character after each line
+        }
+        hasChanged = false;
+      } catch (IOException e) {
+        e.printStackTrace();
       }
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
@@ -100,7 +105,7 @@ public class MapManagement<T extends IdMap> {
     if (!userIdMapByUser.containsKey(username)) {
       userIdMapByUser.put(entry.getKey(), entry);
       userIdMapByUuid.put(entry.getAuthId(), entry);
-      save();
+      hasChanged = true;
       return true;
     }
     return false;

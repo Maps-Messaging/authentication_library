@@ -53,13 +53,13 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
-    return passwordFileIdentities.getPasswordHash(username);
+  public String getDomain() {
+    return getName();
   }
 
   @Override
-  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
-    throw new NotImplementedException("Unale to add users to a unix system");
+  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+    return passwordFileIdentities.getPasswordHash(username);
   }
 
   @Override
@@ -102,6 +102,17 @@ public class UnixAuth implements IdentityLookup {
       }
     }
     return null;
+  }
+
+
+  @Override
+  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
+    throw new NotImplementedException("Unable to add users to a unix system");
+  }
+
+  @Override
+  public void deleteUser(String username) {
+    throw new NotImplementedException("Unable to delete users to a unix system");
   }
 
 }

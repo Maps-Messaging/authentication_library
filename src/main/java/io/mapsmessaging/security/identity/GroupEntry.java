@@ -38,10 +38,10 @@ import java.util.TreeSet;
  *
  * <pre>{@code
  * // Create a new group
- * Set<UUID> userSet = new TreeSet();
+ * Set<String> userSet = new TreeSet();
  * // Add users to the group
- * userSet.add(uuid1);
- * userSet.add(uuid2);
+ * userSet.add(string1);
+ * userSet.add(string2);
  *
  * GroupEntry group = new GroupEntry("Group1", userSet);
  *

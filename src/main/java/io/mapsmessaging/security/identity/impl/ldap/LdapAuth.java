@@ -45,13 +45,13 @@ public class LdapAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
-    return ldapUserManager.getPasswordHash(username);
+  public String getDomain() {
+    return "ldap";
   }
 
   @Override
-  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
-    throw new NotImplementedException("Unable to add users to an LDAP server");
+  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+    return ldapUserManager.getPasswordHash(username);
   }
 
   @Override
@@ -74,6 +74,16 @@ public class LdapAuth implements IdentityLookup {
       }
     }
     return null;
+  }
+
+  @Override
+  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
+    throw new NotImplementedException("Unable to add users to an LDAP server");
+  }
+
+  @Override
+  public void deleteUser(String username) {
+    throw new NotImplementedException("Unable to delete users to an LDAP server");
   }
 
 }

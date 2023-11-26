@@ -26,6 +26,8 @@ public interface IdentityLookup {
 
   String getName();
 
+  String getDomain();
+
   char[] getPasswordHash(String username) throws NoSuchUserFoundException;
 
   boolean createUser(String username, String passwordHash, PasswordParser passwordParser) throws IOException;
@@ -36,4 +38,5 @@ public interface IdentityLookup {
 
   IdentityLookup create(Map<String, ?> config);
 
+  void deleteUser(String username) throws IOException;
 }
