@@ -19,7 +19,9 @@ package io.mapsmessaging.security.identity.impl.base;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
+import io.mapsmessaging.security.identity.impl.apache.HtGroupEntry;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,5 +54,20 @@ public abstract class FileBaseGroups extends FileLoader {
         identityEntry.addGroup(groupEntry);
       }
     }
+  }
+
+  public void addEntry(String groupName) throws IOException {
+    GroupEntry groupEntry = new HtGroupEntry(groupName);
+    groups.put(groupName, groupEntry);
+    add(groupEntry.toString());
+  }
+
+  public void deleteEntry(String groupName) throws IOException {
+    GroupEntry entry = groups.get(groupName);
+    if (entry != null) {
+      groups.remove(groupName);
+      delete(groupName);
+    }
+
   }
 }

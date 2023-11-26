@@ -19,8 +19,6 @@ package io.mapsmessaging.security.identity.impl.ldap;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import org.apache.commons.lang3.NotImplementedException;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -74,16 +72,6 @@ public class LdapAuth implements IdentityLookup {
       }
     }
     return null;
-  }
-
-  @Override
-  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
-    throw new NotImplementedException("Unable to add users to an LDAP server");
-  }
-
-  @Override
-  public void deleteUser(String username) {
-    throw new NotImplementedException("Unable to delete users to an LDAP server");
   }
 
 }

@@ -33,6 +33,7 @@ import javax.security.auth.Subject;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -49,10 +50,18 @@ public class IdentityAccessManager {
     groupMapManagement = new GroupMapManagement(path + File.separator + "groupmap");
     userMapManagement = new UserMapManagement(path + File.separator + "usermap");
     for (IdentityEntry entry : identityLookup.getEntries()) {
-      handleUser(entry);
+      mapUser(entry);
     }
     userMapManagement.save();
     groupMapManagement.save();
+  }
+
+  public List<UserIdMap> getAllUsers() {
+    return userMapManagement.getAll();
+  }
+
+  public List<GroupIdMap> getAllGroups() {
+    return groupMapManagement.getAll();
   }
 
   public Subject updateSubject(Subject subject) {
@@ -63,7 +72,7 @@ public class IdentityAccessManager {
     }
     UserIdMap userIdMap = userMapManagement.get(username);
     if (userIdMap == null) {
-      userIdMap = handleUser(identityEntry);
+      userIdMap = mapUser(identityEntry);
       userMapManagement.save();
       groupMapManagement.save();
     }
@@ -76,6 +85,28 @@ public class IdentityAccessManager {
       }
     }
     return subject;
+  }
+
+  public boolean createGroup(String groupName) throws IOException {
+    if (groupMapManagement.get(groupName) != null) {
+      return false;
+    }
+    GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), groupName, identityLookup.getDomain());
+    identityLookup.createGroup(groupName);
+    groupMapManagement.add(groupIdMap);
+    groupMapManagement.save();
+    return true;
+  }
+
+  public boolean deleteGroup(String groupName) throws IOException {
+    if (groupMapManagement.get(groupName) != null) {
+      if (identityLookup.deleteGroup(groupName)) {
+        groupMapManagement.remove(groupName);
+        groupMapManagement.save();
+        return true;
+      }
+    }
+    return false;
   }
 
   public boolean createUser(String username, String hash, PasswordParser passwordParser) throws IOException {
@@ -108,7 +139,7 @@ public class IdentityAccessManager {
     return false;
   }
 
-  private UserIdMap handleUser(IdentityEntry entry) {
+  private UserIdMap mapUser(IdentityEntry entry) {
     UserIdMap userIdMap = null;
     if (userMapManagement.get(entry.getUsername()) == null) {
       userIdMap = new UserIdMap(UUID.randomUUID(), entry.getUsername(), identityLookup.getDomain(), null);

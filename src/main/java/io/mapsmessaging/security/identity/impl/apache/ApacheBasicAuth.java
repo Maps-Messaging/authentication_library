@@ -60,16 +60,6 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean createUser(String username, String password, PasswordParser passwordParser) throws IOException {
-    String salt = PasswordGenerator.generateSalt(16);
-    byte[] hash = passwordParser.computeHash(password.getBytes(), salt.getBytes(), 12);
-    if (passwdFileManager != null) {
-      passwdFileManager.addEntry(username, new String(hash));
-    }
-    return false;
-  }
-
-  @Override
   public IdentityEntry findEntry(String username) {
     if (passwdFileManager == null || groupFileManager == null) {
       return null;
@@ -107,10 +97,39 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public void deleteUser(String username) throws IOException {
+  public boolean createUser(String username, String password, PasswordParser passwordParser) throws IOException {
+    String salt = PasswordGenerator.generateSalt(16);
+    byte[] hash = passwordParser.computeHash(password.getBytes(), salt.getBytes(), 12);
     if (passwdFileManager != null) {
-      passwdFileManager.deleteEntry(username);
+      passwdFileManager.addEntry(username, new String(hash));
     }
+    return false;
   }
 
+  @Override
+  public boolean deleteUser(String username) throws IOException {
+    if (passwdFileManager != null) {
+      passwdFileManager.deleteEntry(username);
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public boolean createGroup(String groupName) throws IOException {
+    if (groupFileManager != null) {
+      groupFileManager.addEntry(groupName);
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public boolean deleteGroup(String groupName) throws IOException {
+    if (groupFileManager != null) {
+      groupFileManager.deleteEntry(groupName);
+      return true;
+    }
+    return false;
+  }
 }

@@ -21,8 +21,6 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.File;
 import java.util.List;
@@ -103,16 +101,4 @@ public class UnixAuth implements IdentityLookup {
     }
     return null;
   }
-
-
-  @Override
-  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
-    throw new NotImplementedException("Unable to add users to a unix system");
-  }
-
-  @Override
-  public void deleteUser(String username) {
-    throw new NotImplementedException("Unable to delete users to a unix system");
-  }
-
 }
