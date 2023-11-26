@@ -19,10 +19,11 @@ package io.mapsmessaging.security.sasl.provider.scram;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-import java.io.IOException;
-import java.util.Map;
+
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import java.io.IOException;
+import java.util.Map;
 
 public abstract class State {
 

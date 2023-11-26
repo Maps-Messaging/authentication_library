@@ -16,10 +16,10 @@
 
 package io.mapsmessaging.security.identity;
 
+import lombok.Getter;
+
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
-import lombok.Getter;
 
 /**
  * Represents a group in the context of authentication.
@@ -38,10 +38,10 @@ import lombok.Getter;
  *
  * <pre>{@code
  * // Create a new group
- * Set<UUID> userSet = new TreeSet();
+ * Set<String> userSet = new TreeSet();
  * // Add users to the group
- * userSet.add(uuid1);
- * userSet.add(uuid2);
+ * userSet.add(string1);
+ * userSet.add(string2);
  *
  * GroupEntry group = new GroupEntry("Group1", userSet);
  *
@@ -57,31 +57,39 @@ import lombok.Getter;
  */
 public class GroupEntry implements Comparable<GroupEntry> {
 
-  protected final Set<UUID> userSet;
+  protected final Set<String> userSet;
 
   @Getter
   protected String name;
 
-  @Getter protected UUID uuid;
-
-  public GroupEntry(){
+  public GroupEntry() {
     name = "";
-    uuid = UUID.randomUUID();
     userSet = new TreeSet<>();
   }
 
-  public GroupEntry(String name, UUID uuid, Set<UUID> userSet) {
+  public GroupEntry(String name, Set<String> userSet) {
     this.name = name;
     this.userSet = userSet;
-    this.uuid = uuid;
   }
 
-  public boolean isInGroup(UUID authId) {
-    return userSet.contains(authId);
+  public void addUser(String user) {
+    userSet.add(user);
+  }
+
+  public boolean isInGroup(String check) {
+    return userSet.contains(check);
   }
 
   @Override
   public int compareTo(GroupEntry o) {
-    return uuid.compareTo(o.uuid);
+    return name.compareTo(o.name);
+  }
+
+  public void removeUser(String username) {
+    userSet.remove(username);
+  }
+
+  public int getUserCount() {
+    return userSet.size();
   }
 }

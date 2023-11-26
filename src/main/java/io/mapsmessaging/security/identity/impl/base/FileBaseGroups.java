@@ -16,22 +16,20 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
-import io.mapsmessaging.security.access.mapping.GroupIdMap;
-import io.mapsmessaging.security.access.mapping.GroupMapManagement;
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
+import io.mapsmessaging.security.identity.impl.apache.HtGroupEntry;
+
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public abstract class FileBaseGroups extends FileLoader {
 
   private final Map<String, GroupEntry> groups;
 
-  public FileBaseGroups(String filename){
+  public FileBaseGroups(String filename) {
     super(filename);
     groups = new LinkedHashMap<>();
   }
@@ -45,29 +43,31 @@ public abstract class FileBaseGroups extends FileLoader {
     groups.put(group.getName(), group);
   }
 
-  public GroupEntry findGroup(String name){
+  public GroupEntry findGroup(String name) {
     return groups.get(name);
   }
 
   public void loadGroups(IdentityEntry identityEntry) {
     identityEntry.clearGroups();
-    UserMapManagement userMapManagement = UserMapManagement.getGlobalInstance();
-    GroupMapManagement groupMapManagement = GroupMapManagement.getGlobalInstance();
-    for(GroupEntry groupEntry:groups.values()){
-      UserIdMap userIdMap = userMapManagement.get(getDomain() + ":" + identityEntry.getUsername());
-      if (userIdMap == null) {
-        userIdMap = new UserIdMap(UUID.randomUUID(), getDomain(), identityEntry.getUsername(), "");
-        userMapManagement.add(userIdMap);
-      }
-      if (groupMapManagement.get(groupEntry.getName()) == null) {
-        GroupIdMap groupIdMap =
-            new GroupIdMap(UUID.randomUUID(), groupEntry.getName(), getDomain());
-        groupMapManagement.add(groupIdMap);
-      }
-      if (groupEntry.isInGroup(userIdMap.getAuthId())) {
+    for (GroupEntry groupEntry : groups.values()) {
+      if (groupEntry.isInGroup(identityEntry.getUsername())) {
         identityEntry.addGroup(groupEntry);
       }
     }
   }
 
+  public void addEntry(String groupName) throws IOException {
+    GroupEntry groupEntry = new HtGroupEntry(groupName);
+    groups.put(groupName, groupEntry);
+    add(groupEntry.toString());
+  }
+
+  public void deleteEntry(String groupName) throws IOException {
+    GroupEntry entry = groups.get(groupName);
+    if (entry != null) {
+      groups.remove(groupName);
+      delete(groupName);
+    }
+
+  }
 }

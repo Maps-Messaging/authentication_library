@@ -1,7 +1,7 @@
 package io.mapsmessaging.security.jaas;
 
-import java.security.Principal;
 import javax.security.auth.callback.Callback;
+import java.security.Principal;
 
 public class PrincipalCallback implements Callback {
 

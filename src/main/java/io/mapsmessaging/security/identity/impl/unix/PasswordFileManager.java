@@ -18,6 +18,7 @@ package io.mapsmessaging.security.identity.impl.unix;
 
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import io.mapsmessaging.security.identity.impl.base.FileLoader;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,13 +26,13 @@ public class PasswordFileManager extends FileLoader {
 
   private final Map<String, PasswordEntry> users;
 
-  public PasswordFileManager(String filename){
+  public PasswordFileManager(String filename) {
     super(filename);
     users = new LinkedHashMap<>();
     load();
   }
 
-  protected PasswordEntry load(String line) throws IllegalFormatException{
+  protected PasswordEntry load(String line) throws IllegalFormatException {
     return new PasswordEntry(line);
   }
 
@@ -40,7 +41,7 @@ public class PasswordFileManager extends FileLoader {
     users.put(user.getUsername(), user);
   }
 
-  public PasswordEntry findUser(String name){
+  public PasswordEntry findUser(String name) {
     return users.get(name);
   }
 

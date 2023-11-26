@@ -25,13 +25,14 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.sun.security.auth.UserPrincipal;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 import java.security.interfaces.RSAPublicKey;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Map;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
 
 public class Auth0JwtLoginModule extends BaseLoginModule {
 
@@ -66,15 +67,15 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
       DecodedJWT verifiedJwt = verifier.verify(token);
       LocalDate expires = verifiedJwt.getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
       LocalDate now = LocalDate.now();
-      if(expires.isBefore(now)){
-        throw new LoginException("Token expired on "+expires);
+      if (expires.isBefore(now)) {
+        throw new LoginException("Token expired on " + expires);
       }
       // Need to add token information into the subject
       String tokenUser = jwt.getSubject();
-      if(tokenUser.contains("@")){
+      if (tokenUser.contains("@")) {
         tokenUser = tokenUser.substring(0, tokenUser.indexOf("@"));
       }
-      if(username.equals(tokenUser)){
+      if (username.equals(tokenUser)) {
         userPrincipal = new UserPrincipal(username);
         return true;
       }

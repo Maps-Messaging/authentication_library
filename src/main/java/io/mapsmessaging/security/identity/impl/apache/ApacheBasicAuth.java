@@ -16,12 +16,14 @@
 
 package io.mapsmessaging.security.identity.impl.apache;
 
-import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 public class ApacheBasicAuth implements IdentityLookup {
@@ -29,12 +31,12 @@ public class ApacheBasicAuth implements IdentityLookup {
   private final FileBaseIdentities passwdFileManager;
   private final FileBaseGroups groupFileManager;
 
-  public ApacheBasicAuth(){
+  public ApacheBasicAuth() {
     passwdFileManager = null;
     groupFileManager = null;
   }
 
-  public ApacheBasicAuth(String passwordFile, String groupFile){
+  public ApacheBasicAuth(String passwordFile, String groupFile) {
     passwdFileManager = new HtPasswdFileManager(passwordFile);
     groupFileManager = new HtGroupFileManager(groupFile);
   }
@@ -59,14 +61,30 @@ public class ApacheBasicAuth implements IdentityLookup {
 
   @Override
   public IdentityEntry findEntry(String username) {
-    if (passwdFileManager == null) {
+    if (passwdFileManager == null || groupFileManager == null) {
       return null;
     }
     IdentityEntry identityEntry = passwdFileManager.findEntry(username);
-    if(identityEntry != null){
+    if (identityEntry != null) {
       groupFileManager.loadGroups(identityEntry);
     }
     return identityEntry;
+  }
+
+  @Override
+  public GroupEntry findGroup(String groupName) {
+    return groupFileManager.findGroup(groupName);
+  }
+
+  @Override
+  public void updateGroup(GroupEntry groupEntry) throws IOException {
+    groupFileManager.deleteEntry(groupEntry.getName());
+    groupFileManager.addEntry(groupEntry.toString());
+  }
+
+  @Override
+  public List<IdentityEntry> getEntries() {
+    return passwdFileManager.getEntries();
   }
 
   @Override
@@ -74,22 +92,55 @@ public class ApacheBasicAuth implements IdentityLookup {
     if (config.containsKey("passwordFile")) {
       String filePath = config.get("passwordFile").toString();
       String groupFile = "";
-      if(config.containsKey("groupFile")){
+      if (config.containsKey("groupFile")) {
         groupFile = config.get("groupFile").toString();
       }
       return new ApacheBasicAuth(filePath, groupFile);
     }
-    if(config.containsKey("configDirectory")){
+    if (config.containsKey("configDirectory")) {
       String directory = config.get("configDirectory").toString();
       File file = new File(directory);
-      if (!file.exists()) {
-        file.mkdirs();
-      }
-      if(file.isDirectory()){
-        return new ApacheBasicAuth(file.getAbsolutePath()+File.separator+".htpassword", file.getAbsolutePath()+File.separator+".htgroups");
+      if (file.isDirectory()) {
+        return new ApacheBasicAuth(file.getAbsolutePath() + File.separator + ".htpassword", file.getAbsolutePath() + File.separator + ".htgroups");
       }
     }
     return null;
   }
 
+  @Override
+  public boolean createUser(String username, String password, PasswordParser passwordParser) throws IOException {
+    String salt = PasswordGenerator.generateSalt(16);
+    byte[] hash = passwordParser.computeHash(password.getBytes(), salt.getBytes(), 12);
+    if (passwdFileManager != null) {
+      passwdFileManager.addEntry(username, new String(hash));
+    }
+    return false;
+  }
+
+  @Override
+  public boolean deleteUser(String username) throws IOException {
+    if (passwdFileManager != null) {
+      passwdFileManager.deleteEntry(username);
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public boolean createGroup(String groupName) throws IOException {
+    if (groupFileManager != null) {
+      groupFileManager.addEntry(groupName);
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public boolean deleteGroup(String groupName) throws IOException {
+    if (groupFileManager != null) {
+      groupFileManager.deleteEntry(groupName);
+      return true;
+    }
+    return false;
+  }
 }

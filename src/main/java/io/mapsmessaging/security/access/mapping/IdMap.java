@@ -16,10 +16,11 @@
 
 package io.mapsmessaging.security.access.mapping;
 
-import java.util.UUID;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.util.UUID;
 
 @Data
 @ToString

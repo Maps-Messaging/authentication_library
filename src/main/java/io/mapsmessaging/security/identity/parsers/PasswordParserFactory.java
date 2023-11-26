@@ -16,12 +16,13 @@
 
 package io.mapsmessaging.security.identity.parsers;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_PARSER_LOADED;
-
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.parsers.plain.PlainPasswordParser;
+
 import java.util.ServiceLoader;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_PARSER_LOADED;
 
 public class PasswordParserFactory {
 
@@ -32,7 +33,7 @@ public class PasswordParserFactory {
 
   private PasswordParserFactory() {
     passwordParsers = ServiceLoader.load(PasswordParser.class);
-    for(PasswordParser parser:passwordParsers){
+    for (PasswordParser parser : passwordParsers) {
       logger.log(PASSWORD_PARSER_LOADED, parser.getName(), parser.getKey());
     }
   }

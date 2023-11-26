@@ -16,27 +16,19 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
-
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
-import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.*;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.spi.LoginModule;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 
 public abstract class BaseLoginModule implements LoginModule {
 

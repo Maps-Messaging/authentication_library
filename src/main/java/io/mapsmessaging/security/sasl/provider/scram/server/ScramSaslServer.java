@@ -16,15 +16,16 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server;
 
-import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
+import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.server.state.InitialState;
-import java.util.Map;
+
 import javax.crypto.Mac;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
+import java.util.Map;
 
 public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 

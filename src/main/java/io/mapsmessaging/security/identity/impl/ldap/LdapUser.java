@@ -20,14 +20,15 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
-import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Set;
+import lombok.Getter;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import lombok.Getter;
+import java.security.Principal;
+import java.util.Enumeration;
+import java.util.Set;
 
 public class LdapUser extends IdentityEntry {
 
@@ -43,14 +44,13 @@ public class LdapUser extends IdentityEntry {
     super.password = new String(password);
     super.passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
     this.attrs = attrs;
-    NamingEnumeration<? extends Attribute> namingEnum =  attrs.getAll();
-    while(namingEnum.hasMoreElements()){
+    NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();
+    while (namingEnum.hasMoreElements()) {
       Attribute attribute = namingEnum.nextElement();
       try {
-        if(attribute.getID().equalsIgnoreCase("homedirectory")){
+        if (attribute.getID().equalsIgnoreCase("homedirectory")) {
           homeDirectory = (String) attribute.get();
-        }
-        else if(attribute.getID().equalsIgnoreCase("gecos")){
+        } else if (attribute.getID().equalsIgnoreCase("gecos")) {
           description = (String) attribute.get();
         }
 
@@ -62,25 +62,24 @@ public class LdapUser extends IdentityEntry {
 
 
   @Override
-  protected Set<Principal> getPrincipals(){
+  protected Set<Principal> getPrincipals() {
     Set<Principal> principals = super.getPrincipals();
-    if(homeDirectory != null){
+    if (homeDirectory != null) {
       principals.add(new HomeDirectoryPrinicipal(homeDirectory));
     }
-    if(description != null){
+    if (description != null) {
       principals.add(new FullNamePrincipal(description));
     }
-    Enumeration<? extends Attribute> enumeration= attrs.getAll();
-    while(enumeration.hasMoreElements()){
+    Enumeration<? extends Attribute> enumeration = attrs.getAll();
+    while (enumeration.hasMoreElements()) {
       Attribute attribute = enumeration.nextElement();
-      if(!attribute.getID().equalsIgnoreCase("cn") &&
-          !attribute.getID().toLowerCase().contains("password")){
+      if (!attribute.getID().equalsIgnoreCase("cn") &&
+          !attribute.getID().toLowerCase().contains("password")) {
         principals.add(new LdapPrincipal(attribute.toString()));
       }
     }
     return principals;
   }
-
 
 
   static class LdapPrincipal implements Principal {

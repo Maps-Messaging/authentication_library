@@ -16,20 +16,25 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
+import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import java.util.Map;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-public class LdapAuth  implements IdentityLookup {
+public class LdapAuth implements IdentityLookup {
 
   private LdapUserManager ldapUserManager;
 
-  public LdapAuth(){}
+  public LdapAuth() {
+  }
 
-  public LdapAuth(Map<String, ?> config) throws NamingException{
+  public LdapAuth(Map<String, ?> config) throws NamingException {
     ldapUserManager = new LdapUserManager(config);
   }
 
@@ -40,7 +45,12 @@ public class LdapAuth  implements IdentityLookup {
 
   @Override
   public String getDomain() {
-    return getName();
+    return "ldap";
+  }
+
+  @Override
+  public GroupEntry findGroup(String groupName) {
+    return null;//ldapUserManager.findGroup(groupName);
   }
 
   @Override
@@ -51,6 +61,11 @@ public class LdapAuth  implements IdentityLookup {
   @Override
   public IdentityEntry findEntry(String username) {
     return ldapUserManager.findEntry(username);
+  }
+
+  @Override
+  public List<IdentityEntry> getEntries() {
+    return new ArrayList<>();
   }
 
   @Override

@@ -16,13 +16,14 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.msgs;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
-import lombok.Getter;
-import lombok.Setter;
 
 public class ChallengeResponse {
 

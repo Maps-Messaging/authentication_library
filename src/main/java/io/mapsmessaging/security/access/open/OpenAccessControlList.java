@@ -18,8 +18,9 @@ package io.mapsmessaging.security.access.open;
 
 import io.mapsmessaging.security.access.AccessControlList;
 import io.mapsmessaging.security.access.AccessControlMapping;
-import java.util.List;
+
 import javax.security.auth.Subject;
+import java.util.List;
 
 public class OpenAccessControlList implements AccessControlList {
 

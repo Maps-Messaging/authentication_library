@@ -16,11 +16,11 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.crypto;
 
+import javax.crypto.Mac;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
-import javax.crypto.Mac;
 
 public class CryptoHelper {
 

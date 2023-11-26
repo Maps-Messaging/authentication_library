@@ -19,11 +19,12 @@ package io.mapsmessaging.security.sasl.provider.scram.client.state;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
+
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
 
 public class FinalValidationState extends State {
 

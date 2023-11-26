@@ -21,7 +21,6 @@ import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 
 public class HtPasswdFileManager extends FileBaseIdentities {
 
-
   public HtPasswdFileManager(String filepath) {
     super(filepath);
     load();

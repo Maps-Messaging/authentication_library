@@ -16,21 +16,19 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
-public class GroupFileManager  extends FileBaseGroups {
+public class GroupFileManager extends FileBaseGroups {
 
   private final Map<Integer, GroupEntry> byId = new LinkedHashMap<>();
 
-  public GroupFileManager(String filename){
+  public GroupFileManager(String filename) {
     super(filename);
     load();
   }
@@ -47,22 +45,15 @@ public class GroupFileManager  extends FileBaseGroups {
     return entry;
   }
 
-  public GroupEntry findGroup(int id){
+  public GroupEntry findGroup(int id) {
     return byId.get(id);
   }
 
   public void loadGroups(IdentityEntry identityEntry) {
-    UserMapManagement userMapManagement = UserMapManagement.getGlobalInstance();
-    for(GroupEntry groupEntry:byId.values()){
-      UserIdMap userIdMap = userMapManagement.get("unix:" + identityEntry.getUsername());
-      if (userIdMap == null) {
-        userIdMap = new UserIdMap(UUID.randomUUID(), "unix", identityEntry.getUsername(), "");
-        userMapManagement.add(userIdMap);
-      }
-      if (groupEntry.isInGroup(userIdMap.getAuthId())) {
+    for (GroupEntry groupEntry : byId.values()) {
+      if (groupEntry.isInGroup(identityEntry.getUsername())) {
         identityEntry.addGroup(groupEntry);
       }
     }
   }
-
 }

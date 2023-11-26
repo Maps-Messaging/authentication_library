@@ -16,30 +16,23 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.generateSecretHash;
-import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.getGroups;
-import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.isJwt;
-
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthRequest;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthenticationResultType;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.GetUserRequest;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.GetUserResponse;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.NotAuthorizedException;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+
+import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.*;
 
 public class AwsCognitoLoginModule extends BaseLoginModule {
 
@@ -62,8 +55,8 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     super.initialize(subject, callbackHandler, sharedState, options);
 
     // Region details and cognito location
-    region = Region.of ((String) options.get("region"));
-    userPoolId =(String) options.get("userPoolId");
+    region = Region.of((String) options.get("region"));
+    userPoolId = (String) options.get("userPoolId");
 
     // admin Credentials to use
     accessKeyId = (String) options.get("accessKeyId");
@@ -91,7 +84,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
       String passwordString = new String(password);
 
       // Login based on the JWT being passed in
-      if(isJwt(passwordString)){
+      if (isJwt(passwordString)) {
         return validateForJWT(cognitoClient, username, passwordString);
       }
 
@@ -111,7 +104,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
 
       AdminInitiateAuthResponse authResponse = cognitoClient.adminInitiateAuth(authRequest);
       AuthenticationResultType authResult = authResponse.authenticationResult();
-      if(authResult != null){
+      if (authResult != null) {
         groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
         return true;
       }
@@ -129,18 +122,18 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
   @Override
   public boolean commit() {
     boolean res = super.commit();
-    if(res && groupList != null){
+    if (res && groupList != null) {
       // Add known groups here
-      for(String group:groupList){
+      for (String group : groupList) {
         // ToDo
-        subject.getPrincipals().add(new GroupPrincipal(group, UUID.randomUUID()));
+        subject.getPrincipals().add(new GroupPrincipal(group));
       }
       subject.getPrincipals().add(new AuthHandlerPrincipal("Aws:Cognito"));
     }
     return res;
   }
 
-  private boolean validateForJWT(CognitoIdentityProviderClient cognitoClient, String username, String jwt){
+  private boolean validateForJWT(CognitoIdentityProviderClient cognitoClient, String username, String jwt) {
     GetUserRequest getUserRequest = GetUserRequest.builder()
         .accessToken(jwt)
         .build();
@@ -151,7 +144,6 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     // Retrieve the username from the GetUserResponse
     return username.equals(getUserResponse.username());
   }
-
 
 
 }

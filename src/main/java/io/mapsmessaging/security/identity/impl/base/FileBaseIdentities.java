@@ -16,17 +16,18 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
-
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
+
+import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
 
 public abstract class FileBaseIdentities extends FileLoader {
 
@@ -53,15 +54,28 @@ public abstract class FileBaseIdentities extends FileLoader {
     return identityEntry.getPassword().toCharArray();
   }
 
+  public List<IdentityEntry> getEntries() {
+    return (List<IdentityEntry>) usernamePasswordMap.values();
+  }
+
   protected abstract IdentityEntry load(String line);
 
   public void parse(String line) {
     IdentityEntry identityEntry = load(line);
     usernamePasswordMap.put(identityEntry.getUsername(), identityEntry);
-    if (UserMapManagement.getGlobalInstance().get(getDomain() + ":" + identityEntry.getUsername())
-        == null) {
-      UserMapManagement.getGlobalInstance()
-          .add(new UserIdMap(UUID.randomUUID(), identityEntry.getUsername(), getDomain(), ""));
+  }
+
+  public void addEntry(String username, String passwordHash) throws IOException {
+    IdentityEntry identityEntry = new HtPasswdEntry(username, passwordHash);
+    usernamePasswordMap.put(username, identityEntry);
+    add(identityEntry.toString());
+  }
+
+  public void deleteEntry(String username) throws IOException {
+    IdentityEntry entry = usernamePasswordMap.get(username);
+    if (entry != null) {
+      usernamePasswordMap.remove(username);
+      delete(username);
     }
   }
 }

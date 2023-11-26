@@ -20,10 +20,11 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
-import java.security.Principal;
-import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.security.Principal;
+import java.util.Set;
 
 public class ShadowEntry extends IdentityEntry {
 
@@ -41,9 +42,9 @@ public class ShadowEntry extends IdentityEntry {
   }
 
   @Override
-  protected Set<Principal> getPrincipals(){
+  protected Set<Principal> getPrincipals() {
     Set<Principal> principals = super.getPrincipals();
-    if(passwordEntry != null){
+    if (passwordEntry != null) {
       principals.add(new FullNamePrincipal(passwordEntry.getDescription()));
       principals.add(new HomeDirectoryPrinicipal(passwordEntry.getHomeDirectory()));
     }

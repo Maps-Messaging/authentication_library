@@ -22,17 +22,18 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 public class AwsAuthHelper {
 
-  public static List<String> getGroups(String token, String region, String userPoolId){
+  public static List<String> getGroups(String token, String region, String userPoolId) {
     RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider(region, userPoolId);
     Algorithm algorithm = Algorithm.RSA256(keyProvider);
     JWTVerifier jwtVerifier = JWT.require(algorithm).build();

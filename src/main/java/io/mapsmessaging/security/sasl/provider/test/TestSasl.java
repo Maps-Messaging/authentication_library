@@ -16,13 +16,13 @@
 
 package io.mapsmessaging.security.sasl.provider.test;
 
+import javax.security.sasl.SaslException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Properties;
-import javax.security.sasl.SaslException;
 
 public class TestSasl {
 

@@ -38,21 +38,23 @@ public class AccessControlListTest {
   @Test
   public void testAccessControlListCreation() {
     IdentityAuthorisationManager identityAuthorisationManager = new IdentityAuthorisationManager();
+    UserMapManagement userMapManagement = new UserMapManagement("src/test/resources/users.txt");
+    GroupMapManagement groupMapManagement = new GroupMapManagement("src/test/resources/groups.txt");
 
     UserIdMap username = new UserIdMap(UUID.randomUUID(), "username", "test", "");
-    UserMapManagement.getGlobalInstance().add(username);
+    userMapManagement.add(username);
 
     UserIdMap username2 = new UserIdMap(UUID.randomUUID(), "username2", "test", "");
-    UserMapManagement.getGlobalInstance().add(username2);
+    userMapManagement.add(username2);
 
     GroupIdMap groupIdMap1 = new GroupIdMap(UUID.randomUUID(), "group1", "test");
-    GroupMapManagement.getGlobalInstance().add(groupIdMap1);
+    groupMapManagement.add(groupIdMap1);
 
     GroupIdMap groupIdMap2 = new GroupIdMap(UUID.randomUUID(), "group2", "test");
-    GroupMapManagement.getGlobalInstance().add(groupIdMap2);
+    groupMapManagement.add(groupIdMap2);
 
     UserIdMap usernameLdap = new UserIdMap(UUID.randomUUID(), "fred", "ldap", "remotehost2");
-    UserMapManagement.getGlobalInstance().add(usernameLdap);
+    userMapManagement.add(usernameLdap);
 
     // Create the AccessControlList
     List<String> aclEntries = new ArrayList<>();
@@ -102,16 +104,19 @@ public class AccessControlListTest {
 
   @Test
   void testCanAccess_ValidAccess_ReturnsTrue() {
-    UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), "user1", "test", "");
-    UserMapManagement.getGlobalInstance().add(userIdMap);
+    UserMapManagement userMapManagement = new UserMapManagement("./src/test/resources/users.txt");
+    GroupMapManagement groupMapManagement = new GroupMapManagement("./src/test/resources/groups.txt");
 
+    UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), "user1", "test", "");
     GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), "group1", "test");
-    GroupMapManagement.getGlobalInstance().add(groupIdMap);
+
+    userMapManagement.add(userIdMap);
+    groupMapManagement.add(groupIdMap);
 
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
-    subject.getPrincipals().add(new GroupPrincipal("group1", groupIdMap.getAuthId()));
+    subject.getPrincipals().add(new GroupPrincipal("group1"));
     subject.getPrincipals().add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
     // Set up the access control list with the necessary ACL entries
     List<String> aclEntries = Collections.singletonList(userIdMap.getAuthId() + " = Read|Write");
@@ -144,7 +149,7 @@ public class AccessControlListTest {
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
-    subject.getPrincipals().add(new GroupPrincipal("group1", UUID.randomUUID()));
+    subject.getPrincipals().add(new GroupPrincipal("group1"));
 
     // Set up the access control list with the necessary ACL entries
     List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
@@ -163,7 +168,7 @@ public class AccessControlListTest {
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
-    subject.getPrincipals().add(new GroupPrincipal("group1", UUID.randomUUID()));
+    subject.getPrincipals().add(new GroupPrincipal("group1"));
 
     // Set up the access control list with invalid ACL entry
     List<String> aclEntries = Collections.singletonList("invalidEntry");
@@ -182,7 +187,7 @@ public class AccessControlListTest {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(user.getUsername()));
     principals.add(new UniqueIdentifierPrincipal(user.getAuthId()));
-    principals.add(new GroupPrincipal(group.getGroupName(), group.getAuthId()));
+    principals.add(new GroupPrincipal(group.getGroupName()));
     if (remoteHost != null) {
       principals.add(new RemoteHostPrincipal(remoteHost));
     }

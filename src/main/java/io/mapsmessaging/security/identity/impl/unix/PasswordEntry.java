@@ -18,7 +18,7 @@ package io.mapsmessaging.security.identity.impl.unix;
 
 import lombok.Getter;
 
-public class PasswordEntry implements Comparable<PasswordEntry>{
+public class PasswordEntry implements Comparable<PasswordEntry> {
 
   @Getter
   private final String username;

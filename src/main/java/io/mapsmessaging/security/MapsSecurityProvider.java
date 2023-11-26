@@ -21,30 +21,8 @@ import java.security.Security;
 
 public class MapsSecurityProvider extends Provider {
 
-  public static void register(){
-    Provider[] providers = Security.getProviders();
-    boolean found = false;
-    for(Provider provider:providers){
-      if(provider instanceof MapsSecurityProvider) {
-        found = true;
-        break;
-      }
-    }
-    if(!found) Security.insertProviderAt(new MapsSecurityProvider(), 1);
-  }
-
   private static final String CLIENT_FACTORY = "io.mapsmessaging.security.sasl.provider.MapsSaslClientFactory";
   private static final String SERVER_FACTORY = "io.mapsmessaging.security.sasl.provider.MapsSaslServerFactory";
-
-  private void register(String hmacAlgorithm) {
-    if (hmacAlgorithm.toLowerCase().startsWith("sha") && !hmacAlgorithm.toLowerCase().startsWith("sha3")) {
-      hmacAlgorithm = hmacAlgorithm.substring(0, "sha".length()) + "-" + hmacAlgorithm.substring("sha".length());
-    }
-    put("SaslClientFactory.SCRAM-" + hmacAlgorithm, CLIENT_FACTORY);
-    put("SaslServerFactory.SCRAM-" + hmacAlgorithm, SERVER_FACTORY);
-    put("SaslClientFactory.SCRAM-bcrypt-" + hmacAlgorithm, CLIENT_FACTORY);
-    put("SaslServerFactory.SCRAM-bcrypt-" + hmacAlgorithm, SERVER_FACTORY);
-  }
 
   public MapsSecurityProvider() {
     super("MapsSasl", "1.0", "Provider for SCRAM SASL implementation.");
@@ -60,5 +38,27 @@ public class MapsSecurityProvider extends Provider {
       put("SaslClientFactory.MAPS-TEST-10", CLIENT_FACTORY);
       put("SaslServerFactory.MAPS-TEST-10", SERVER_FACTORY);
     }
+  }
+
+  public static void register() {
+    Provider[] providers = Security.getProviders();
+    boolean found = false;
+    for (Provider provider : providers) {
+      if (provider instanceof MapsSecurityProvider) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) Security.insertProviderAt(new MapsSecurityProvider(), 1);
+  }
+
+  private void register(String hmacAlgorithm) {
+    if (hmacAlgorithm.toLowerCase().startsWith("sha") && !hmacAlgorithm.toLowerCase().startsWith("sha3")) {
+      hmacAlgorithm = hmacAlgorithm.substring(0, "sha".length()) + "-" + hmacAlgorithm.substring("sha".length());
+    }
+    put("SaslClientFactory.SCRAM-" + hmacAlgorithm, CLIENT_FACTORY);
+    put("SaslServerFactory.SCRAM-" + hmacAlgorithm, SERVER_FACTORY);
+    put("SaslClientFactory.SCRAM-bcrypt-" + hmacAlgorithm, CLIENT_FACTORY);
+    put("SaslServerFactory.SCRAM-bcrypt-" + hmacAlgorithm, SERVER_FACTORY);
   }
 }

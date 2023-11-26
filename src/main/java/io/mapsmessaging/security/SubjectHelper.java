@@ -20,10 +20,14 @@ import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import java.util.UUID;
+
 import javax.security.auth.Subject;
+import java.util.UUID;
 
 public class SubjectHelper {
+
+  private SubjectHelper() {
+  }
 
   public static String getUsername(Subject subject) {
     return subject.getPrincipals(UserPrincipal.class).stream()
@@ -52,6 +56,4 @@ public class SubjectHelper {
         .map(UniqueIdentifierPrincipal::getAuthId)
         .orElse(null);
   }
-
-  private SubjectHelper() {}
 }

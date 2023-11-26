@@ -68,8 +68,8 @@ public class PermissionAccessControlList implements AccessControlList {
       Set<GroupPrincipal> groups = subject.getPrincipals(GroupPrincipal.class);
       for (GroupPrincipal group : groups) {
         for (AclEntry aclEntry : aclEntries) {
-          if (!aclEntry.getExpiryPolicy().hasExpired(time) &&
-              aclEntry.matches(group.getUuid())) {
+          //ToDo check that the group is in the aclEntry
+          if (!aclEntry.getExpiryPolicy().hasExpired(time)) {//&& aclEntry.matches(group.getUuid())) {
             mask = mask | aclEntry.getPermissions();
           }
         }
@@ -96,8 +96,7 @@ public class PermissionAccessControlList implements AccessControlList {
     Set<GroupPrincipal> groups = subject.getPrincipals(GroupPrincipal.class);
     for (GroupPrincipal group : groups) {
       for (AclEntry aclEntry : aclEntries) {
-        if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess
-            && aclEntry.matches(group.getUuid())) {
+        if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess) {//&& aclEntry.matches(group.getUuid())) {
           return true;
         }
       }

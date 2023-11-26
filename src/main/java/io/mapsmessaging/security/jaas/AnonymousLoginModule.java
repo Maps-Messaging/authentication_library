@@ -16,14 +16,15 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
-
 import com.sun.security.auth.UserPrincipal;
+
 import javax.security.auth.login.LoginException;
 
-public class AnonymousLoginModule  extends BaseLoginModule {
+import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
 
-  public AnonymousLoginModule(){
+public class AnonymousLoginModule extends BaseLoginModule {
+
+  public AnonymousLoginModule() {
     super();
     username = "anonymous";
     logger.log(DO_NOT_USE_IN_PRODUCTION);

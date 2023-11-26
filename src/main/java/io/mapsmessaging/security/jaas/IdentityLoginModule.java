@@ -16,25 +16,20 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
-
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
+import java.util.Arrays;
+import java.util.Map;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -61,7 +56,7 @@ public class IdentityLoginModule extends BaseLoginModule {
   @Override
   protected boolean validate(String username, char[] password) throws LoginException {
     IdentityEntry identityEntry = identityLookup.findEntry(username);
-    if(identityEntry == null){
+    if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
@@ -95,6 +90,7 @@ public class IdentityLoginModule extends BaseLoginModule {
 
       subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
       subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
+      subject.getPrincipals().add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
       commitSucceeded = true;
       return true;
     }
