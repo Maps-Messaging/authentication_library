@@ -16,20 +16,21 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
-import java.util.Arrays;
-import java.util.Map;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -82,15 +83,10 @@ public class IdentityLoginModule extends BaseLoginModule {
       Set<Principal> principalSet = subject.getPrincipals();
       principalSet.addAll(subject1.getPrincipals());
       principalSet.add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
-      UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get(getDomain() + ":" + username);
-      if (userIdMap == null) {
-        userIdMap = new UserIdMap(UUID.randomUUID(), username, getDomain(), "");
-      }
-      principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
+      principalSet.add(userPrincipal);
 
       subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
       subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
-      subject.getPrincipals().add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
       commitSucceeded = true;
       return true;
     }
