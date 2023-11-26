@@ -49,6 +49,11 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
   }
 
   @Override
+  protected String getDomain() {
+    return "auth0";
+  }
+
+  @Override
   protected boolean validate(String username, char[] password) throws LoginException {
     try {
       String token = new String(password);

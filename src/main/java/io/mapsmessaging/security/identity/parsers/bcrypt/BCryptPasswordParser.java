@@ -31,14 +31,14 @@ public abstract class BCryptPasswordParser implements PasswordParser {
   protected BCryptPasswordParser() {
     password = new byte[0];
     salt = new byte[0];
-    cost = 0;
+    cost = 12;
     version = null;
   }
 
   protected BCryptPasswordParser(Version version) {
     password = new byte[0];
     salt = new byte[0];
-    cost = 0;
+    cost = 12;
     this.version = version;
   }
 

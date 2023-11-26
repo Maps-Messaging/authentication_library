@@ -49,6 +49,11 @@ public class IdentityLoginModule extends BaseLoginModule {
   }
 
   @Override
+  protected String getDomain() {
+    return identityLookup.getDomain();
+  }
+
+  @Override
   protected boolean validate(String username, char[] password) throws LoginException {
     IdentityEntry identityEntry = identityLookup.findEntry(username);
     if (identityEntry == null) {
@@ -74,7 +79,15 @@ public class IdentityLoginModule extends BaseLoginModule {
     } else {
       IdentityEntry identityEntry = identityLookup.findEntry(username);
       Subject subject1 = identityEntry.getSubject();
-      subject.getPrincipals().addAll(subject1.getPrincipals());
+      Set<Principal> principalSet = subject.getPrincipals();
+      principalSet.addAll(subject1.getPrincipals());
+      principalSet.add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
+      UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get(getDomain() + ":" + username);
+      if (userIdMap == null) {
+        userIdMap = new UserIdMap(UUID.randomUUID(), username, getDomain(), "");
+      }
+      principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
+
       subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
       subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
       subject.getPrincipals().add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));

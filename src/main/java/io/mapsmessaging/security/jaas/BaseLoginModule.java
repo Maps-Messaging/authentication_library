@@ -59,6 +59,8 @@ public abstract class BaseLoginModule implements LoginModule {
     debug = "true".equalsIgnoreCase((String) options.get("debug"));
   }
 
+  protected abstract String getDomain();
+
   protected abstract boolean validate(String username, char[] password) throws LoginException;
 
   @Override
@@ -139,7 +141,13 @@ public abstract class BaseLoginModule implements LoginModule {
       subject.getPublicCredentials().clear();
       return false;
     } else {
-      subject.getPrincipals().add(userPrincipal);
+      Set<Principal> principalSet = subject.getPrincipals();
+      principalSet.add(userPrincipal);
+      UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get(getDomain() + ":" + username);
+      if (userIdMap == null) {
+        userIdMap = new UserIdMap(UUID.randomUUID(), username, getDomain(), "");
+      }
+      principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
       commitSucceeded = true;
       return true;
     }
