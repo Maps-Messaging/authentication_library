@@ -42,6 +42,7 @@ public class MapManagement<T extends IdMap> {
   public void clearAll() {
     userIdMapByUuid.clear();
     userIdMapByUser.clear();
+    hasChanged = true;
   }
 
   public List<T> getAll() {
