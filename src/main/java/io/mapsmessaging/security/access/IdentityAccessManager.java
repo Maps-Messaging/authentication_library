@@ -45,7 +45,6 @@ public class IdentityAccessManager {
       Map<String, ?> config,
       MapStore<UserIdMap> userStore,
       MapStore<GroupIdMap> groupStore) {
-    String path = (String) config.get("configDirectory");
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
     groupMapManagement = new GroupMapManagement(groupStore);
     userMapManagement = new UserMapManagement(userStore);
@@ -153,6 +152,10 @@ public class IdentityAccessManager {
       return true;
     }
     return false;
+  }
+
+  public IdentityEntry getUserIdentity(String username) {
+    return identityLookup.findEntry(username);
   }
 
   public boolean deleteUser(String username) throws IOException {
