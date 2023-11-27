@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.access.mapping;
+package io.mapsmessaging.security.access.mapping.store;
 
-import io.mapsmessaging.security.access.mapping.store.MapStore;
+import io.mapsmessaging.security.access.mapping.IdMap;
+import io.mapsmessaging.security.access.mapping.MapParser;
+import java.util.List;
 
-public class UserMapManagement extends MapManagement<UserIdMap> {
+public interface MapStore<T extends IdMap> {
 
-  public UserMapManagement(MapStore<UserIdMap> store) {
-    super(store, new UserMapParser());
-  }
+  List<T> load(MapParser<T> parser);
 
+  void save(List<T> entries, MapParser<T> parser);
 }

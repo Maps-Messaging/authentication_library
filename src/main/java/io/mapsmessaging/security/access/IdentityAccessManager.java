@@ -21,6 +21,7 @@ import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
+import io.mapsmessaging.security.access.mapping.store.MapStore;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -28,7 +29,6 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
@@ -40,11 +40,15 @@ public class IdentityAccessManager {
   private final GroupMapManagement groupMapManagement;
   private final UserMapManagement userMapManagement;
 
-  public IdentityAccessManager(String identity, Map<String, ?> config) {
+  public IdentityAccessManager(
+      String identity,
+      Map<String, ?> config,
+      MapStore<UserIdMap> userStore,
+      MapStore<GroupIdMap> groupStore) {
     String path = (String) config.get("configDirectory");
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
-    groupMapManagement = new GroupMapManagement(path + File.separator + "groupmap");
-    userMapManagement = new UserMapManagement(path + File.separator + "usermap");
+    groupMapManagement = new GroupMapManagement(groupStore);
+    userMapManagement = new UserMapManagement(userStore);
     for (IdentityEntry entry : identityLookup.getEntries()) {
       mapUser(entry);
     }
@@ -108,7 +112,7 @@ public class IdentityAccessManager {
   public boolean deleteGroup(String groupName) throws IOException {
     if (groupMapManagement.get(groupName) != null) {
       if (identityLookup.deleteGroup(groupName)) {
-        groupMapManagement.remove(groupName);
+        groupMapManagement.delete(identityLookup.getDomain() + ":" + groupName);
         groupMapManagement.save();
         return true;
       }
@@ -154,14 +158,14 @@ public class IdentityAccessManager {
   public boolean deleteUser(String username) throws IOException {
     if (identityLookup.findEntry(username) != null) {
       identityLookup.deleteUser(username);
-      userMapManagement.remove(username);
+      userMapManagement.delete(identityLookup.getDomain() + ":" + username);
       userMapManagement.save();
       for (GroupEntry groupEntry : identityLookup.getGroups()) {
         if (groupEntry.isInGroup(username)) {
           groupEntry.removeUser(username);
           if (groupEntry.getUserCount() == 0) {
             identityLookup.deleteGroup(groupEntry.getName());
-            groupMapManagement.remove(groupEntry.getName());
+            groupMapManagement.delete(groupEntry.getName());
           }
           identityLookup.updateGroup(groupEntry);
         }
@@ -207,7 +211,7 @@ public class IdentityAccessManager {
     identityLookup.updateGroup(groupEntry);
     if (groupEntry.getUserCount() == 0) {
       identityLookup.deleteGroup(groupEntry.getName());
-      groupMapManagement.remove(groupEntry.getName());
+      groupMapManagement.delete(groupEntry.getName());
       groupMapManagement.save();
     }
     return true;

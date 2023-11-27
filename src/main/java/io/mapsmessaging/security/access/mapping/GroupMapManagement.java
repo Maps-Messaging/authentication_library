@@ -16,10 +16,12 @@
 
 package io.mapsmessaging.security.access.mapping;
 
+import io.mapsmessaging.security.access.mapping.store.MapStore;
+
 public class GroupMapManagement extends MapManagement<GroupIdMap> {
 
-  public GroupMapManagement(String filename) {
-    super(filename, new GroupMapParser());
+  public GroupMapManagement(MapStore<GroupIdMap> store) {
+    super(store, new GroupMapParser());
   }
 
 }

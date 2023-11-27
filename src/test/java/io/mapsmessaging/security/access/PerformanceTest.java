@@ -16,11 +16,13 @@
 
 package io.mapsmessaging.security.access;
 
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
-import org.junit.jupiter.api.Test;
-
-import javax.security.auth.Subject;
+import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.access.mapping.store.MapStore;
 import java.util.List;
+import javax.security.auth.Subject;
+import org.junit.jupiter.api.Test;
 
 public class PerformanceTest extends BaseSecurityTest {
 
@@ -28,7 +30,8 @@ public class PerformanceTest extends BaseSecurityTest {
   public void testAccessControlListPerformance() {
     // Define the number of iterations and ACL entries
     int iterations = 1000000;
-    GroupMapManagement groupMapManagement = new GroupMapManagement("./src/test/resources/groups.txt");
+    MapStore<GroupIdMap> groupStore = new MapFileStore<>("./src/test/resources/groups.txt");
+    GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
     List<String> aclEntries = generateGroupEntries(1000, groupMapManagement);
 
     // Create an instance of AccessControlListManager

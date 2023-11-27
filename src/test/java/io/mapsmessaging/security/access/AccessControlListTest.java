@@ -21,6 +21,8 @@ import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
+import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.access.mapping.store.MapStore;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
@@ -40,10 +42,16 @@ public class AccessControlListTest {
   public void testAccessControlListCreation() throws IOException {
     File file = new File("./target/test/security");
     file.mkdirs();
+    MapStore<UserIdMap> userStore = new MapFileStore<>("./target/test/security/userMap");
+    MapStore<GroupIdMap> groupStore = new MapFileStore<>("./target/test/security/groupMap");
+
     IdentityAccessManager identityAccessManager =
         new IdentityAccessManager(
             "Apache-Basic-Auth",
-            Collections.singletonMap("configDirectory", "./target/test/security"));
+            Collections.singletonMap("configDirectory", "./target/test/security"),
+            userStore,
+            groupStore);
+
     PasswordParser passwordParser = new BCrypt2yPasswordParser();
     byte[] hash =
         passwordParser.computeHash(
@@ -113,8 +121,11 @@ public class AccessControlListTest {
 
   @Test
   void testCanAccess_ValidAccess_ReturnsTrue() {
-    UserMapManagement userMapManagement = new UserMapManagement("./src/test/resources/users.txt");
-    GroupMapManagement groupMapManagement = new GroupMapManagement("./src/test/resources/groups.txt");
+    MapStore<UserIdMap> userStore = new MapFileStore<>("./src/test/resources/users.txt");
+    MapStore<GroupIdMap> groupStore = new MapFileStore<>("./src/test/resources/groups.txt");
+
+    UserMapManagement userMapManagement = new UserMapManagement(userStore);
+    GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
 
     UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), "user1", "test");
     GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), "group1", "test");

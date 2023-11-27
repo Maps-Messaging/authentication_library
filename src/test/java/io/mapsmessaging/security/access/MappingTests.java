@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,18 +20,22 @@ import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
+import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.access.mapping.store.MapStore;
 import java.util.Comparator;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MappingTests extends BaseSecurityTest {
 
   @Test
   void loadingAndSavingTest() {
-    UserMapManagement userMapManagement = new UserMapManagement("userTest.map");
-    GroupMapManagement groupMapManagement = new GroupMapManagement("groupTest.map");
+    MapStore<UserIdMap> userStore = new MapFileStore<>("userTest.map");
+    MapStore<GroupIdMap> groupStore = new MapFileStore<>("groupTest.map");
+
+    UserMapManagement userMapManagement = new UserMapManagement(userStore);
+    GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
 
     generateGroupEntries(1000, groupMapManagement);
     generateUserEntries(1000, userMapManagement, groupMapManagement);
@@ -39,8 +43,8 @@ public class MappingTests extends BaseSecurityTest {
     userMapManagement.save();
     groupMapManagement.save();
 
-    UserMapManagement userMapManagement1 = new UserMapManagement("userTest.map");
-    GroupMapManagement groupMapManagement1 = new GroupMapManagement("groupTest.map");
+    UserMapManagement userMapManagement1 = new UserMapManagement(userStore);
+    GroupMapManagement groupMapManagement1 = new GroupMapManagement(groupStore);
 
     Assertions.assertEquals(userMapManagement1.size(), userMapManagement.size());
     List<UserIdMap> userIdMapList = userMapManagement.getAll();
