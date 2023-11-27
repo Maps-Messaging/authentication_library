@@ -20,7 +20,6 @@ import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -74,6 +73,11 @@ public class ApacheBasicAuth implements IdentityLookup {
   @Override
   public GroupEntry findGroup(String groupName) {
     return groupFileManager.findGroup(groupName);
+  }
+
+  @Override
+  public List<GroupEntry> getGroups() {
+    return groupFileManager.getGroups();
   }
 
   @Override

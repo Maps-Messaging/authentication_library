@@ -17,11 +17,11 @@
 package io.mapsmessaging.security.identity;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import org.apache.commons.lang3.NotImplementedException;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.NotImplementedException;
 
 public interface IdentityLookup {
 
@@ -33,9 +33,13 @@ public interface IdentityLookup {
 
   IdentityEntry findEntry(String username);
 
+  List<IdentityEntry> getEntries();
+
   GroupEntry findGroup(String groupName);
 
-  List<IdentityEntry> getEntries();
+  default List<GroupEntry> getGroups() {
+    return new ArrayList<>();
+  }
 
   IdentityLookup create(Map<String, ?> config);
 

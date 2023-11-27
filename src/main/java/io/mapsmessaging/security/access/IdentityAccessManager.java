@@ -116,6 +116,14 @@ public class IdentityAccessManager {
     return false;
   }
 
+  public UserIdMap getUser(String username) {
+    return userMapManagement.get(identityLookup.getDomain() + ":" + username);
+  }
+
+  public GroupIdMap getGroup(String groupName) {
+    return groupMapManagement.get(identityLookup.getDomain() + ":" + groupName);
+  }
+
   public UserIdMap createUser(String username, String hash, PasswordParser passwordParser)
       throws IOException {
     IdentityEntry entry = identityLookup.findEntry(username);
@@ -148,6 +156,17 @@ public class IdentityAccessManager {
       identityLookup.deleteUser(username);
       userMapManagement.remove(username);
       userMapManagement.save();
+      for (GroupEntry groupEntry : identityLookup.getGroups()) {
+        if (groupEntry.isInGroup(username)) {
+          groupEntry.removeUser(username);
+          if (groupEntry.getUserCount() == 0) {
+            identityLookup.deleteGroup(groupEntry.getName());
+            groupMapManagement.remove(groupEntry.getName());
+          }
+          identityLookup.updateGroup(groupEntry);
+        }
+      }
+      groupMapManagement.save();
       return true;
     }
     return false;
