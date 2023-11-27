@@ -16,18 +16,18 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
+
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
 
 public abstract class FileBaseIdentities extends FileLoader {
 
@@ -55,7 +55,7 @@ public abstract class FileBaseIdentities extends FileLoader {
   }
 
   public List<IdentityEntry> getEntries() {
-    return (List<IdentityEntry>) usernamePasswordMap.values();
+    return new ArrayList<>(usernamePasswordMap.values());
   }
 
   protected abstract IdentityEntry load(String line);

@@ -53,16 +53,10 @@ public class MapManagement<T extends IdMap> {
   }
 
   public T get(String username) {
-    if (!username.endsWith(": []")) {
-      username = username + ": []";
-    }
     return userIdMapByUser.get(username);
   }
 
   public boolean delete(String name) {
-    if (!name.endsWith(": []")) {
-      name = name + ": []";
-    }
     T entry = userIdMapByUser.remove(name);
     if (entry != null) {
       userIdMapByUuid.remove(entry.getAuthId());

@@ -16,11 +16,10 @@
 
 package io.mapsmessaging.security.access.mapping;
 
+import java.util.UUID;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.UUID;
 
 @Getter
 @EqualsAndHashCode(callSuper = true)
@@ -28,19 +27,16 @@ import java.util.UUID;
 public class UserIdMap extends IdMap {
 
   private final String authDomain;
-  private final String remoteHost;
   private final String username;
 
-  public UserIdMap(UUID authId, String username, String authDomain, String remoteHost) {
+  public UserIdMap(UUID authId, String username, String authDomain) {
     super(authId);
     this.username = username;
     this.authDomain = authDomain;
-    this.remoteHost = remoteHost;
   }
 
   @Override
   protected String getKey() {
-    String tmp = remoteHost != null ? remoteHost : "";
-    return authDomain + ":" + username + ": [" + tmp + "]";
+    return authDomain + ":" + username;
   }
 }

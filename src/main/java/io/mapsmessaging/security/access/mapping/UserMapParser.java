@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 public class UserMapParser extends MapParser<UserIdMap> {
 
   private final Pattern IDENTIFIER_PATTERN =
-      Pattern.compile("^([a-fA-F0-9-]+)\\s*=\\s*([^:]+):([^:]+):\\s*\\[([^\\[\\]]*)\\]$");
+      Pattern.compile("^([a-fA-F0-9-]+)\\s*=\\s*([^:]+):([^:]+)$");
 
   public UserMapParser() {
     super();
@@ -36,8 +36,7 @@ public class UserMapParser extends MapParser<UserIdMap> {
       UUID uuid = UUID.fromString(matcher.group(1).trim());
       String authDomain = matcher.group(2).trim();
       String username = matcher.group(3).trim();
-      String remoteHost = matcher.group(4).trim();
-      return new UserIdMap(uuid, username, authDomain, remoteHost);
+      return new UserIdMap(uuid, username, authDomain);
     }
     throw new IllegalArgumentException("Invalid identifier format: " + identifier);
   }

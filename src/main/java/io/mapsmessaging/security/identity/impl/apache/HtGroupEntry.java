@@ -18,13 +18,15 @@ package io.mapsmessaging.security.identity.impl.apache;
 
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
-
 import java.util.StringTokenizer;
 
 public class HtGroupEntry extends GroupEntry {
 
   public HtGroupEntry(String line) throws IllegalFormatException {
     super();
+    if (!line.endsWith(":") && !line.contains(":")) {
+      line = line + ":";
+    }
     int index = line.indexOf(":");
     if (index == -1) {
       throw new IllegalFormatException("Expected format, groupName: user name list");

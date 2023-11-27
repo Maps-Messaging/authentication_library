@@ -21,65 +21,74 @@ import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
-import io.mapsmessaging.security.identity.IdentityAuthorisationManager;
-import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
+import io.mapsmessaging.security.identity.PasswordGenerator;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
-import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import javax.security.auth.Subject;
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
+import javax.security.auth.Subject;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class AccessControlListTest {
 
   @Test
-  public void testAccessControlListCreation() {
-    IdentityAuthorisationManager identityAuthorisationManager = new IdentityAuthorisationManager();
-    UserMapManagement userMapManagement = new UserMapManagement("src/test/resources/users.txt");
-    GroupMapManagement groupMapManagement = new GroupMapManagement("src/test/resources/groups.txt");
+  public void testAccessControlListCreation() throws IOException {
+    File file = new File("./target/test/security");
+    file.mkdirs();
+    IdentityAccessManager identityAccessManager =
+        new IdentityAccessManager(
+            "Apache-Basic-Auth",
+            Collections.singletonMap("configDirectory", "./target/test/security"));
+    PasswordParser passwordParser = new BCrypt2yPasswordParser();
+    byte[] hash =
+        passwordParser.computeHash(
+            "password1".getBytes(), PasswordGenerator.generateSalt(16).getBytes(), 10);
+    UserIdMap usernameId =
+        identityAccessManager.createUser("username", new String(hash), passwordParser);
 
-    UserIdMap username = new UserIdMap(UUID.randomUUID(), "username", "test", "");
-    userMapManagement.add(username);
+    hash =
+        passwordParser.computeHash(
+            "password2".getBytes(), PasswordGenerator.generateSalt(16).getBytes(), 10);
+    UserIdMap username2Id =
+        identityAccessManager.createUser("username2", new String(hash), passwordParser);
 
-    UserIdMap username2 = new UserIdMap(UUID.randomUUID(), "username2", "test", "");
-    userMapManagement.add(username2);
+    hash =
+        passwordParser.computeHash(
+            "password3".getBytes(), PasswordGenerator.generateSalt(16).getBytes(), 10);
+    UserIdMap fredId = identityAccessManager.createUser("fred", new String(hash), passwordParser);
 
-    GroupIdMap groupIdMap1 = new GroupIdMap(UUID.randomUUID(), "group1", "test");
-    groupMapManagement.add(groupIdMap1);
+    GroupIdMap group1IdMap = identityAccessManager.createGroup("group1");
+    GroupIdMap group2IdMap = identityAccessManager.createGroup("group2");
 
-    GroupIdMap groupIdMap2 = new GroupIdMap(UUID.randomUUID(), "group2", "test");
-    groupMapManagement.add(groupIdMap2);
-
-    UserIdMap usernameLdap = new UserIdMap(UUID.randomUUID(), "fred", "ldap", "remotehost2");
-    userMapManagement.add(usernameLdap);
+    identityAccessManager.addUserToGroup("username", "group1");
+    // identityAccessManager.addUserToGroup("username", "group2");
+    identityAccessManager.addUserToGroup("username2", "group2");
 
     // Create the AccessControlList
     List<String> aclEntries = new ArrayList<>();
-    aclEntries.add(username.getAuthId() + " = Read|Write");
-    aclEntries.add(username2.getAuthId() + " = Read|Write");
-    aclEntries.add(groupIdMap2.getAuthId() + " = Read|Delete");
-
-    aclEntries.add(groupIdMap2.getAuthId() + " = Write|Create");
-    aclEntries.add(username.getAuthId() + " = Delete");
-    aclEntries.add(usernameLdap.getAuthId() + " = Write|Read|Delete");
+    aclEntries.add(usernameId.getAuthId() + " = Read|Write");
+    aclEntries.add(username2Id.getAuthId() + " = Read|Write");
+    aclEntries.add(group2IdMap.getAuthId() + " = Read|Write");
+    aclEntries.add(group1IdMap.getAuthId() + " = Delete");
+    aclEntries.add(fredId.getAuthId() + " = Write|Read|Delete");
 
     AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
 
     // Create a Subject with remote host
-    Subject subjectWithRemoteHost = createSubject(username, groupIdMap1, "remotehost");
-    identityAuthorisationManager.setAuthId(subjectWithRemoteHost);
+    Subject subjectWithRemoteHost = createSubject(usernameId);
+    subjectWithRemoteHost = identityAccessManager.updateSubject(subjectWithRemoteHost);
 
     // Create a Subject without remote host
-    Subject subjectWithoutRemoteHost = createSubject(username2, groupIdMap1, null);
-    identityAuthorisationManager.setAuthId(subjectWithoutRemoteHost);
+    Subject subjectWithoutRemoteHost = createSubject(username2Id);
+    subjectWithoutRemoteHost = identityAccessManager.updateSubject(subjectWithoutRemoteHost);
 
-    Subject subjectWithAuthDomain = createSubject(username2, groupIdMap1, "remotehost");
-    subjectWithAuthDomain.getPrincipals().add(new AuthHandlerPrincipal("unix"));
-
-    identityAuthorisationManager.setAuthId(subjectWithAuthDomain);
+    Subject subjectWithAuthDomain = createSubject(username2Id);
+    subjectWithAuthDomain = identityAccessManager.updateSubject(subjectWithAuthDomain);
 
     long test = acl.getSubjectAccess(subjectWithRemoteHost);
     Assertions.assertTrue((test & CustomAccessControlMapping.READ_VALUE) != 0);
@@ -107,7 +116,7 @@ public class AccessControlListTest {
     UserMapManagement userMapManagement = new UserMapManagement("./src/test/resources/users.txt");
     GroupMapManagement groupMapManagement = new GroupMapManagement("./src/test/resources/groups.txt");
 
-    UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), "user1", "test", "");
+    UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), "user1", "test");
     GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), "group1", "test");
 
     userMapManagement.add(userIdMap);
@@ -183,15 +192,9 @@ public class AccessControlListTest {
     Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
   }
 
-  private Subject createSubject(UserIdMap user, GroupIdMap group, String remoteHost) {
+  private Subject createSubject(UserIdMap user) {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(user.getUsername()));
-    principals.add(new UniqueIdentifierPrincipal(user.getAuthId()));
-    principals.add(new GroupPrincipal(group.getGroupName()));
-    if (remoteHost != null) {
-      principals.add(new RemoteHostPrincipal(remoteHost));
-    }
-
     return new Subject(false, principals, new HashSet<>(), new HashSet<>());
   }
 

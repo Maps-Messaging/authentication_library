@@ -16,10 +16,9 @@
 
 package io.mapsmessaging.security.identity;
 
-import lombok.Getter;
-
 import java.util.Set;
 import java.util.TreeSet;
+import lombok.Getter;
 
 /**
  * Represents a group in the context of authentication.
@@ -91,5 +90,17 @@ public class GroupEntry implements Comparable<GroupEntry> {
 
   public int getUserCount() {
     return userSet.size();
+  }
+
+  public String toString() {
+    StringBuilder sb = new StringBuilder(name).append(":");
+    boolean isFirst = true;
+    for (String user : userSet) {
+      if (!isFirst) sb.append(" ");
+      isFirst = false;
+      sb.append(user);
+    }
+
+    return sb.toString();
   }
 }
