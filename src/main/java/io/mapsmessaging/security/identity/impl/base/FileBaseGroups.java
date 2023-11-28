@@ -60,9 +60,9 @@ public abstract class FileBaseGroups extends FileLoader {
     return List.copyOf(groups.values());
   }
 
-  public void addEntry(String groupName) throws IOException {
-    GroupEntry groupEntry = new HtGroupEntry(groupName);
-    groups.put(groupName, groupEntry);
+  public void addEntry(String groupConfig) throws IOException {
+    GroupEntry groupEntry = new HtGroupEntry(groupConfig);
+    groups.put(groupEntry.getName(), groupEntry);
     add(groupEntry.toString());
   }
 
