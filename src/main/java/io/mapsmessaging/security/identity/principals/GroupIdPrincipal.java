@@ -35,4 +35,13 @@ public class GroupIdPrincipal implements Principal {
   public String getName() {
     return "GroupIds";
   }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Group Ids:");
+    for (GroupIdMap groupId : groupIds) {
+      sb.append("\n\t").append(groupId.toString());
+    }
+    return sb.toString();
+  }
 }

@@ -16,10 +16,9 @@
 
 package io.mapsmessaging.security.identity.principals;
 
-import lombok.Data;
-
 import java.security.Principal;
 import java.util.UUID;
+import lombok.Data;
 
 @Data
 public class UniqueIdentifierPrincipal implements Principal {
@@ -33,5 +32,10 @@ public class UniqueIdentifierPrincipal implements Principal {
   @Override
   public String getName() {
     return authId.toString();
+  }
+
+  @Override
+  public String toString() {
+    return "Unique Id : " + getName();
   }
 }

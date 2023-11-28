@@ -30,4 +30,9 @@ public class HomeDirectoryPrinicipal implements Principal {
   public String getName() {
     return homeDirectory;
   }
+
+  @Override
+  public String toString() {
+    return "Home Directory : " + getName();
+  }
 }

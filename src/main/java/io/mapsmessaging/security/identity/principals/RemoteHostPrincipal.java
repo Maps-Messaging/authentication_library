@@ -30,4 +30,9 @@ public class RemoteHostPrincipal implements Principal {
   public String getName() {
     return remoteHost;
   }
+
+  @Override
+  public String toString() {
+    return "Remote Host : " + getName();
+  }
 }
