@@ -127,6 +127,10 @@ public class IdentityAccessManager {
     return groupMapManagement.get(identityLookup.getDomain() + ":" + groupName);
   }
 
+  public GroupEntry getGroupDetails(String groupName) {
+    return identityLookup.findGroup(groupName);
+  }
+
   public UserIdMap createUser(String username, String hash, PasswordParser passwordParser)
       throws IOException {
     IdentityEntry entry = identityLookup.findEntry(username);
