@@ -88,6 +88,10 @@ public class GroupEntry implements Comparable<GroupEntry> {
     userSet.remove(username);
   }
 
+  public Set<String> getUsers() {
+    return Set.copyOf(userSet);
+  }
+
   public int getUserCount() {
     return userSet.size();
   }
