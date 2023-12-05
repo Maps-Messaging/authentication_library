@@ -108,7 +108,7 @@ public class CognitoAuth implements IdentityLookup {
 
   protected void loadUsers() {
     long time = System.currentTimeMillis();
-    if (time > lastUpdated) {
+    if (time < lastUpdated) {
       return;
     }
     lastUpdated = time + 30000;
