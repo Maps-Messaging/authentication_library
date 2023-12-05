@@ -39,6 +39,7 @@ public class CognitoAuth implements IdentityLookup {
   private final String userPoolId;
   private final String appClientId;
   private final String appClientSecret;
+  private long lastUpdated = 0;
 
   private final Map<String, GroupEntry> groupEntryMap = new LinkedHashMap<>();
   private final Map<String, CognitoIdentityEntry> identityEntryMap = new LinkedHashMap<>();
@@ -95,21 +96,22 @@ public class CognitoAuth implements IdentityLookup {
 
   @Override
   public IdentityEntry findEntry(String username) {
-    if (identityEntries.isEmpty()) {
-      loadUsers();
-    }
+    loadUsers();
     return identityEntryMap.get(username);
   }
 
   @Override
   public List<IdentityEntry> getEntries() {
-    if (identityEntries.isEmpty()) {
-      loadUsers();
-    }
+    loadUsers();
     return new ArrayList<>(identityEntries);
   }
 
   protected void loadUsers() {
+    long time = System.currentTimeMillis();
+    if (time > lastUpdated) {
+      return;
+    }
+    lastUpdated = time + 30000;
     ListUsersRequest usersRequest = ListUsersRequest.builder().userPoolId(userPoolId).build();
     ListUsersResponse response = cognitoClient.listUsers(usersRequest);
     List<UserType> userList = response.users();
@@ -186,12 +188,23 @@ public class CognitoAuth implements IdentityLookup {
 
   @Override
   public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) throws IOException {
-    return IdentityLookup.super.createUser(username, passwordHash, passwordParser);
+    AdminCreateUserResponse response = cognitoClient.adminCreateUser(AdminCreateUserRequest.builder().userPoolId(userPoolId).username(username).temporaryPassword(passwordHash).build());
+    if (response.sdkHttpResponse().isSuccessful()) {
+      reset();
+      return true;
+    }
+    return false;
   }
 
   @Override
   public boolean deleteUser(String username) throws IOException {
-    return IdentityLookup.super.deleteUser(username);
+    AdminDeleteUserRequest deleteUserRequest = AdminDeleteUserRequest.builder().username(username).userPoolId(userPoolId).build();
+    AdminDeleteUserResponse response = cognitoClient.adminDeleteUser(deleteUserRequest);
+    if (response.sdkHttpResponse().isSuccessful()) {
+      reset();
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -203,6 +216,7 @@ public class CognitoAuth implements IdentityLookup {
     groupEntryMap.clear();
     this.identityEntries.clear();
     this.identityEntryMap.clear();
+    lastUpdated = 0;
     loadUsers();
   }
 }
