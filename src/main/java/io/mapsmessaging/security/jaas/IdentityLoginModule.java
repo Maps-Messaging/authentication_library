@@ -16,21 +16,22 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
-
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -60,7 +61,11 @@ public class IdentityLoginModule extends BaseLoginModule {
     if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
+
+    PasswordParser passwordParser = identityEntry.getPasswordParser();
+    if (passwordParser == null) {
+      passwordParser = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
+    }
     String rawPassword = new String(password);
     byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
     if (!Arrays.equals(hash, identityEntry.getPassword().getBytes())) {

@@ -28,10 +28,12 @@ public class CognitoIdentityEntry extends IdentityEntry {
   public CognitoIdentityEntry(CognitoAuth cognitoAuth, String username, String uuid) {
     this.username = username;
     this.uuid = uuid;
-    this.password = "";
     this.email = "";
     this.profile = "";
     passwordParser = new CognitoPasswordParser(username, cognitoAuth);
   }
 
+  public String getPassword() {
+    return new String(passwordParser.getPassword());
+  }
 }

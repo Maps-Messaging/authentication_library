@@ -23,6 +23,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Map;
 
 import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.isJwt;
@@ -31,6 +32,8 @@ public class CognitoPasswordParser implements PasswordParser {
 
   private final CognitoAuth cognitoAuth;
   private final String username;
+
+  private byte[] computedPassword;
 
   public CognitoPasswordParser(String username, CognitoAuth cognitoAuth) {
     this.cognitoAuth = cognitoAuth;
@@ -79,17 +82,26 @@ public class CognitoPasswordParser implements PasswordParser {
           )
           .build();
 
+
       AdminInitiateAuthResponse authResponse = cognitoAuth.getCognitoClient().adminInitiateAuth(authRequest);
       AuthenticationResultType authResult = authResponse.authenticationResult();
       if (authResult != null) {
+        computedPassword = password;
         return password;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
+      // todo log
     }
     // If the above code executes without throwing an exception,
     // the JWT token is valid for the given user
+    computedPassword = new byte[10];
+    Arrays.fill(computedPassword, (byte) 0xff);
     return new byte[0];
+  }
+
+  @Override
+  public byte[] getPassword() {
+    return computedPassword;
   }
 
   public String generateSecretHash(String username) throws NoSuchAlgorithmException, InvalidKeyException {
@@ -110,11 +122,6 @@ public class CognitoPasswordParser implements PasswordParser {
 
   @Override
   public byte[] getSalt() {
-    return new byte[0];
-  }
-
-  @Override
-  public byte[] getPassword() {
     return new byte[0];
   }
 

@@ -95,6 +95,9 @@ public class CognitoAuth implements IdentityLookup {
 
   @Override
   public IdentityEntry findEntry(String username) {
+    if (identityEntries.isEmpty()) {
+      loadUsers();
+    }
     return identityEntryMap.get(username);
   }
 
@@ -202,6 +205,4 @@ public class CognitoAuth implements IdentityLookup {
     this.identityEntryMap.clear();
     loadUsers();
   }
-
-
 }
