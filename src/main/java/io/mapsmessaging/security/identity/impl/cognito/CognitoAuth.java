@@ -53,7 +53,7 @@ public class CognitoAuth implements IdentityLookup {
     appClientSecret = "";
   }
 
-  protected CognitoAuth(Map<String, ?> config) {
+  public CognitoAuth(Map<String, ?> config) {
     userPoolId = (String) config.get("userPoolId");
     appClientId = (String) config.get("appClientId");
     appClientSecret = (String) config.get("appClientSecret");
