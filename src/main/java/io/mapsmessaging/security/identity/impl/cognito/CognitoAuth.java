@@ -203,20 +203,5 @@ public class CognitoAuth implements IdentityLookup {
     loadUsers();
   }
 
-  public static void main(String[] args) throws IOException {
-    Map<String, Object> config = new LinkedHashMap<>();
-    config.put("userPoolId", "ap-southeast-2_WKlJFvzFQ");
-    config.put("region", "ap-southeast-2");
-    config.put("accessKeyId", "AKIAZM6BZVSFATDCCP6S");
-    config.put("secretAccessKey", "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");
-    config.put("appClientId", "5qcmqfvudp6kqm6ob6gj1e4tbq");
-    config.put("appClientSecret", "n76i4s980fbkdhpm2ebfgi78mluddbmvg7fjchbgqe9fu1d7m60");
-    CognitoAuth auth = new CognitoAuth(config);
-    for (IdentityEntry entry : auth.getEntries()) {
-      System.err.println(entry);
-    }
-    if (auth.createGroup("testGroup")) {
-      auth.deleteGroup("testGroup");
-    }
-  }
+
 }
