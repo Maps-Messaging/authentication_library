@@ -16,6 +16,8 @@
 
 package io.mapsmessaging.security.identity.impl.auth0;
 
+import com.auth0.client.auth.AuthAPI;
+import com.auth0.client.mgmt.ManagementAPI;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -26,6 +28,38 @@ import java.util.List;
 import java.util.Map;
 
 public class Auth0Auth implements IdentityLookup {
+
+  private final String domain;
+  private final String clientId;
+  private final String clientSecret;
+  private final String apiToken;
+
+  private final AuthAPI authAPI;
+  private final ManagementAPI mgmt;
+
+  private long cacheTime = 30000;
+
+  public Auth0Auth() {
+    domain = "";
+    clientId = "";
+    clientSecret = "";
+    apiToken = "";
+    authAPI = null;
+    mgmt = null;
+  }
+
+  public Auth0Auth(Map<String, ?> config) {
+    domain = (String) config.get("domain");
+    clientId = (String) config.get("clientId");
+    clientSecret = (String) config.get("clientSecret");
+    apiToken = (String) config.get("apiToken");
+    String cacheTimeString = (String) config.get("cacheTime");
+    if (cacheTimeString != null && !cacheTimeString.trim().isEmpty()) {
+      cacheTime = Long.parseLong(cacheTimeString.trim());
+    }
+    authAPI = AuthAPI.newBuilder(domain, clientId, clientSecret).build();
+    mgmt = ManagementAPI.newBuilder(domain, apiToken).build();
+  }
 
   @Override
   public String getName() {

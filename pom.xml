@@ -333,6 +333,12 @@
       <version>2.21.37</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>auth0</artifactId>
+      <version>2.9.0</version>
+    </dependency>
+
     <!-- TEST DEPENDENCIES -->
 
     <!-- Junit5 -->
