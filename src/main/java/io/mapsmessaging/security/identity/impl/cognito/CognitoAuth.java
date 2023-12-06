@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,17 +21,16 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import lombok.Getter;
-import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 @Getter
 public class CognitoAuth implements IdentityLookup {
@@ -40,6 +39,7 @@ public class CognitoAuth implements IdentityLookup {
   private final String appClientId;
   private final String appClientSecret;
   private long lastUpdated = 0;
+  private long cacheTime = 30000;
 
   private final Map<String, GroupEntry> groupEntryMap = new LinkedHashMap<>();
   private final Map<String, CognitoIdentityEntry> identityEntryMap = new LinkedHashMap<>();
@@ -62,6 +62,11 @@ public class CognitoAuth implements IdentityLookup {
     String regionName = (String) config.get("region");
     String accesskeyId = (String) config.get("accessKeyId");
     String secretAccessKey = (String) config.get("secretAccessKey");
+
+    String cacheTimeString = (String) config.get("cacheTime");
+    if(cacheTimeString != null && !cacheTimeString.trim().isEmpty()){
+      cacheTime = Long.parseLong(cacheTimeString.trim());
+    }
 
     Region region = Region.of(regionName);
 
@@ -111,7 +116,7 @@ public class CognitoAuth implements IdentityLookup {
     if (time < lastUpdated) {
       return;
     }
-    lastUpdated = time + 30000;
+    lastUpdated = time + cacheTime;
     ListUsersRequest usersRequest = ListUsersRequest.builder().userPoolId(userPoolId).build();
     ListUsersResponse response = cognitoClient.listUsers(usersRequest);
     List<UserType> userList = response.users();
