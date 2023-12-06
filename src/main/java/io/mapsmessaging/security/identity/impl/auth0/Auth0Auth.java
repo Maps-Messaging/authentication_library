@@ -18,11 +18,15 @@ package io.mapsmessaging.security.identity.impl.auth0;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.exception.Auth0Exception;
+import com.auth0.json.auth.TokenHolder;
+import com.auth0.net.TokenRequest;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +56,22 @@ public class Auth0Auth implements IdentityLookup {
     domain = (String) config.get("domain");
     clientId = (String) config.get("clientId");
     clientSecret = (String) config.get("clientSecret");
-    apiToken = (String) config.get("apiToken");
+    String token = (String) config.get("apiToken");
     String cacheTimeString = (String) config.get("cacheTime");
     if (cacheTimeString != null && !cacheTimeString.trim().isEmpty()) {
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }
     authAPI = AuthAPI.newBuilder(domain, clientId, clientSecret).build();
+    if (token == null) {
+      TokenRequest tokenRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
+      try {
+        TokenHolder holder = tokenRequest.execute().getBody();
+        token = holder.getAccessToken();
+      } catch (Auth0Exception e) {
+        //ToDo add logging
+      }
+    }
+    apiToken = token;
     mgmt = ManagementAPI.newBuilder(domain, apiToken).build();
   }
 
@@ -98,7 +112,7 @@ public class Auth0Auth implements IdentityLookup {
 
   @Override
   public IdentityLookup create(Map<String, ?> config) {
-    return null;
+    return new Auth0Auth(config);
   }
 
   @Override
