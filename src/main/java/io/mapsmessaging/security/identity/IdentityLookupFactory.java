@@ -16,19 +16,26 @@
 
 package io.mapsmessaging.security.identity;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_LOADED;
+
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
-
 import java.util.Map;
 import java.util.ServiceLoader;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_LOADED;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class IdentityLookupFactory {
 
   private static final IdentityLookupFactory instance = new IdentityLookupFactory();
+
+  private final Map<String, IdentityLookup> identityLookupMap = new ConcurrentHashMap<>();
+
   private final ServiceLoader<IdentityLookup> identityLookups;
   private final Logger logger = LoggerFactory.getLogger(IdentityLookupFactory.class);
+
+  public static IdentityLookupFactory getInstance() {
+    return instance;
+  }
 
   private IdentityLookupFactory() {
     identityLookups = ServiceLoader.load(IdentityLookup.class);
@@ -37,8 +44,12 @@ public class IdentityLookupFactory {
     }
   }
 
-  public static IdentityLookupFactory getInstance() {
-    return instance;
+  public void registerSiteIdentityLookup(String name, IdentityLookup identityLookup) {
+    identityLookupMap.put(name, identityLookup);
+  }
+
+  public IdentityLookup getSiteWide(String name) {
+    return identityLookupMap.get(name);
   }
 
   public IdentityLookup get(String name, Map<String, ?> config) {

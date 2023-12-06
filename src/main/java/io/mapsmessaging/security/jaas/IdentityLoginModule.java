@@ -16,22 +16,21 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -44,7 +43,10 @@ public class IdentityLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
-    if (options.containsKey("identityName")) {
+    if (options.containsKey("siteWide")) {
+      String siteWide = options.get("siteWide").toString();
+      identityLookup = IdentityLookupFactory.getInstance().getSiteWide(siteWide);
+    } else if (options.containsKey("identityName")) {
       String identityLookupName = options.get("identityName").toString();
       identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, options);
     }
