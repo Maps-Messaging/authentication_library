@@ -170,9 +170,8 @@ public class CognitoAuth implements IdentityLookup {
     return new ArrayList<>(groupEntryMap.values());
   }
 
-
   @Override
-  public boolean createGroup(String groupName) throws IOException {
+  public boolean createGroup(String groupName) {
     CreateGroupResponse response = cognitoClient.createGroup(CreateGroupRequest.builder().groupName(groupName).userPoolId(userPoolId).build());
     if (response.sdkHttpResponse().isSuccessful()) {
       reset();
@@ -182,7 +181,7 @@ public class CognitoAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean deleteGroup(String groupName) throws IOException {
+  public boolean deleteGroup(String groupName) {
     DeleteGroupResponse response = cognitoClient.deleteGroup(DeleteGroupRequest.builder().groupName(groupName).userPoolId(userPoolId).build());
     if (response.sdkHttpResponse().isSuccessful()) {
       reset();
@@ -192,8 +191,20 @@ public class CognitoAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) throws IOException {
-    AdminCreateUserResponse response = cognitoClient.adminCreateUser(AdminCreateUserRequest.builder().userPoolId(userPoolId).username(username).temporaryPassword(passwordHash).build());
+  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
+    List<AttributeType> userAttributes = new ArrayList<>();
+    if (username.contains("@")) {
+      userAttributes.add(AttributeType.builder().name("email_verified").value("true").build());
+      userAttributes.add(AttributeType.builder().name("email").value(username).build());
+    }
+    AdminCreateUserRequest request =
+        AdminCreateUserRequest.builder()
+            .userPoolId(userPoolId)
+            .userAttributes(userAttributes)
+            .username(username)
+            .build();
+
+    AdminCreateUserResponse response = cognitoClient.adminCreateUser(request);
     if (response.sdkHttpResponse().isSuccessful()) {
       reset();
       return true;
@@ -202,7 +213,7 @@ public class CognitoAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean deleteUser(String username) throws IOException {
+  public boolean deleteUser(String username) {
     AdminDeleteUserRequest deleteUserRequest = AdminDeleteUserRequest.builder().username(username).userPoolId(userPoolId).build();
     AdminDeleteUserResponse response = cognitoClient.adminDeleteUser(deleteUserRequest);
     if (response.sdkHttpResponse().isSuccessful()) {
