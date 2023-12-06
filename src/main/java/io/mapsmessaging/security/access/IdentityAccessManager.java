@@ -33,10 +33,11 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import javax.security.auth.Subject;
+import lombok.Getter;
 
 public class IdentityAccessManager {
 
-  private final IdentityLookup identityLookup;
+  @Getter private final IdentityLookup identityLookup;
   private final GroupMapManagement groupMapManagement;
   private final UserMapManagement userMapManagement;
 
