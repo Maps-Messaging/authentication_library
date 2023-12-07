@@ -16,18 +16,50 @@
 
 package io.mapsmessaging.security.identity.principals;
 
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import java.security.Principal;
-import lombok.Getter;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import lombok.Data;
+import lombok.ToString;
 
+@Data
+@ToString
 public class JwtPrincipal implements Principal {
-  @Getter private final DecodedJWT jwt;
+
+  private final LocalDateTime expires;
+  private final LocalDateTime issued;
+  private final Map<String, Claim> claims;
+  private final List<String> audience;
+  private final String issuer;
 
   public JwtPrincipal(DecodedJWT jwt) {
-    this.jwt = jwt;
+    expires = convertDateToLocalDateTime(jwt.getExpiresAt());
+    issued = convertDateToLocalDateTime(jwt.getIssuedAt());
+    claims = jwt.getClaims();
+    audience = jwt.getAudience();
+    issuer = jwt.getIssuer();
+  }
+
+  private static LocalDateTime convertDateToLocalDateTime(Date date) {
+    return date.toInstant()
+        .atZone(ZoneId.systemDefault()) // Replace with desired time zone if needed
+        .toLocalDateTime();
+  }
+
+  public boolean isActive() {
+    return issued.isAfter(LocalDateTime.now());
   }
 
   public String getName() {
     return "jwt";
+  }
+
+  public boolean hasExpired() {
+    return expires.isAfter(LocalDateTime.now());
   }
 }

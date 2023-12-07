@@ -18,6 +18,11 @@ package io.mapsmessaging.security.identity.impl.cognito;
 
 import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
 
+import com.auth0.jwk.JwkProvider;
+import com.auth0.jwk.UrlJwkProvider;
+import io.mapsmessaging.security.identity.impl.external.JwtPasswordParser;
+import io.mapsmessaging.security.identity.impl.external.JwtValidator;
+import io.mapsmessaging.security.identity.impl.external.TokenProvider;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.jaas.aws.AwsAuthHelper;
 import java.security.InvalidKeyException;
@@ -27,7 +32,7 @@ import java.util.Map;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
-public class CognitoPasswordParser implements PasswordParser {
+public class CognitoPasswordParser extends JwtPasswordParser implements TokenProvider {
 
   private final CognitoAuth cognitoAuth;
   private final String username;
@@ -61,11 +66,10 @@ public class CognitoPasswordParser implements PasswordParser {
 
       // Login based on the JWT being passed in
       if (isJwt(passwordString)) {
-        if (validateForJWT(cognitoAuth.getCognitoClient(), username, passwordString)) {
-          computedPassword = password;
-          return password;
-        }
-        return new byte[0];
+        JwtValidator validator = new JwtValidator(this);
+        jwt = validator.validateJwt(username, passwordString);
+        computedPassword = password;
+        return password;
       }
       // Login based on user/password
       String secretHash = generateSecretHash(username);
@@ -86,10 +90,13 @@ public class CognitoPasswordParser implements PasswordParser {
       AdminInitiateAuthResponse authResponse = cognitoAuth.getCognitoClient().adminInitiateAuth(authRequest);
       AuthenticationResultType authResult = authResponse.authenticationResult();
       if (authResult != null) {
+        JwtValidator validator = new JwtValidator(this);
+        jwt = validator.validateJwt(username, authResult.idToken());
         computedPassword = password;
         return password;
       }
     } catch (Exception ex) {
+      ex.printStackTrace();
       // todo log
     }
     // If the above code executes without throwing an exception,
@@ -133,5 +140,14 @@ public class CognitoPasswordParser implements PasswordParser {
   @Override
   public String getName() {
     return "cognito";
+  }
+
+  @Override
+  public JwkProvider getJwkProvider(String issuer) {
+    return new UrlJwkProvider(
+        "https://cognito-idp."
+            + cognitoAuth.getRegionName()
+            + ".amazonaws.com/"
+            + cognitoAuth.getUserPoolId());
   }
 }

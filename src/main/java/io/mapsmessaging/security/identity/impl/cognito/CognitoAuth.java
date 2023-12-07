@@ -20,10 +20,10 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
@@ -33,17 +33,14 @@ import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityPr
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 @Getter
-public class CognitoAuth implements IdentityLookup {
+public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
 
   private final String userPoolId;
   private final String appClientId;
   private final String appClientSecret;
+  private final String regionName;
   private long lastUpdated = 0;
   private long cacheTime = 30000;
-
-  private final Map<String, GroupEntry> groupEntryMap = new LinkedHashMap<>();
-  private final Map<String, CognitoIdentityEntry> identityEntryMap = new LinkedHashMap<>();
-  private final List<CognitoIdentityEntry> identityEntries = new ArrayList<>();
 
   private final CognitoIdentityProviderClient cognitoClient;
 
@@ -51,6 +48,7 @@ public class CognitoAuth implements IdentityLookup {
     cognitoClient = null;
     userPoolId = "";
     appClientId = "";
+    regionName = "";
     appClientSecret = "";
   }
 
@@ -59,7 +57,7 @@ public class CognitoAuth implements IdentityLookup {
     appClientId = (String) config.get("appClientId");
     appClientSecret = (String) config.get("appClientSecret");
 
-    String regionName = (String) config.get("region");
+    regionName = (String) config.get("region");
     String accesskeyId = (String) config.get("accessKeyId");
     String secretAccessKey = (String) config.get("secretAccessKey");
 
@@ -225,7 +223,7 @@ public class CognitoAuth implements IdentityLookup {
 
   @Override
   public void updateGroup(GroupEntry groupEntry) throws IOException {
-    IdentityLookup.super.updateGroup(groupEntry);
+    super.updateGroup(groupEntry);
   }
 
   private void reset() {

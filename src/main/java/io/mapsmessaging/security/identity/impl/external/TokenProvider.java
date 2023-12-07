@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.impl.auth0;
+package io.mapsmessaging.security.identity.impl.external;
 
-import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
+import com.auth0.jwk.JwkProvider;
 
-public class Auth0IdentityEntry extends JwtIdentityEntry {
-
-  public Auth0IdentityEntry(Auth0Auth auth0Auth, String username) {
-    super();
-    this.username = username;
-    passwordParser = new Auth0PasswordParser(username, auth0Auth);
-  }
-
-  @Override
-  public String getPassword() {
-    return new String(passwordParser.getPassword());
-  }
-
+public interface TokenProvider {
+  JwkProvider getJwkProvider(String issuer);
 }

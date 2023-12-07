@@ -25,6 +25,7 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import java.io.IOException;
 import java.util.List;
@@ -32,7 +33,7 @@ import java.util.Map;
 import lombok.Data;
 
 @Data
-public class Auth0Auth implements IdentityLookup {
+public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
   private final String auth0Domain;
   private final String clientId;
@@ -109,7 +110,7 @@ public class Auth0Auth implements IdentityLookup {
 
   @Override
   public List<GroupEntry> getGroups() {
-    return IdentityLookup.super.getGroups();
+    return super.getGroups();
   }
 
   @Override
@@ -119,27 +120,27 @@ public class Auth0Auth implements IdentityLookup {
 
   @Override
   public boolean createGroup(String groupName) throws IOException {
-    return IdentityLookup.super.createGroup(groupName);
+    return super.createGroup(groupName);
   }
 
   @Override
   public boolean deleteGroup(String groupName) throws IOException {
-    return IdentityLookup.super.deleteGroup(groupName);
+    return super.deleteGroup(groupName);
   }
 
   @Override
   public boolean createUser(String username, String passwordHash, PasswordParser passwordParser)
       throws IOException {
-    return IdentityLookup.super.createUser(username, passwordHash, passwordParser);
+    return super.createUser(username, passwordHash, passwordParser);
   }
 
   @Override
   public boolean deleteUser(String username) throws IOException {
-    return IdentityLookup.super.deleteUser(username);
+    return super.deleteUser(username);
   }
 
   @Override
   public void updateGroup(GroupEntry groupEntry) throws IOException {
-    IdentityLookup.super.updateGroup(groupEntry);
+    super.updateGroup(groupEntry);
   }
 }
