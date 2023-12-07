@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.identity.impl.auth0;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.principals.JwtPrincipal;
 import io.mapsmessaging.security.identity.principals.TokenPrincipal;
 import java.security.Principal;
 import java.util.Set;
@@ -37,8 +38,15 @@ public class Auth0IdentityEntry extends IdentityEntry {
   @Override
   protected Set<Principal> getPrincipals() {
     Set<Principal> principals = super.getPrincipals();
-    principals.add(
-        new TokenPrincipal(((Auth0PasswordParser) passwordParser).getToken().getAccessToken()));
+    if (passwordParser instanceof Auth0PasswordParser) {
+      Auth0PasswordParser auth0PasswordParser = (Auth0PasswordParser) passwordParser;
+      if (auth0PasswordParser.getToken() != null) {
+        principals.add(new TokenPrincipal(auth0PasswordParser.getToken().getAccessToken()));
+      }
+      if (auth0PasswordParser.getJwt() != null) {
+        principals.add(new JwtPrincipal(auth0PasswordParser.getJwt()));
+      }
+    }
     return principals;
   }
 }

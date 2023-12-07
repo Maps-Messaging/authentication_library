@@ -16,10 +16,19 @@
 
 package io.mapsmessaging.security.jaas;
 
+import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.security.auth.spi.LoginModule;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -55,5 +64,47 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
   @Override
   String getPassword() {
     return "testPassword01!";
+  }
+
+  @Test
+  void simpleJwtLoginTest() throws Exception {
+    Auth0Client auth0Client = new Auth0Client();
+    String token = auth0Client.authenticateAndGetToken();
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), token, "");
+    LoginModule module = createLoginModule(clientCallbackHandler);
+    Assertions.assertTrue(module.login());
+    Assertions.assertTrue(subject.getPrincipals().isEmpty());
+    Assertions.assertTrue(module.commit());
+    Assertions.assertFalse(subject.getPrincipals().isEmpty());
+  }
+
+  public class Auth0Client {
+
+    public String authenticateAndGetToken() throws Exception {
+      String url = "https://" + properties.get("domain") + "/oauth/token";
+      try (CloseableHttpClient client = HttpClients.createDefault()) {
+        HttpPost httpPost = new HttpPost(url);
+
+        String json =
+            new JSONObject()
+                .put("client_id", properties.get("clientId"))
+                .put("client_secret", properties.get("clientSecret"))
+                .put("grant_type", "client_credentials")
+                .put("grant_type", "password") // Note: using the Resource Owner Password Grant
+                .put("username", getUser())
+                .put("password", getPassword())
+                .toString();
+
+        StringEntity entity = new StringEntity(json);
+        httpPost.setEntity(entity);
+        httpPost.setHeader("Accept", "application/json");
+        httpPost.setHeader("Content-type", "application/json");
+
+        var response = client.execute(httpPost);
+        String result = EntityUtils.toString(response.getEntity());
+        JSONObject jsonObj = new JSONObject(result);
+        return jsonObj.getString("id_token");
+      }
+    }
   }
 }

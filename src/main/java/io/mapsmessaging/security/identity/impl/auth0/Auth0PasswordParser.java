@@ -39,6 +39,7 @@ public class Auth0PasswordParser implements PasswordParser {
   private final Auth0Auth auth;
   private final String username;
   @Getter private TokenHolder token;
+  @Getter private DecodedJWT jwt;
 
   private byte[] computedPassword = new byte[0];
 
@@ -67,6 +68,37 @@ public class Auth0PasswordParser implements PasswordParser {
     return false;
   }
 
+  private static boolean validate(String username, DecodedJWT verifiedJwt) {
+    LocalDate expires =
+        verifiedJwt.getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    LocalDate now = LocalDate.now();
+    if (expires.isBefore(now)) {
+      return false;
+    }
+    String name = verifiedJwt.getClaim("name").asString();
+    return (username.equals(name));
+  }
+
+  @Override
+  public byte[] getSalt() {
+    return new byte[0];
+  }
+
+  @Override
+  public byte[] getPassword() {
+    return computedPassword;
+  }
+
+  @Override
+  public char[] getFullPasswordHash() {
+    return new char[0];
+  }
+
+  @Override
+  public String getName() {
+    return "auth0";
+  }
+
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
     if (auth == null) {
@@ -75,7 +107,8 @@ public class Auth0PasswordParser implements PasswordParser {
     String passwordString = new String(password);
     if (isJwt(passwordString)) {
       try {
-        if (validateJwt(passwordString)) {
+        jwt = validateJwt(auth, username, passwordString);
+        if (jwt != null) {
           computedPassword = password;
           return computedPassword;
         }
@@ -106,49 +139,18 @@ public class Auth0PasswordParser implements PasswordParser {
     return new byte[0];
   }
 
-  @Override
-  public byte[] getSalt() {
-    return new byte[0];
-  }
-
-  @Override
-  public byte[] getPassword() {
-    return computedPassword;
-  }
-
-  @Override
-  public char[] getFullPasswordHash() {
-    return new char[0];
-  }
-
-  @Override
-  public String getName() {
-    return "auth0";
-  }
-
-  private boolean validateJwt(String token) throws JwkException {
+  private DecodedJWT validateJwt(Auth0Auth auth, String username, String token)
+      throws JwkException {
     JwkProvider provider = new UrlJwkProvider("https://" + auth.getAuth0Domain() + "/");
-    DecodedJWT jwt = JWT.decode(token);
-    Jwk jwk = provider.get(jwt.getKeyId());
+    DecodedJWT decodedJwt = JWT.decode(token);
+    Jwk jwk = provider.get(decodedJwt.getKeyId());
     Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
     JWTVerifier verifier =
         JWT.require(algorithm).withIssuer("https://" + auth.getAuth0Domain() + "/").build();
     DecodedJWT verifiedJwt = verifier.verify(token);
-    return validate(verifiedJwt);
-  }
-
-  private boolean validate(DecodedJWT verifiedJwt) {
-    LocalDate expires =
-        verifiedJwt.getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    LocalDate now = LocalDate.now();
-    if (expires.isBefore(now)) {
-      return false;
+    if (validate(username, verifiedJwt)) {
+      return verifiedJwt;
     }
-    // Need to add token information into the subject
-    String tokenUser = verifiedJwt.getSubject();
-    if (tokenUser.contains("@")) {
-      tokenUser = tokenUser.substring(0, tokenUser.indexOf("@"));
-    }
-    return (username.equals(tokenUser));
+    return null;
   }
 }
