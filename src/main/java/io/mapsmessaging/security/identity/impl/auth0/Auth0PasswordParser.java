@@ -32,11 +32,13 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
+import lombok.Getter;
 
 public class Auth0PasswordParser implements PasswordParser {
 
   private final Auth0Auth auth;
   private final String username;
+  @Getter private TokenHolder token;
 
   private byte[] computedPassword = new byte[0];
 
@@ -85,10 +87,13 @@ public class Auth0PasswordParser implements PasswordParser {
 
     try {
       TokenRequest request =
-          auth.getAuthAPI().login(username, passwordString).setScope("openid profile email");
-      //          .setAudience(String.format("https://%s/userinfo", auth.getAuthToken()));
+          auth.getAuthAPI()
+              .login(username, passwordString.toCharArray())
+              .setScope("openid profile email");
       Response<TokenHolder> holder = request.execute();
+
       if (holder.getStatusCode() == 200) {
+        token = holder.getBody();
         computedPassword = password;
         return computedPassword;
       }
@@ -122,13 +127,17 @@ public class Auth0PasswordParser implements PasswordParser {
   }
 
   private boolean validateJwt(String token) throws JwkException {
-    JwkProvider provider = new UrlJwkProvider("https://" + auth.getDomain() + "/");
+    JwkProvider provider = new UrlJwkProvider("https://" + auth.getAuth0Domain() + "/");
     DecodedJWT jwt = JWT.decode(token);
     Jwk jwk = provider.get(jwt.getKeyId());
     Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
     JWTVerifier verifier =
-        JWT.require(algorithm).withIssuer("https://" + auth.getDomain() + "/").build();
+        JWT.require(algorithm).withIssuer("https://" + auth.getAuth0Domain() + "/").build();
     DecodedJWT verifiedJwt = verifier.verify(token);
+    return validate(verifiedJwt);
+  }
+
+  private boolean validate(DecodedJWT verifiedJwt) {
     LocalDate expires =
         verifiedJwt.getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     LocalDate now = LocalDate.now();
@@ -136,7 +145,7 @@ public class Auth0PasswordParser implements PasswordParser {
       return false;
     }
     // Need to add token information into the subject
-    String tokenUser = jwt.getSubject();
+    String tokenUser = verifiedJwt.getSubject();
     if (tokenUser.contains("@")) {
       tokenUser = tokenUser.substring(0, tokenUser.indexOf("@"));
     }

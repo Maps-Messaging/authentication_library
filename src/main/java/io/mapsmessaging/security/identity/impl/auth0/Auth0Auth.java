@@ -34,7 +34,7 @@ import lombok.Data;
 @Data
 public class Auth0Auth implements IdentityLookup {
 
-  private final String domain;
+  private final String auth0Domain;
   private final String clientId;
   private final String clientSecret;
   private final String authToken;
@@ -46,7 +46,7 @@ public class Auth0Auth implements IdentityLookup {
   private long cacheTime = 30000;
 
   public Auth0Auth() {
-    domain = "";
+    auth0Domain = "";
     clientId = "";
     clientSecret = "";
     authToken = "";
@@ -56,7 +56,7 @@ public class Auth0Auth implements IdentityLookup {
   }
 
   public Auth0Auth(Map<String, ?> config) {
-    domain = (String) config.get("domain");
+    auth0Domain = (String) config.get("domain");
     clientId = (String) config.get("clientId");
     clientSecret = (String) config.get("clientSecret");
     authToken = (String) config.get("authToken");
@@ -64,8 +64,8 @@ public class Auth0Auth implements IdentityLookup {
     if (cacheTimeString != null && !cacheTimeString.trim().isEmpty()) {
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }
-    authAPI = AuthAPI.newBuilder(domain, clientId, clientSecret).build();
-    TokenRequest tokenRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
+    authAPI = AuthAPI.newBuilder(auth0Domain, clientId, clientSecret).build();
+    TokenRequest tokenRequest = authAPI.requestToken("https://" + auth0Domain + "/api/v2/");
     String token = "";
     try {
       TokenHolder holder = tokenRequest.execute().getBody();
@@ -74,7 +74,7 @@ public class Auth0Auth implements IdentityLookup {
       // ToDo add logging
     }
     apiToken = token;
-    mgmt = ManagementAPI.newBuilder(domain, apiToken).build();
+    mgmt = ManagementAPI.newBuilder(auth0Domain, apiToken).build();
   }
 
   @Override
