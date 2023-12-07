@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2023 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,12 @@
 
 package io.mapsmessaging.security.jaas;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class Auth0IdentityLoginTest extends BaseIdentity {
   private static Properties properties;
@@ -50,7 +49,7 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
 
   @Override
   String getUser() {
-    return "maps.test";
+    return "admin@mapsmessaging.io";
   }
 
   @Override

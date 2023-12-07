@@ -26,16 +26,18 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import lombok.Data;
 
+@Data
 public class Auth0Auth implements IdentityLookup {
 
   private final String domain;
   private final String clientId;
   private final String clientSecret;
+  private final String authToken;
   private final String apiToken;
 
   private final AuthAPI authAPI;
@@ -47,6 +49,7 @@ public class Auth0Auth implements IdentityLookup {
     domain = "";
     clientId = "";
     clientSecret = "";
+    authToken = "";
     apiToken = "";
     authAPI = null;
     mgmt = null;
@@ -56,20 +59,19 @@ public class Auth0Auth implements IdentityLookup {
     domain = (String) config.get("domain");
     clientId = (String) config.get("clientId");
     clientSecret = (String) config.get("clientSecret");
-    String token = (String) config.get("apiToken");
+    authToken = (String) config.get("authToken");
     String cacheTimeString = (String) config.get("cacheTime");
     if (cacheTimeString != null && !cacheTimeString.trim().isEmpty()) {
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }
     authAPI = AuthAPI.newBuilder(domain, clientId, clientSecret).build();
-    if (token == null) {
-      TokenRequest tokenRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
-      try {
-        TokenHolder holder = tokenRequest.execute().getBody();
-        token = holder.getAccessToken();
-      } catch (Auth0Exception e) {
-        //ToDo add logging
-      }
+    TokenRequest tokenRequest = authAPI.requestToken("https://" + domain + "/api/v2/");
+    String token = "";
+    try {
+      TokenHolder holder = tokenRequest.execute().getBody();
+      token = holder.getAccessToken();
+    } catch (Auth0Exception e) {
+      // ToDo add logging
     }
     apiToken = token;
     mgmt = ManagementAPI.newBuilder(domain, apiToken).build();
@@ -92,7 +94,7 @@ public class Auth0Auth implements IdentityLookup {
 
   @Override
   public IdentityEntry findEntry(String username) {
-    return null;
+    return new Auth0IdentityEntry(this, username);
   }
 
   @Override

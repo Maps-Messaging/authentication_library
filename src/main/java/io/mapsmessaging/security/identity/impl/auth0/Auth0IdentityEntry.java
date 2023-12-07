@@ -18,4 +18,16 @@ package io.mapsmessaging.security.identity.impl.auth0;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 
-public class Auth0IdentityEntry extends IdentityEntry {}
+public class Auth0IdentityEntry extends IdentityEntry {
+
+  public Auth0IdentityEntry(Auth0Auth auth0Auth, String username) {
+    super();
+    this.username = username;
+    passwordParser = new Auth0PasswordParser(username, auth0Auth);
+  }
+
+  @Override
+  public String getPassword() {
+    return new String(passwordParser.getPassword());
+  }
+}

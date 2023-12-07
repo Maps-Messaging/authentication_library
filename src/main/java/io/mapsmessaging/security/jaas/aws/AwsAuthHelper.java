@@ -22,14 +22,13 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 public class AwsAuthHelper {
 
@@ -42,23 +41,6 @@ public class AwsAuthHelper {
     return groups.asList(String.class);
   }
 
-
-  public static boolean isJwt(String token) {
-    // Check if the token has three parts (header, payload, signature)
-    String[] tokenParts = token.split("\\.");
-    if (tokenParts.length != 3) {
-      return false;
-    }
-
-    // Decode the header and payload and check if they are valid Base64 strings
-    try {
-      Base64.getUrlDecoder().decode(tokenParts[0]);
-      Base64.getUrlDecoder().decode(tokenParts[1]);
-    } catch (IllegalArgumentException e) {
-      return false;
-    }
-    return true;
-  }
 
   public static String generateSecretHash(String clientId, String clientSecret, String username) throws NoSuchAlgorithmException, InvalidKeyException {
     String message = username + clientId;
