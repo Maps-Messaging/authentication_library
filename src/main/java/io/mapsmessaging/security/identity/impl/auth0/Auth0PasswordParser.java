@@ -133,7 +133,6 @@ public class Auth0PasswordParser implements PasswordParser {
     } catch (Auth0Exception e) {
       computedPassword = new byte[12];
       Arrays.fill(computedPassword, (byte) 0xff);
-      e.printStackTrace();
       // ToDo log
     }
     return new byte[0];
