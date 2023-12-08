@@ -114,7 +114,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
     List<UserType> userList = response.users();
     for (UserType user : userList) {
       if (user.enabled()) {
-        List<software.amazon.awssdk.services.cognitoidentityprovider.model.AttributeType> list = user.attributes();
+        List<AttributeType> list = user.attributes();
         AttributeType email = list.stream().filter(attributeType -> attributeType.name().equals("email")).findFirst().orElse(null);
         AttributeType uuid = list.stream().filter(attributeType -> attributeType.name().equals("sub")).findFirst().orElse(null);
         AttributeType profile = list.stream().filter(attributeType -> attributeType.name().equals("profile")).findFirst().orElse(null);
@@ -141,8 +141,8 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
     ListGroupsResponse listGroupsResponse = cognitoApi.getGroupList();
     for (GroupType groupType : listGroupsResponse.groups()) {
       CognitoGroupEntry groupEntry = new CognitoGroupEntry(groupType.groupName());
-      ListUsersInGroupRequest listUsersInGroupRequest = ListUsersInGroupRequest.builder().userPoolId(userPoolId).groupName(groupType.groupName()).build();
-      ListUsersInGroupResponse listUsersInGroupResponse = cognitoClient.listUsersInGroup(listUsersInGroupRequest);
+      ListUsersInGroupResponse listUsersInGroupResponse =
+          cognitoApi.getUsersInGroup(groupType.groupName());
       for (UserType userType : listUsersInGroupResponse.users()) {
         String username = userType.username();
         CognitoIdentityEntry identityEntry = identityEntryMap.get(username);
@@ -228,7 +228,6 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
 
   @Override
   protected void loadGroups(CognitoIdentityEntry identityEntry) {
-    groupEntryMap.clear();
     loadGroups();
   }
 

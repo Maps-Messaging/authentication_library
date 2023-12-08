@@ -35,6 +35,7 @@ public abstract class CachingIdentityLookup<T extends IdentityEntry> implements 
 
   @Override
   public IdentityEntry findEntry(String username) {
+    loadUsers();
     IdentityEntry identityEntry = identityEntryMap.get(username);
     if (identityEntry == null) {
       identityEntry = createIdentityEntry(username);

@@ -1,0 +1,119 @@
+/*
+ * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.mapsmessaging.security.identity.impl.auth0;
+
+import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.filter.RolesFilter;
+import com.auth0.client.mgmt.filter.UserFilter;
+import com.auth0.exception.Auth0Exception;
+import com.auth0.json.mgmt.roles.Role;
+import com.auth0.json.mgmt.roles.RolesPage;
+import com.auth0.json.mgmt.users.User;
+import com.auth0.json.mgmt.users.UsersPage;
+import com.auth0.net.Request;
+import io.mapsmessaging.security.identity.impl.external.WebRequestCaching;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Auth0Api {
+  private final WebRequestCaching caching;
+  private final ManagementAPI mgmt;
+
+  public Auth0Api(ManagementAPI mgmt, long cacheAge) {
+    caching = new WebRequestCaching(cacheAge);
+    this.mgmt = mgmt;
+  }
+
+  public boolean isUserCacheValid() {
+    return caching.get("ListUsersRequest") != null;
+  }
+
+  public boolean isGroupCacheValid() {
+    return caching.get("ListGroupsRequest") != null;
+  }
+
+  public List<String> getUserInGroup(String groupname) throws Auth0Exception {
+    List<String> users = (List<String>) caching.get("GetUserInGroup(" + groupname + ")");
+    if (users != null) {
+      return users;
+    }
+    List<String> users1 = new ArrayList<>();
+    mgmt.roles()
+        .listUsers(groupname, null)
+        .execute()
+        .getBody()
+        .getItems()
+        .forEach(user -> users1.add(user.getEmail()));
+    caching.put("GetUserInGroup(" + groupname + ")", users1);
+    return users1;
+  }
+
+  public List<Role> getGroupList() throws Auth0Exception {
+    List<Role> responseList = (List<Role>) caching.get("ListGroupRequest");
+    if (responseList != null) {
+      return responseList;
+    }
+    int start = 0;
+    int limit = 100;
+    mgmt.roles().list(new RolesFilter().withPage(start, limit));
+    RolesPage rolesPage =
+        mgmt.roles().list(new RolesFilter().withPage(start, limit)).execute().getBody();
+    List<Role> roleList = rolesPage.getItems();
+    start = start + roleList.size();
+    responseList = new ArrayList<>(roleList);
+    if (rolesPage.getTotal() != null && rolesPage.getTotal() > start) {
+      while (rolesPage.getTotal() > start) {
+        rolesPage = mgmt.roles().list(new RolesFilter().withPage(start, limit)).execute().getBody();
+        roleList = rolesPage.getItems();
+        start = start + roleList.size();
+        responseList.addAll(roleList);
+      }
+    }
+    caching.put("ListGroupRequest", responseList);
+    return responseList;
+  }
+
+  public List<User> getUserList() throws Auth0Exception {
+    List<User> responseList = (List<User>) caching.get("ListUsersRequest");
+    if (responseList != null) {
+      return responseList;
+    }
+    int start = 0;
+    int limit = 100;
+    Request<UsersPage> request = mgmt.users().list(null);
+    UsersPage usersPage = request.execute().getBody();
+    List<User> userList = usersPage.getItems();
+    start += userList.size();
+    responseList = new ArrayList<>(userList);
+    if (usersPage.getTotal() != null && usersPage.getTotal() > start) {
+      while (usersPage.getTotal() > start) {
+        request = mgmt.users().list(new UserFilter().withPage(start, limit));
+        usersPage = request.execute().getBody();
+        start = start + usersPage.getLength();
+        userList = usersPage.getItems();
+        responseList.addAll(userList);
+      }
+    }
+    responseList =
+        responseList.stream()
+            .filter(user -> (user.isBlocked() == null || !user.isBlocked()))
+            .collect(Collectors.toList());
+    caching.put("ListUsersRequest", responseList);
+    return responseList;
+  }
+}

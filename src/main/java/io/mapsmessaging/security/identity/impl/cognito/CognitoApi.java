@@ -18,10 +18,7 @@ package io.mapsmessaging.security.identity.impl.cognito;
 
 import io.mapsmessaging.security.identity.impl.external.WebRequestCaching;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsRequest;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.ListGroupsResponse;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersRequest;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.ListUsersResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 public class CognitoApi {
 
@@ -43,6 +40,18 @@ public class CognitoApi {
       caching.put("ListUsersRequest", response);
     }
     return response;
+  }
+
+  public ListUsersInGroupResponse getUsersInGroup(String name) {
+    ListUsersInGroupResponse listUsersInGroupResponse =
+        (ListUsersInGroupResponse) caching.get("UsersInGroupRequest(" + name + ")");
+    if (listUsersInGroupResponse == null) {
+      ListUsersInGroupRequest listUsersInGroupRequest =
+          ListUsersInGroupRequest.builder().userPoolId(userPoolId).groupName(name).build();
+      listUsersInGroupResponse = cognitoClient.listUsersInGroup(listUsersInGroupRequest);
+      caching.put("UsersInGroupRequest(" + name + ")", listUsersInGroupResponse);
+    }
+    return listUsersInGroupResponse;
   }
 
   public ListGroupsResponse getGroupList() {

@@ -20,6 +20,8 @@ import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
+import com.auth0.json.mgmt.roles.Role;
+import com.auth0.json.mgmt.users.User;
 import com.auth0.net.TokenRequest;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
@@ -28,6 +30,7 @@ import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
@@ -43,6 +46,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   private final String authToken;
   private final String apiToken;
 
+  private final Auth0Api auth0Api;
   private final AuthAPI authAPI;
   private final ManagementAPI mgmt;
 
@@ -54,6 +58,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     clientSecret = "";
     authToken = "";
     apiToken = "";
+    auth0Api = null;
     authAPI = null;
     mgmt = null;
   }
@@ -78,6 +83,12 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     }
     apiToken = token;
     mgmt = ManagementAPI.newBuilder(auth0Domain, apiToken).build();
+    auth0Api = new Auth0Api(mgmt, cacheTime);
+  }
+
+  @Override
+  public IdentityLookup create(Map<String, ?> config) {
+    return new Auth0Auth(config);
   }
 
   @Override
@@ -101,26 +112,19 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   }
 
   @Override
-  protected void loadUsers() {}
-
-  @Override
   public List<IdentityEntry> getEntries() {
-    return null;
+    loadUsers();
+    return new ArrayList<>(identityEntries);
   }
 
   @Override
   public GroupEntry findGroup(String groupName) {
-    return null;
+    return groupEntryMap.get(groupName);
   }
 
   @Override
   public List<GroupEntry> getGroups() {
-    return super.getGroups();
-  }
-
-  @Override
-  public IdentityLookup create(Map<String, ?> config) {
-    return new Auth0Auth(config);
+    return new ArrayList<>(groupEntryMap.values());
   }
 
   @Override
@@ -150,5 +154,53 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   }
 
   @Override
-  protected void loadGroups(Auth0IdentityEntry identityEntry) {}
+  protected void loadGroups(Auth0IdentityEntry identityEntry) {
+    loadGroups();
+  }
+
+  private void loadGroups() {
+    if (auth0Api.isGroupCacheValid()) {
+      return;
+    }
+    groupEntryMap.clear();
+    try {
+      List<Role> roles = auth0Api.getGroupList();
+      for (Role role : roles) {
+        Auth0GroupEntry groupEntry = new Auth0GroupEntry(role.getName());
+
+        List<String> users = auth0Api.getUserInGroup(role.getId());
+        for (String user : users) {
+          Auth0IdentityEntry identityEntry = identityEntryMap.get(user);
+          if (identityEntry != null) {
+            groupEntry.addUser(user);
+            identityEntry.addGroup(groupEntry);
+          }
+        }
+        groupEntryMap.put(role.getName(), groupEntry);
+      }
+    } catch (Auth0Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  protected void loadUsers() {
+    if (auth0Api.isUserCacheValid()) {
+      return;
+    }
+    identityEntryMap.clear();
+    identityEntries.clear();
+    try {
+      List<User> response = auth0Api.getUserList();
+      for (User user : response) {
+        Auth0IdentityEntry entry = new Auth0IdentityEntry(this, user.getEmail());
+        identityEntryMap.put(user.getEmail(), entry);
+        identityEntries.add(entry);
+      }
+    } catch (Exception ex) {
+      // todo
+      ex.printStackTrace();
+    }
+    loadGroups();
+  }
 }
