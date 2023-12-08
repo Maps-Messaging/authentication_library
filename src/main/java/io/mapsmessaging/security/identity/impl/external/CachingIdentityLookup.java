@@ -20,10 +20,7 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public abstract class CachingIdentityLookup<T extends IdentityEntry> implements IdentityLookup {
 
@@ -65,4 +62,5 @@ public abstract class CachingIdentityLookup<T extends IdentityEntry> implements 
   protected abstract IdentityEntry createIdentityEntry(String username);
 
   protected abstract void loadUsers();
+
 }

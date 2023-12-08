@@ -43,9 +43,11 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   private long cacheTime = 30000;
 
   private final CognitoIdentityProviderClient cognitoClient;
+  private final CognitoApi cognitoApi;
 
   public CognitoAuth() {
     cognitoClient = null;
+    cognitoApi = null;
     userPoolId = "";
     appClientId = "";
     regionName = "";
@@ -74,6 +76,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
         credentialsProvider(() -> credentials).
         region(region).
         build();
+    cognitoApi = new CognitoApi(cognitoClient, userPoolId, cacheTime);
   }
 
   @Override
@@ -103,13 +106,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   protected void loadUsers() {
-    long time = System.currentTimeMillis();
-    if (time < lastUpdated) {
-      return;
-    }
-    lastUpdated = time + cacheTime;
-    ListUsersRequest usersRequest = ListUsersRequest.builder().userPoolId(userPoolId).build();
-    ListUsersResponse response = cognitoClient.listUsers(usersRequest);
+    ListUsersResponse response = cognitoApi.getUserList();
     List<UserType> userList = response.users();
     for (UserType user : userList) {
       if (user.enabled()) {
@@ -133,8 +130,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   private void loadGroups() {
-    ListGroupsRequest listGroupsRequest = ListGroupsRequest.builder().userPoolId(userPoolId).build();
-    ListGroupsResponse listGroupsResponse = cognitoClient.listGroups(listGroupsRequest);
+    ListGroupsResponse listGroupsResponse = cognitoApi.getGroupList();
     for (GroupType groupType : listGroupsResponse.groups()) {
       CognitoGroupEntry groupEntry = new CognitoGroupEntry(groupType.groupName());
       ListUsersInGroupRequest listUsersInGroupRequest = ListUsersInGroupRequest.builder().userPoolId(userPoolId).groupName(groupType.groupName()).build();
