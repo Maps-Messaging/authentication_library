@@ -55,4 +55,12 @@ public class CognitoApi {
     }
     return response;
   }
+
+  public boolean isUserCacheValid() {
+    return caching.get("ListUsersRequest") != null;
+  }
+
+  public boolean isGroupCacheValid() {
+    return caching.get("ListGroupsRequest") != null;
+  }
 }

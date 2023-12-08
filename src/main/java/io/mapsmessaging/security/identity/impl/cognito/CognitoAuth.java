@@ -39,7 +39,6 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   private final String appClientId;
   private final String appClientSecret;
   private final String regionName;
-  private long lastUpdated = 0;
   private long cacheTime = 30000;
 
   private final CognitoIdentityProviderClient cognitoClient;
@@ -106,6 +105,11 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   protected void loadUsers() {
+    if (cognitoApi.isUserCacheValid()) {
+      return;
+    }
+    identityEntryMap.clear();
+    identityEntries.clear();
     ListUsersResponse response = cognitoApi.getUserList();
     List<UserType> userList = response.users();
     for (UserType user : userList) {
@@ -130,6 +134,10 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   private void loadGroups() {
+    if (cognitoApi.isGroupCacheValid()) {
+      return;
+    }
+    groupEntryMap.clear();
     ListGroupsResponse listGroupsResponse = cognitoApi.getGroupList();
     for (GroupType groupType : listGroupsResponse.groups()) {
       CognitoGroupEntry groupEntry = new CognitoGroupEntry(groupType.groupName());
@@ -161,7 +169,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   public boolean createGroup(String groupName) {
     CreateGroupResponse response = cognitoClient.createGroup(CreateGroupRequest.builder().groupName(groupName).userPoolId(userPoolId).build());
     if (response.sdkHttpResponse().isSuccessful()) {
-      reset();
+      groupEntryMap.put(groupName, new CognitoGroupEntry(groupName));
       return true;
     }
     return false;
@@ -171,7 +179,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   public boolean deleteGroup(String groupName) {
     DeleteGroupResponse response = cognitoClient.deleteGroup(DeleteGroupRequest.builder().groupName(groupName).userPoolId(userPoolId).build());
     if (response.sdkHttpResponse().isSuccessful()) {
-      reset();
+      groupEntryMap.remove(groupName);
       return true;
     }
     return false;
@@ -193,7 +201,9 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
 
     AdminCreateUserResponse response = cognitoClient.adminCreateUser(request);
     if (response.sdkHttpResponse().isSuccessful()) {
-      reset();
+      CognitoIdentityEntry entry = new CognitoIdentityEntry(this, username, "");
+      identityEntryMap.put(username, entry);
+      identityEntries.add(entry);
       return true;
     }
     return false;
@@ -204,7 +214,8 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
     AdminDeleteUserRequest deleteUserRequest = AdminDeleteUserRequest.builder().username(username).userPoolId(userPoolId).build();
     AdminDeleteUserResponse response = cognitoClient.adminDeleteUser(deleteUserRequest);
     if (response.sdkHttpResponse().isSuccessful()) {
-      reset();
+      identityEntryMap.remove(username);
+      identityEntries.removeIf(identityEntry -> identityEntry.getUsername().equals(username));
       return true;
     }
     return false;
@@ -224,13 +235,5 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   @Override
   protected IdentityEntry createIdentityEntry(String username) {
     return new CognitoIdentityEntry(this, username, null);
-  }
-
-  private void reset() {
-    groupEntryMap.clear();
-    this.identityEntries.clear();
-    this.identityEntryMap.clear();
-    lastUpdated = 0;
-    loadUsers();
   }
 }
