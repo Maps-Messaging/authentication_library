@@ -17,11 +17,13 @@
 package io.mapsmessaging.security.identity.impl.cognito;
 
 import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class CognitoIdentityEntry extends JwtIdentityEntry {
-  private final String uuid;
+  private String uuid;
   private String email;
   private String profile;
 
@@ -30,7 +32,7 @@ public class CognitoIdentityEntry extends JwtIdentityEntry {
     this.uuid = uuid;
     this.email = "";
     this.profile = "";
-    passwordParser = new CognitoPasswordParser(username, cognitoAuth);
+    passwordParser = new CognitoPasswordParser(username, cognitoAuth, this);
   }
 
   public String getPassword() {

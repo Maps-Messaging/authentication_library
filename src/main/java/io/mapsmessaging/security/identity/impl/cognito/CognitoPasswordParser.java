@@ -23,40 +23,24 @@ import com.auth0.jwk.UrlJwkProvider;
 import io.mapsmessaging.security.identity.impl.external.JwtPasswordParser;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.jaas.aws.AwsAuthHelper;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Map;
-import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 public class CognitoPasswordParser extends JwtPasswordParser implements TokenProvider {
 
   private final CognitoAuth cognitoAuth;
   private final String username;
+  private final CognitoIdentityEntry identityEntry;
 
-  private byte[] computedPassword;
-
-  public CognitoPasswordParser(String username, CognitoAuth cognitoAuth) {
+  public CognitoPasswordParser(
+      String username, CognitoAuth cognitoAuth, CognitoIdentityEntry identityEntry) {
     this.cognitoAuth = cognitoAuth;
     this.username = username;
-  }
-
-  @Override
-  public PasswordParser create(String password) {
-    return null;
-  }
-
-  @Override
-  public String getKey() {
-    return null;
-  }
-
-  @Override
-  public boolean hasSalt() {
-    return false;
+    this.identityEntry = identityEntry;
   }
 
   @Override
@@ -69,6 +53,7 @@ public class CognitoPasswordParser extends JwtPasswordParser implements TokenPro
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, passwordString);
         computedPassword = password;
+        success();
         return password;
       }
       // Login based on user/password
@@ -93,6 +78,7 @@ public class CognitoPasswordParser extends JwtPasswordParser implements TokenPro
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, authResult.idToken());
         computedPassword = password;
+        success();
         return password;
       }
     } catch (Exception ex) {
@@ -106,36 +92,21 @@ public class CognitoPasswordParser extends JwtPasswordParser implements TokenPro
     return new byte[0];
   }
 
-  @Override
-  public byte[] getPassword() {
-    return computedPassword;
-  }
 
   public String generateSecretHash(String username) throws NoSuchAlgorithmException, InvalidKeyException {
     return AwsAuthHelper.generateSecretHash(cognitoAuth.getAppClientId(), cognitoAuth.getAppClientSecret(), username);
   }
 
-  private boolean validateForJWT(CognitoIdentityProviderClient cognitoClient, String username, String jwt) {
-    GetUserRequest getUserRequest = GetUserRequest.builder()
-        .accessToken(jwt)
-        .build();
-
-    // Call GetUser to validate the token
-    GetUserResponse getUserResponse = cognitoClient.getUser(getUserRequest);
-
-    // Retrieve the username from the GetUserResponse
-    return username.equals(getUserResponse.username());
+  private void success() {
+    if (cognitoAuth != null) {
+      if (jwt != null) {
+        String sub = jwt.getClaim("sub").asString();
+        if (sub != null) identityEntry.setUuid(sub);
+      }
+      cognitoAuth.authorised(identityEntry);
+    }
   }
 
-  @Override
-  public byte[] getSalt() {
-    return new byte[0];
-  }
-
-  @Override
-  public char[] getFullPasswordHash() {
-    return new char[0];
-  }
 
   @Override
   public String getName() {

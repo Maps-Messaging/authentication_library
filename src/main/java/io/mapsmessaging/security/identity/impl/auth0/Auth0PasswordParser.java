@@ -26,53 +26,24 @@ import com.auth0.net.TokenRequest;
 import io.mapsmessaging.security.identity.impl.external.JwtPasswordParser;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import java.util.Arrays;
 
 public class Auth0PasswordParser extends JwtPasswordParser implements TokenProvider {
 
   private final Auth0Auth auth;
+  private final Auth0IdentityEntry identityEntry;
   private final String username;
-  private byte[] computedPassword = new byte[0];
 
   public Auth0PasswordParser() {
     auth = null;
     username = "";
+    identityEntry = null;
   }
 
-  public Auth0PasswordParser(String username, Auth0Auth auth) {
+  public Auth0PasswordParser(String username, Auth0Auth auth, Auth0IdentityEntry identityEntry) {
     this.auth = auth;
     this.username = username;
-  }
-
-  @Override
-  public PasswordParser create(String password) {
-    return null;
-  }
-
-  @Override
-  public String getKey() {
-    return null;
-  }
-
-  @Override
-  public boolean hasSalt() {
-    return false;
-  }
-
-  @Override
-  public byte[] getSalt() {
-    return new byte[0];
-  }
-
-  @Override
-  public byte[] getPassword() {
-    return computedPassword;
-  }
-
-  @Override
-  public char[] getFullPasswordHash() {
-    return new char[0];
+    this.identityEntry = identityEntry;
   }
 
   @Override
@@ -92,6 +63,7 @@ public class Auth0PasswordParser extends JwtPasswordParser implements TokenProvi
         jwt = validator.validateJwt(username, passwordString);
         if (jwt != null) {
           computedPassword = password;
+          success();
           return computedPassword;
         }
       } catch (JwkException e) {
@@ -113,6 +85,7 @@ public class Auth0PasswordParser extends JwtPasswordParser implements TokenProvi
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, idToken);
         computedPassword = password;
+        success();
         return computedPassword;
       }
     } catch (Auth0Exception | JwkException e) {
@@ -121,6 +94,10 @@ public class Auth0PasswordParser extends JwtPasswordParser implements TokenProvi
       // ToDo log
     }
     return new byte[0];
+  }
+
+  private void success() {
+    if (auth != null) auth.authorised(identityEntry);
   }
 
   @Override

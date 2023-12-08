@@ -35,4 +35,34 @@ public abstract class CachingIdentityLookup<T extends IdentityEntry> implements 
   public void updateGroup(GroupEntry groupEntry) throws IOException {
     IdentityLookup.super.updateGroup(groupEntry);
   }
+
+  @Override
+  public IdentityEntry findEntry(String username) {
+    IdentityEntry identityEntry = identityEntryMap.get(username);
+    if (identityEntry == null) {
+      identityEntry = createIdentityEntry(username);
+    }
+    return identityEntry;
+  }
+
+  public void authorised(T identityEntry) {
+    boolean added = false;
+    if (!identityEntries.contains(identityEntry)) {
+      identityEntries.add(identityEntry);
+      added = true;
+    }
+    if (identityEntryMap.containsKey(identityEntry.getUsername())) {
+      identityEntryMap.put(identityEntry.getUsername(), identityEntry);
+      added = true;
+    }
+    if (added) {
+      loadGroups(identityEntry);
+    }
+  }
+
+  protected abstract void loadGroups(T identityEntry);
+
+  protected abstract IdentityEntry createIdentityEntry(String username);
+
+  protected abstract void loadUsers();
 }

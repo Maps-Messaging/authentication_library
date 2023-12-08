@@ -30,9 +30,11 @@ import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
   private final String auth0Domain;
@@ -94,9 +96,12 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   }
 
   @Override
-  public IdentityEntry findEntry(String username) {
+  protected IdentityEntry createIdentityEntry(String username) {
     return new Auth0IdentityEntry(this, username);
   }
+
+  @Override
+  protected void loadUsers() {}
 
   @Override
   public List<IdentityEntry> getEntries() {
@@ -143,4 +148,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   public void updateGroup(GroupEntry groupEntry) throws IOException {
     super.updateGroup(groupEntry);
   }
+
+  @Override
+  protected void loadGroups(Auth0IdentityEntry identityEntry) {}
 }

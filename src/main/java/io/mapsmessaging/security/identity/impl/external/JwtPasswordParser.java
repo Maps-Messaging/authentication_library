@@ -22,5 +22,37 @@ import lombok.Data;
 
 @Data
 public abstract class JwtPasswordParser implements PasswordParser {
+
   protected DecodedJWT jwt;
+  protected byte[] computedPassword;
+
+  @Override
+  public PasswordParser create(String password) {
+    return null;
+  }
+
+  @Override
+  public String getKey() {
+    return null;
+  }
+
+  @Override
+  public boolean hasSalt() {
+    return false;
+  }
+
+  @Override
+  public byte[] getSalt() {
+    return new byte[0];
+  }
+
+  @Override
+  public byte[] getPassword() {
+    return computedPassword;
+  }
+
+  @Override
+  public char[] getFullPasswordHash() {
+    return new char[0];
+  }
 }

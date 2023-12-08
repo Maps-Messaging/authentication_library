@@ -17,10 +17,11 @@
 package io.mapsmessaging.security.identity.impl.auth0;
 
 import io.mapsmessaging.security.identity.GroupEntry;
+import java.util.TreeSet;
 
 public class Auth0GroupEntry extends GroupEntry {
 
   public Auth0GroupEntry(String groupname) {
-    this.name = groupname;
+    super(groupname, new TreeSet<>());
   }
 }

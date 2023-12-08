@@ -74,7 +74,6 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
         credentialsProvider(() -> credentials).
         region(region).
         build();
-
   }
 
   @Override
@@ -95,12 +94,6 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   @Override
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     return new char[0];
-  }
-
-  @Override
-  public IdentityEntry findEntry(String username) {
-    loadUsers();
-    return identityEntryMap.get(username);
   }
 
   @Override
@@ -224,6 +217,17 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   @Override
   public void updateGroup(GroupEntry groupEntry) throws IOException {
     super.updateGroup(groupEntry);
+  }
+
+  @Override
+  protected void loadGroups(CognitoIdentityEntry identityEntry) {
+    groupEntryMap.clear();
+    loadGroups();
+  }
+
+  @Override
+  protected IdentityEntry createIdentityEntry(String username) {
+    return new CognitoIdentityEntry(this, username, null);
   }
 
   private void reset() {
