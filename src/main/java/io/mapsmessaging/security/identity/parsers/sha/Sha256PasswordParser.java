@@ -38,4 +38,12 @@ public class Sha256PasswordParser extends ShaPasswordParser {
     return "SHA-256";
   }
 
+  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+    String t = new String(salt);
+    if (!t.startsWith("$5$")) {
+      t = "$5$" + t;
+    }
+    return super.computeHash(password, t.getBytes(), cost);
+  }
+
 }

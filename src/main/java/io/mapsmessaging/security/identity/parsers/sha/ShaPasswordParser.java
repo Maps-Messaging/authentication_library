@@ -50,7 +50,8 @@ public abstract class ShaPasswordParser implements PasswordParser {
 
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    return Crypt.crypt(password, new String(salt)).getBytes();
+    String hash = Crypt.crypt(password, new String(salt));
+    return hash.getBytes();
   }
 
   @Override

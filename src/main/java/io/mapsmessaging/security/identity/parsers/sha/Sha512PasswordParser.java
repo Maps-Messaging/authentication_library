@@ -37,4 +37,12 @@ public class Sha512PasswordParser extends ShaPasswordParser {
   public String getName() {
     return "SHA-512";
   }
+
+  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+    String t = new String(salt);
+    if (!t.startsWith("$6$")) {
+      t = "$6$" + t;
+    }
+    return super.computeHash(password, t.getBytes(), cost);
+  }
 }

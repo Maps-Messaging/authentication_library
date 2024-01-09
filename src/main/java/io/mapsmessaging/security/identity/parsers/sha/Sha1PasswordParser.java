@@ -71,4 +71,6 @@ public class Sha1PasswordParser implements PasswordParser {
   public String getName() {
     return "SHA1";
   }
+
+
 }
