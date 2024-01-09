@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,17 +16,15 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client.state;
 
-import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
 
 public class ChallengeState extends State {
 
@@ -52,9 +50,12 @@ public class ChallengeState extends State {
 
     String saltedPassword = "";
     if (context.getPasswordParser() != null) {
-      Radix64Encoder encoder = new Radix64Encoder.Default();
-      byte[] salt = encoder.decode(context.getPasswordSalt().getBytes());
-      byte[] computedHash = context.getPasswordParser().computeHash(context.getPrepPassword().getBytes(), salt, context.getInterations());
+      Base64.Encoder encoder = Base64.getEncoder();
+      byte[] salt = encoder.encode(context.getPasswordSalt().getBytes());
+      byte[] computedHash =
+          context
+              .getPasswordParser()
+              .computeHash(context.getPrepPassword().getBytes(), salt, context.getIterations());
       saltedPassword = new String(computedHash);
     }
 
@@ -87,6 +88,6 @@ public class ChallengeState extends State {
     context.setInitialServerChallenge(response.toString());
     context.setServerNonce(response.get(ChallengeResponse.NONCE));
     context.setPasswordSalt(response.get(ChallengeResponse.SALT));
-    context.setInterations(Integer.parseInt(response.get(ChallengeResponse.ITERATION_COUNT)));
+    context.setIterations(Integer.parseInt(response.get(ChallengeResponse.ITERATION_COUNT)));
   }
 }

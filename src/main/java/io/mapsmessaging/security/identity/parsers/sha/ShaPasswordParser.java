@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public abstract class ShaPasswordParser implements PasswordParser {
 
   @Override
   public boolean hasSalt() {
-    return salt == null || salt.length() == 0;
+    return salt == null || salt.isEmpty();
   }
 
   @Override
@@ -65,8 +65,11 @@ public abstract class ShaPasswordParser implements PasswordParser {
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + new String(password)).toCharArray();
+    return (key + salt + "$" + new String(password)).toCharArray();
   }
 
-
+  @Override
+  public int getCost() {
+    return 5000;
+  }
 }

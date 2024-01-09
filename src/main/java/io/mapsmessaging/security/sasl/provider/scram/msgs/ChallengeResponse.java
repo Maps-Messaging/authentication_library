@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,14 +16,13 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.msgs;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ChallengeResponse {
 
@@ -81,7 +80,7 @@ public class ChallengeResponse {
     StringTokenizer st = new StringTokenizer(val, ",");
     while (st.hasMoreElements()) {
       String entry = st.nextElement().toString().trim();
-      if (entry.length() > 0) {
+      if (!entry.isEmpty()) {
         parseKeyValue(entry);
       }
     }

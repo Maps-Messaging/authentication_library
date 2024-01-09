@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.*;
 import java.io.IOException;
 import java.util.Map;
+import javax.security.auth.callback.*;
 
 public class InitialState extends State {
 
@@ -53,7 +52,7 @@ public class InitialState extends State {
     }
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
-    response.put(ChallengeResponse.ITERATION_COUNT, String.valueOf(context.getInterations()));
+    response.put(ChallengeResponse.ITERATION_COUNT, String.valueOf(context.getIterations()));
     response.put(ChallengeResponse.SALT, context.getPasswordSalt());
     context.setState(new ValidationState(this));
     context.setInitialServerChallenge(response.toString());
@@ -96,7 +95,7 @@ public class InitialState extends State {
     Radix64Encoder encoder = new Radix64Encoder.Default();
     context.setPrepPassword(new String(password));
     context.setPasswordSalt(new String(encoder.encode(passwordParser.getSalt())));
-    context.setInterations(passwordParser.getCost());
+    context.setIterations(passwordParser.getCost());
     context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
   }
 }

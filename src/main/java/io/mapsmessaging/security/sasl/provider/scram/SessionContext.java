@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,16 +18,15 @@ package io.mapsmessaging.security.sasl.provider.scram;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.security.sasl.SaslException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.sasl.SaslException;
+import lombok.Getter;
+import lombok.Setter;
 
 public class SessionContext {
 
@@ -54,9 +53,7 @@ public class SessionContext {
   @Setter
   private State state;
 
-  @Getter
-  @Setter
-  private int interations;
+  @Getter @Setter private int iterations;
 
   @Getter
   @Setter
