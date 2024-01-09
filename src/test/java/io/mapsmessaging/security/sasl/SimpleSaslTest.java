@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -49,10 +49,13 @@ class SimpleSaslTest extends BaseSasl {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
+  @ValueSource(strings = {"PLAIN", "DIGEST-MD5", "CRAM-MD5"})
   void simpleDigestNonSaltValidTest(String mechanism) throws IOException {
     Sha1PasswordParser passwordParser = new Sha1PasswordParser();
-    byte[] password = passwordParser.computeHash("This is a random password".getBytes(), null, 0);
+    byte[] password = "This is a random password".getBytes();
+    if (!mechanism.equalsIgnoreCase("PLAIN")) {
+      password = passwordParser.computeHash(password, null, 0);
+    }
     testMechanism(mechanism, "fred2@google.com", new String(password));
   }
 

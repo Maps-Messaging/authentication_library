@@ -60,8 +60,8 @@ public class PlainSaslClient implements SaslClient {
     byte[] user = username.getBytes(StandardCharsets.UTF_8);
     byte[] pass = password.getBytes(StandardCharsets.UTF_8);
     byte[] response = new byte[user.length + pass.length + 2];
-    System.arraycopy(user, 0, response, 0, user.length);
-    System.arraycopy(pass, 0, response, user.length + 1, pass.length);
+    System.arraycopy(user, 0, response, 1, user.length);
+    System.arraycopy(pass, 0, response, user.length + 2, pass.length);
     complete = true;
     return response;
   }
