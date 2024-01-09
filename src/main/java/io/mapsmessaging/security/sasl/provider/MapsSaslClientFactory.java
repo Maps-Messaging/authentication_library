@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package io.mapsmessaging.security.sasl.provider;
 
+import io.mapsmessaging.security.sasl.provider.plain.PlainSaslClient;
 import io.mapsmessaging.security.sasl.provider.scram.client.ScramSaslClient;
 import io.mapsmessaging.security.sasl.provider.test.TestSaslClient;
-
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslClientFactory;
 import javax.security.sasl.SaslException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 public class MapsSaslClientFactory implements SaslClientFactory {
 
@@ -46,6 +46,9 @@ public class MapsSaslClientFactory implements SaslClientFactory {
       if (mech.startsWith("maps-test") &&
           Boolean.parseBoolean(System.getProperty("sasl.test", "false"))) {
         return new TestSaslClient(mech);
+      }
+      if (mech.startsWith("plain")) {
+        return new PlainSaslClient(cbh);
       }
     }
     throw new SaslException("Unknown mechanism " + mechanisms);
