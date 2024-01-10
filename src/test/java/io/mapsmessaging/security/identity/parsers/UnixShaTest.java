@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,21 +17,21 @@
 package io.mapsmessaging.security.identity.parsers;
 
 import io.mapsmessaging.security.identity.PasswordGenerator;
-import io.mapsmessaging.security.identity.parsers.sha.Sha256PasswordParser;
-import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
+import io.mapsmessaging.security.identity.parsers.sha.UnixSha256PasswordParser;
+import io.mapsmessaging.security.identity.parsers.sha.UnixSha512PasswordParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ShaTest extends BashHashFunctions {
+class UnixShaTest extends BaseHashFunctions {
 
   @Test
   void testCreateAndTest512() {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
-    PasswordParser passwordParser = new Sha512PasswordParser();
+    PasswordParser passwordParser = new UnixSha512PasswordParser();
     byte[] hash = passwordParser.computeHash(password.getBytes(), salt.getBytes(), 5000);
 
-    PasswordParser passwordCheck = new Sha512PasswordParser(new String(hash));
+    PasswordParser passwordCheck = new UnixSha512PasswordParser(new String(hash));
     byte[] check = passwordCheck.computeHash(password.getBytes(), passwordCheck.getSalt(), 5000);
     Assertions.assertArrayEquals(hash, check);
   }
@@ -40,10 +40,10 @@ class ShaTest extends BashHashFunctions {
   void testCreateAndTest256() {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
-    PasswordParser passwordParser = new Sha256PasswordParser();
+    PasswordParser passwordParser = new UnixSha256PasswordParser();
     byte[] hash = passwordParser.computeHash(password.getBytes(), salt.getBytes(), 5000);
 
-    PasswordParser passwordCheck = new Sha256PasswordParser(new String(hash));
+    PasswordParser passwordCheck = new UnixSha256PasswordParser(new String(hash));
     byte[] check = passwordCheck.computeHash(password.getBytes(), passwordCheck.getSalt(), 5000);
     Assertions.assertArrayEquals(hash, check);
   }

@@ -60,7 +60,7 @@ class SimpleSaslTest extends BaseSasl {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SCRAM-BCRYPT-SHA-512"})
+  @ValueSource(strings = {"SCRAM-SHA-512"})
   void simpleBCryptScramValidTest(String mechanism) throws IOException {
     testMechanism(mechanism, "test3", "This is an bcrypt password");
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package io.mapsmessaging.security.identity.parsers;
 import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 
-public class BashHashFunctions {
+public class BaseHashFunctions {
 
   protected void testHashing(String passwordHashString, String rawPassword) {
     testHashing(passwordHashString, rawPassword, true);

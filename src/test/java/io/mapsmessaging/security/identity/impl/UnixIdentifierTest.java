@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
+import io.mapsmessaging.security.identity.parsers.sha.UnixSha512PasswordParser;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
@@ -43,7 +43,7 @@ class UnixIdentifierTest {
     String pwd = new String(hash);
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
-    Assertions.assertEquals(Sha512PasswordParser.class, passwordParser.getClass());
+    Assertions.assertEquals(UnixSha512PasswordParser.class, passwordParser.getClass());
   }
 
   @Test
@@ -54,7 +54,7 @@ class UnixIdentifierTest {
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", entry.toString());
-    Assertions.assertEquals(Sha512PasswordParser.class, entry.getPasswordParser().getClass());
+    Assertions.assertEquals(UnixSha512PasswordParser.class, entry.getPasswordParser().getClass());
   }
 
 
