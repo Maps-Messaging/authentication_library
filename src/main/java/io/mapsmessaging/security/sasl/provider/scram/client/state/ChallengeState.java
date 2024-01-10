@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client.state;
 
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
@@ -50,29 +51,29 @@ public class ChallengeState extends State {
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.CHANNEL_BINDING, "biws");
 
-    String saltedPassword = "";
-    if (context.getPasswordParser() != null) {
-      Base64.Encoder encoder = Base64.getEncoder();
-      byte[] salt = encoder.encode(context.getPasswordSalt().getBytes(StandardCharsets.UTF_8));
-      byte[] computedHash =
-          context
-              .getPasswordParser()
-              .computeHash(context.getPrepPassword().getBytes(StandardCharsets.UTF_8), salt, context.getIterations());
-      saltedPassword = new String(computedHash);
+    if (context.getPasswordParser() == null) {
+      throw new SaslException("No Password mechanism supplied");
     }
+    Base64.Encoder encoder = Base64.getEncoder();
+    byte[] salt = encoder.encode(context.getPasswordSalt().getBytes(StandardCharsets.UTF_8));
+    byte[] computedHash =
+        context
+            .getPasswordParser()
+            .computeHash(context.getPrepPassword().getBytes(StandardCharsets.UTF_8), salt, context.getIterations());
+    PasswordParser extract = context.getPasswordParser().create(new String(computedHash));
 
     //
     // Compute Proof
     //
     try {
       String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
-      context.computeClientHashes(saltedPassword.getBytes(StandardCharsets.UTF_8), authString);
+      context.computeClientHashes(extract.getPassword(), authString);
       response.put(ChallengeResponse.PROOF, Base64.getEncoder().encodeToString(context.getClientProof()));
 
       //
       // Compute the expected server response
       //
-      context.computeServerSignature(saltedPassword.getBytes(StandardCharsets.UTF_8), authString);
+      context.computeServerSignature(extract.getPassword(), authString);
 
     } catch (InvalidKeyException | NoSuchAlgorithmException e) {
       SaslException saslException = new SaslException(e.getMessage());
@@ -80,7 +81,7 @@ public class ChallengeState extends State {
       throw saslException;
     }
 
-    context.setPrepPassword(saltedPassword);
+    context.setPrepPassword(new String(extract.getPassword()));
     context.setState(new FinalValidationState(this));
     return response;
   }

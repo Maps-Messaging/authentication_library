@@ -24,9 +24,10 @@ import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
+
+import javax.security.auth.callback.*;
 import java.io.IOException;
 import java.util.Map;
-import javax.security.auth.callback.*;
 
 public class InitialState extends State {
 
@@ -93,7 +94,7 @@ public class InitialState extends State {
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
     context.setPasswordParser(passwordParser);
     Radix64Encoder encoder = new Radix64Encoder.Default();
-    context.setPrepPassword(new String(password));
+    context.setPrepPassword(new String(encoder.encode(passwordParser.getPassword())));
     context.setPasswordSalt(new String(encoder.encode(passwordParser.getSalt())));
     int costs = passwordParser.getCost() == 0 ? 10000 : passwordParser.getCost();
     context.setIterations(costs);
