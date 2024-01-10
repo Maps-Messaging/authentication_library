@@ -25,70 +25,28 @@ import java.util.Arrays;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.sasl.SaslException;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
+@Data
 public class SessionContext {
 
-  @Getter
-  @Setter
   private boolean receivedClientMessage = false;
-
-  @Getter
-  @Setter
   private String clientNonce;
-
-  @Getter
   private String serverNonce;
-
-  @Getter
-  @Setter
   private String passwordSalt;
-
-  @Getter
-  @Setter
   private String username;
-
-  @Getter
-  @Setter
   private State state;
-
-  @Getter @Setter private int iterations;
-
-  @Getter
-  @Setter
+  private int iterations;
   private String prepPassword;
-
-  @Getter
   private Mac mac;
-
   private String algorithm;
-
-  @Getter
-  @Setter
   private PasswordParser passwordParser;
-
-  @Getter
-  @Setter
   private String initialClientChallenge;
-
-  @Getter
-  @Setter
   private String initialServerChallenge;
-
-  @Getter
   private byte[] clientKey;
-
-  @Getter
   private byte[] storedKey;
-
-  @Getter
   private byte[] clientSignature;
-
-  @Getter
   private byte[] clientProof;
-
-  @Getter
   private byte[] serverSignature;
 
   public void reset() {

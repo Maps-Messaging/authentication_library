@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,16 +17,15 @@
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
 import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
-import io.mapsmessaging.security.identity.parsers.sha.Sha512PasswordParser;
+import io.mapsmessaging.security.identity.parsers.sha.UnixSha512PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.client.state.InitialState;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
-
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
@@ -35,7 +34,7 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
       context.setPasswordParser(new BCrypt2yPasswordParser());
       algorithm = algorithm.substring("bcrypt-".length());
     } else {
-      context.setPasswordParser(new Sha512PasswordParser());
+      context.setPasswordParser(new UnixSha512PasswordParser());
     }
     context.setMac(CryptoHelper.findMac(algorithm));
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));

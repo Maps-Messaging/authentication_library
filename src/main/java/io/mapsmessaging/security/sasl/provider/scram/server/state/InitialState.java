@@ -95,7 +95,8 @@ public class InitialState extends State {
     Radix64Encoder encoder = new Radix64Encoder.Default();
     context.setPrepPassword(new String(password));
     context.setPasswordSalt(new String(encoder.encode(passwordParser.getSalt())));
-    context.setIterations(passwordParser.getCost());
+    int costs = passwordParser.getCost() == 0 ? 10000 : passwordParser.getCost();
+    context.setIterations(costs);
     context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
   }
 }
