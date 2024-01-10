@@ -20,12 +20,14 @@ import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
 public class UnixSha512PasswordParser extends UnixShaPasswordParser {
 
+  private static String KEY = "$6$";
+
   public UnixSha512PasswordParser() {
-    this("$6$");
+    this(KEY);
   }
 
   public UnixSha512PasswordParser(String password) {
-    super("$6$", password);
+    super(KEY, password);
   }
 
   @Override

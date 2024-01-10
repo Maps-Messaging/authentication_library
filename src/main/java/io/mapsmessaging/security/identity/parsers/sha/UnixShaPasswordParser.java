@@ -58,8 +58,20 @@ public abstract class UnixShaPasswordParser implements PasswordParser {
 
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    String hash = Crypt.crypt(password, new String(salt));
-    return (key + new String(salt) + "$" + hash).getBytes(StandardCharsets.UTF_8);
+    boolean headerOk = true;
+    byte[] packedSalt = salt;
+    byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+    for (int x = 0; x < keyBytes.length; x++) {
+      if (salt[x] != keyBytes[x]) {
+        headerOk = false;
+        break;
+      }
+    }
+    if (!headerOk) {
+      packedSalt = (key + new String(salt)).getBytes(StandardCharsets.UTF_8);
+    }
+    String hash = Crypt.crypt(password, new String(packedSalt));
+    return hash.getBytes(StandardCharsets.UTF_8);
   }
 
   @Override
