@@ -27,7 +27,12 @@ public class PlainPasswordParser implements PasswordParser {
   }
 
   public PlainPasswordParser(String password) {
-    this.password = password.getBytes();
+    int ind = password.indexOf("$");
+    if (ind != -1) {
+      this.password = password.substring(ind + 1).getBytes();
+    } else {
+      this.password = password.getBytes();
+    }
   }
 
   public PasswordParser create(String password) {
@@ -46,7 +51,7 @@ public class PlainPasswordParser implements PasswordParser {
 
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    return password;
+    return (getName() + "$" + new String(password)).getBytes();
   }
 
   @Override
@@ -61,7 +66,7 @@ public class PlainPasswordParser implements PasswordParser {
 
   @Override
   public char[] getFullPasswordHash() {
-    return new String(password).toCharArray();
+    return (getName() + "$" + new String(password)).toCharArray();
   }
 
   @Override

@@ -17,44 +17,68 @@
 package io.mapsmessaging.security.identity.parsers;
 
 import io.mapsmessaging.security.identity.PasswordGenerator;
-import java.io.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
 
 public class SimpleHashingTest {
 
   private static final char[] PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=-\\|][{};:\"'/?.>,<`~".toCharArray();
 
-  @Test
-  void testHashAndValidate(){
-    String password = generatePassword(16);
-    for(PasswordParser base: PasswordParserFactory.getInstance().getPasswordParsers()){
-      String salt = PasswordGenerator.generateSalt(16);
-      PasswordParser parser = base.create("");
-      byte[] hash = parser.computeHash(password.getBytes(), salt.getBytes(), parser.getCost());
-      String storeHash = new String(hash);
-      PasswordParser lookup = PasswordParserFactory.getInstance().parse(storeHash);
-      Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-      byte[] computed = lookup.computeHash(password.getBytes(), lookup.getSalt(), lookup.getCost());
-      Assertions.assertArrayEquals(hash, computed);
-    }
+  private static Stream<PasswordParser> knownParsers() {
+    return PasswordParserFactory.getInstance().getPasswordParsers().stream();
   }
 
-  @Test
-  void testFileLoadAndParse() throws IOException {
+  @ParameterizedTest
+  @MethodSource("knownParsers")
+  void testHashAndValidateBadPassword(PasswordParser base) {
+    String password = generatePassword(16);
+    String salt = PasswordGenerator.generateSalt(16);
+    PasswordParser parser = base.create("");
+    byte[] hash = parser.computeHash(password.getBytes(), salt.getBytes(), parser.getCost());
+    String storeHash = new String(hash);
+    PasswordParser lookup = PasswordParserFactory.getInstance().parse(storeHash);
+    Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
+    byte[] computed = lookup.computeHash(generatePassword(16).getBytes(), lookup.getSalt(), lookup.getCost());
+    String computedString = new String(computed);
+    Assertions.assertNotEquals(storeHash, computedString);
+  }
+
+  @ParameterizedTest
+  @MethodSource("knownParsers")
+  void testHashAndValidate(PasswordParser base) {
+    String password = generatePassword(16);
+    String salt = PasswordGenerator.generateSalt(16);
+    PasswordParser parser = base.create("");
+    byte[] hash = parser.computeHash(password.getBytes(), salt.getBytes(), parser.getCost());
+    String storeHash = new String(hash);
+    PasswordParser lookup = PasswordParserFactory.getInstance().parse(storeHash);
+    Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
+    byte[] computed = lookup.computeHash(password.getBytes(), lookup.getSalt(), lookup.getCost());
+    String computedString = new String(computed);
+    Assertions.assertEquals(storeHash, computedString);
+  }
+
+  @ParameterizedTest
+  @MethodSource("knownParsers")
+  void testFileLoadAndParse(PasswordParser base) throws IOException {
     FileOutputStream fileOutputStream = new FileOutputStream("hash.txt", false);
     String password = generatePassword(16);
-    for(PasswordParser base: PasswordParserFactory.getInstance().getPasswordParsers()){
-      String salt = PasswordGenerator.generateSalt(16);
-      PasswordParser parser = base.create("");
-      byte[] hash = parser.computeHash(password.getBytes(), salt.getBytes(), parser.getCost());
-      String storeHash = new String(hash);
-      fileOutputStream.write(hash);
-      fileOutputStream.write("\n".getBytes());
-    }
+    String salt = PasswordGenerator.generateSalt(16);
+    PasswordParser parser = base.create("");
+    byte[] hash = parser.computeHash(password.getBytes(), salt.getBytes(), parser.getCost());
+    String storeHash = new String(hash);
+    fileOutputStream.write(hash);
+    fileOutputStream.write("\n".getBytes());
     fileOutputStream.close();
 
 
@@ -67,14 +91,11 @@ public class SimpleHashingTest {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    for(String hash:hashes){
-      PasswordParser lookup = PasswordParserFactory.getInstance().parse(hash);
+    for (String received : hashes) {
+      PasswordParser lookup = PasswordParserFactory.getInstance().parse(received);
       byte[] computed = lookup.computeHash(password.getBytes(), lookup.getSalt(), lookup.getCost());
-      Assertions.assertArrayEquals(hash.getBytes(), computed);
-
+      Assertions.assertArrayEquals(received.getBytes(), computed);
     }
-
-
   }
 
   private String generatePassword(int len){
