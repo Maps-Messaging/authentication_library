@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,15 +44,21 @@ public abstract class BCryptPasswordParser implements PasswordParser {
 
   protected BCryptPasswordParser(String password, Version version) {
     this.version = version;
-    String t = password.substring(getKey().length());
-    int dollar = t.indexOf("$");
-    cost = Integer.parseInt(t.substring(0, dollar));
-    t = t.substring(dollar + 1);
-    String s = t.substring(0, 22);
-    String p = t.substring(23);
-    Radix64Encoder encoder = new Radix64Encoder.Default();
-    salt = encoder.decode(s.getBytes());
-    this.password = encoder.decode(p.getBytes());
+    if (password.isEmpty()) {
+      salt = new byte[0];
+      this.password = new byte[0];
+      cost = 12;
+    } else {
+      String t = password.substring(getKey().length());
+      int dollar = t.indexOf("$");
+      cost = Integer.parseInt(t.substring(0, dollar));
+      t = t.substring(dollar + 1);
+      String s = t.substring(0, 22);
+      String p = t.substring(23);
+      Radix64Encoder encoder = new Radix64Encoder.Default();
+      salt = encoder.decode(s.getBytes());
+      this.password = encoder.decode(p.getBytes());
+    }
   }
 
   @Override

@@ -36,4 +36,10 @@ public class PasswordGenerator {
         .collect(Collectors.joining());
   }
 
+  public static byte[] generateSaltBytes(int passwordLength) {
+    SecureRandom random = new SecureRandom();
+    byte[] buf = new byte[passwordLength];
+    random.nextBytes(buf);
+    return buf;
+  }
 }

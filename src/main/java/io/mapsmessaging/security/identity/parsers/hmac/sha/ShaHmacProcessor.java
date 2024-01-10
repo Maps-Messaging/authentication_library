@@ -14,59 +14,61 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.parsers.sha;
+package io.mapsmessaging.security.identity.parsers.hmac.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import org.apache.commons.codec.digest.Crypt;
+import io.mapsmessaging.security.identity.parsers.hmac.HmacData;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
-public abstract class ShaPasswordParser implements PasswordParser {
+public abstract class ShaHmacProcessor implements PasswordParser {
 
-  private final byte[] password;
-  private final String salt;
-  private final String key;
+  private final HmacData hmacData;
 
-  protected ShaPasswordParser(String key, String password) {
-    this.key = key;
-    int idx = password.indexOf("$");
-    if (idx > 0) {
-      salt = password.substring(0, idx);
-      password = password.substring(idx + 1);
-      this.password = password.getBytes();
-    } else {
-      this.password = new byte[0];
-      salt = "";
-    }
+  protected ShaHmacProcessor(HmacData data) {
+    hmacData = data;
   }
 
   @Override
   public String getKey() {
-    return key;
+    return hmacData.getHmac();
   }
 
   @Override
   public boolean hasSalt() {
-    return salt == null || salt.isEmpty();
+    return hmacData.hasSalt();
   }
 
-  @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    String hash = Crypt.crypt(password, new String(salt));
-    return hash.getBytes();
+    try {
+      MessageDigest digest = MessageDigest.getInstance(getName());
+      digest.reset();
+      digest.update(salt);
+      byte[] encodedhash = digest.digest(password);
+
+      for (int i = 0; i < cost - 1; i++) {
+        encodedhash = digest.digest(encodedhash);
+      }
+      return Base64.getEncoder().encode(encodedhash);
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public byte[] getSalt() {
-    return (key + salt).getBytes();
+    return hmacData.getSalt();
   }
 
   @Override
   public byte[] getPassword() {
-    return password;
+    return hmacData.getHmac().getBytes();
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (key + salt + "$" + new String(password)).toCharArray();
+    return hmacData.toString().toCharArray();
   }
 
   @Override

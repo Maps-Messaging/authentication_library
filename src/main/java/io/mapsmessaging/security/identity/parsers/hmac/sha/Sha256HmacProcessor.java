@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,35 +14,29 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.parsers.sha;
+package io.mapsmessaging.security.identity.parsers.hmac.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.identity.parsers.hmac.HmacData;
+import io.mapsmessaging.security.identity.parsers.sha.UnixSha256PasswordParser;
 
-public class Sha512PasswordParser extends ShaPasswordParser {
+public class Sha256HmacProcessor extends ShaHmacProcessor {
 
-  public Sha512PasswordParser() {
-    this("$6$");
+  public Sha256HmacProcessor() {
+    this("SHA-256::");
   }
 
-  public Sha512PasswordParser(String password) {
-    super("$6$", password.substring("$6$".length()));
+  public Sha256HmacProcessor(String password) {
+    super(new HmacData(password));
   }
 
   @Override
   public PasswordParser create(String password) {
-    return new Sha512PasswordParser(password);
+    return new UnixSha256PasswordParser(password);
   }
 
   @Override
   public String getName() {
-    return "SHA-512";
-  }
-
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    String t = new String(salt);
-    if (!t.startsWith("$6$")) {
-      t = "$6$" + t;
-    }
-    return super.computeHash(password, t.getBytes(), cost);
+    return "SHA-256";
   }
 }
