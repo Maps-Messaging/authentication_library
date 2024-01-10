@@ -51,7 +51,6 @@ public class SimpleHashingTest {
     MultiPasswordParser parser = new MultiPasswordParser(parsers);
     byte[] hash = parser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 0);
     String storeHash = new String(hash);
-    System.err.println(storeHash);
     PasswordParser lookup = PasswordParserFactory.getInstance().parse(new String(hash));
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
     byte[] computed = lookup.computeHash(generatePassword(16).getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
