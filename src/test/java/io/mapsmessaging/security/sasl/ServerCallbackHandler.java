@@ -17,13 +17,14 @@
 package io.mapsmessaging.security.sasl;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
-import java.io.IOException;
+
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
+import java.io.IOException;
 
 public class ServerCallbackHandler implements CallbackHandler {
 
@@ -55,9 +56,6 @@ public class ServerCallbackHandler implements CallbackHandler {
       } else if (cb instanceof RealmCallback) {
         RealmCallback rc = (RealmCallback) cb;
         rc.setText(serverName);
-      }
-      else{
-        System.err.println(cb);
       }
     }
   }
