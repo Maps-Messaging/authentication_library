@@ -21,6 +21,8 @@ import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
+import java.nio.charset.StandardCharsets;
+
 public abstract class BCryptPasswordParser implements PasswordParser {
 
   private final Version version;
@@ -56,8 +58,8 @@ public abstract class BCryptPasswordParser implements PasswordParser {
       String s = t.substring(0, 22);
       String p = t.substring(23);
       Radix64Encoder encoder = new Radix64Encoder.Default();
-      salt = encoder.decode(s.getBytes());
-      this.password = encoder.decode(p.getBytes());
+      salt = encoder.decode(s.getBytes(StandardCharsets.UTF_8));
+      this.password = encoder.decode(p.getBytes(StandardCharsets.UTF_8));
     }
   }
 

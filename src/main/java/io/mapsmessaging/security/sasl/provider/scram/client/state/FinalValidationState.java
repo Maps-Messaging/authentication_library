@@ -23,6 +23,7 @@ import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -52,7 +53,7 @@ public class FinalValidationState extends State {
 
   @Override
   public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
-    byte[] verifier = Base64.getDecoder().decode(response.get(ChallengeResponse.VERIFIER).getBytes());
+    byte[] verifier = Base64.getDecoder().decode(response.get(ChallengeResponse.VERIFIER).getBytes(StandardCharsets.UTF_8));
     if (!Arrays.equals(verifier, context.getServerSignature())) {
       throw new SaslException("Invalid server signature received");
     }

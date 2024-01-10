@@ -28,13 +28,15 @@ import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import java.io.File;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.*;
-import javax.security.auth.Subject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import javax.security.auth.Subject;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.util.*;
 
 public class AccessControlListTest {
 
@@ -55,19 +57,19 @@ public class AccessControlListTest {
     PasswordParser passwordParser = new BCrypt2yPasswordParser();
     byte[] hash =
         passwordParser.computeHash(
-            "password1".getBytes(), PasswordGenerator.generateSalt(16).getBytes(), 10);
+            "password1".getBytes(StandardCharsets.UTF_8), PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8), 10);
     UserIdMap usernameId =
         identityAccessManager.createUser("username", new String(hash), passwordParser);
 
     hash =
         passwordParser.computeHash(
-            "password2".getBytes(), PasswordGenerator.generateSalt(16).getBytes(), 10);
+            "password2".getBytes(StandardCharsets.UTF_8), PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8), 10);
     UserIdMap username2Id =
         identityAccessManager.createUser("username2", new String(hash), passwordParser);
 
     hash =
         passwordParser.computeHash(
-            "password3".getBytes(), PasswordGenerator.generateSalt(16).getBytes(), 10);
+            "password3".getBytes(StandardCharsets.UTF_8), PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8), 10);
     UserIdMap fredId = identityAccessManager.createUser("fred", new String(hash), passwordParser);
 
     GroupIdMap group1IdMap = identityAccessManager.createGroup("group1");

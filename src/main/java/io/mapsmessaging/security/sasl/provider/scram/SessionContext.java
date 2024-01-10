@@ -18,14 +18,16 @@ package io.mapsmessaging.security.sasl.provider.scram;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
+import lombok.Data;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.sasl.SaslException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.security.sasl.SaslException;
-import lombok.Data;
 
 @Data
 public class SessionContext {
@@ -89,7 +91,7 @@ public class SessionContext {
     mac.reset();
     SecretKeySpec secretKey = new SecretKeySpec(key, mac.getAlgorithm());
     mac.init(secretKey);
-    mac.update(string.getBytes());
+    mac.update(string.getBytes(StandardCharsets.UTF_8));
     return mac.doFinal();
   }
 

@@ -24,6 +24,7 @@ import io.mapsmessaging.security.sasl.provider.utils.XorStream;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class BaseScramSasl {
 
@@ -52,7 +53,7 @@ public class BaseScramSasl {
         outStream = new XorStream(context.getClientKey());
       }
       if (challengeResponse != null) {
-        return challengeResponse.toString().getBytes();
+        return challengeResponse.toString().getBytes(StandardCharsets.UTF_8);
       }
       return null;
     } catch (IOException | UnsupportedCallbackException e) {

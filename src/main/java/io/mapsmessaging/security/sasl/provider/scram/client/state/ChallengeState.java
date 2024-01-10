@@ -19,12 +19,14 @@ package io.mapsmessaging.security.sasl.provider.scram.client.state;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
+
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
 
 public class ChallengeState extends State {
 
@@ -51,11 +53,11 @@ public class ChallengeState extends State {
     String saltedPassword = "";
     if (context.getPasswordParser() != null) {
       Base64.Encoder encoder = Base64.getEncoder();
-      byte[] salt = encoder.encode(context.getPasswordSalt().getBytes());
+      byte[] salt = encoder.encode(context.getPasswordSalt().getBytes(StandardCharsets.UTF_8));
       byte[] computedHash =
           context
               .getPasswordParser()
-              .computeHash(context.getPrepPassword().getBytes(), salt, context.getIterations());
+              .computeHash(context.getPrepPassword().getBytes(StandardCharsets.UTF_8), salt, context.getIterations());
       saltedPassword = new String(computedHash);
     }
 
@@ -64,13 +66,13 @@ public class ChallengeState extends State {
     //
     try {
       String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
-      context.computeClientHashes(saltedPassword.getBytes(), authString);
+      context.computeClientHashes(saltedPassword.getBytes(StandardCharsets.UTF_8), authString);
       response.put(ChallengeResponse.PROOF, Base64.getEncoder().encodeToString(context.getClientProof()));
 
       //
       // Compute the expected server response
       //
-      context.computeServerSignature(saltedPassword.getBytes(), authString);
+      context.computeServerSignature(saltedPassword.getBytes(StandardCharsets.UTF_8), authString);
 
     } catch (InvalidKeyException | NoSuchAlgorithmException e) {
       SaslException saslException = new SaslException(e.getMessage());

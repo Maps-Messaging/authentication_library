@@ -19,6 +19,8 @@ package io.mapsmessaging.security.identity.parsers.md5;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import org.apache.commons.codec.digest.Md5Crypt;
 
+import java.nio.charset.StandardCharsets;
+
 public class Md5PasswordParser implements PasswordParser {
 
   protected final byte[] password;
@@ -42,8 +44,8 @@ public class Md5PasswordParser implements PasswordParser {
         sl = sub.substring(0, split);
         pw = sub.substring(split + 1);
       }
-      this.password = pw.getBytes();
-      this.salt = sl.getBytes();
+      this.password = pw.getBytes(StandardCharsets.UTF_8);
+      this.salt = sl.getBytes(StandardCharsets.UTF_8);
     }
   }
 
@@ -63,7 +65,7 @@ public class Md5PasswordParser implements PasswordParser {
 
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    return Md5Crypt.apr1Crypt(password, new String(salt)).getBytes();
+    return Md5Crypt.apr1Crypt(password, new String(salt)).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override

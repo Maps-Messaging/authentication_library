@@ -18,6 +18,8 @@ package io.mapsmessaging.security.identity.parsers.plain;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
+import java.nio.charset.StandardCharsets;
+
 public class PlainPasswordParser implements PasswordParser {
 
   private final byte[] password;
@@ -29,9 +31,9 @@ public class PlainPasswordParser implements PasswordParser {
   public PlainPasswordParser(String password) {
     int ind = password.indexOf("$");
     if (ind != -1) {
-      this.password = password.substring(ind + 1).getBytes();
+      this.password = password.substring(ind + 1).getBytes(StandardCharsets.UTF_8);
     } else {
-      this.password = password.getBytes();
+      this.password = password.getBytes(StandardCharsets.UTF_8);
     }
   }
 
@@ -51,7 +53,7 @@ public class PlainPasswordParser implements PasswordParser {
 
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    return (getName() + "$" + new String(password)).getBytes();
+    return (getName() + "$" + new String(password)).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override

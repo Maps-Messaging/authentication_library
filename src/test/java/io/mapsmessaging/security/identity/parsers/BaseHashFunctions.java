@@ -16,8 +16,10 @@
 
 package io.mapsmessaging.security.identity.parsers;
 
-import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class BaseHashFunctions {
 
@@ -32,13 +34,13 @@ public class BaseHashFunctions {
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(passwordHashString);
 
     // This would be done on the client side of this
-    byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
+    byte[] hash = passwordParser.computeHash(rawPassword.getBytes(StandardCharsets.UTF_8), passwordParser.getSalt(), passwordParser.getCost());
 
     // The result should be that the hash = password + salt hashed should match what the server has
     if (shouldPass) {
-      Assertions.assertArrayEquals(passwordHashString.getBytes(), hash);
+      Assertions.assertArrayEquals(passwordHashString.getBytes(StandardCharsets.UTF_8), hash);
     } else {
-      Assertions.assertFalse(Arrays.equals(passwordHashString.getBytes(), hash));
+      Assertions.assertFalse(Arrays.equals(passwordHashString.getBytes(StandardCharsets.UTF_8), hash));
     }
   }
 

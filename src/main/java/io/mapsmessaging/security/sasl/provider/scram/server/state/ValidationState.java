@@ -24,6 +24,7 @@ import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -67,9 +68,9 @@ public class ValidationState extends State {
     //
     String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
     try {
-      context.computeClientKey(context.getPrepPassword().getBytes());
+      context.computeClientKey(context.getPrepPassword().getBytes(StandardCharsets.UTF_8));
       context.computeStoredKeyAndSignature(authString);
-      context.computeServerSignature(context.getPrepPassword().getBytes(), authString);
+      context.computeServerSignature(context.getPrepPassword().getBytes(StandardCharsets.UTF_8), authString);
       byte[] signature = context.getClientSignature().clone();
       for (int i = 0; i < signature.length; i++) {
         signature[i] ^= proof[i];

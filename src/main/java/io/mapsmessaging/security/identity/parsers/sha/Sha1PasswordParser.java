@@ -20,6 +20,8 @@ import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import java.nio.charset.StandardCharsets;
+
 public class Sha1PasswordParser implements PasswordParser {
 
   private final byte[] password;
@@ -29,7 +31,7 @@ public class Sha1PasswordParser implements PasswordParser {
   }
 
   protected Sha1PasswordParser(String password) {
-    this.password = password.getBytes();
+    this.password = password.getBytes(StandardCharsets.UTF_8);
   }
 
   public PasswordParser create(String password) {
@@ -49,7 +51,7 @@ public class Sha1PasswordParser implements PasswordParser {
   @SuppressWarnings("java:S4790") // this is weak but used to test
   @Override
   public byte[] computeHash(byte[] password, byte[] salt, int cost) {
-    return (getKey() + Base64.encodeBase64String(DigestUtils.sha1(password))).getBytes();
+    return (getKey() + Base64.encodeBase64String(DigestUtils.sha1(password))).getBytes(StandardCharsets.UTF_8);
   }
 
   @Override

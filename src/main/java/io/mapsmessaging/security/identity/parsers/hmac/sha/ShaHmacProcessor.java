@@ -18,6 +18,8 @@ package io.mapsmessaging.security.identity.parsers.hmac.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.hmac.HmacData;
+
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -63,7 +65,7 @@ public abstract class ShaHmacProcessor implements PasswordParser {
 
   @Override
   public byte[] getPassword() {
-    return hmacData.getHmac().getBytes();
+    return hmacData.getHmac().getBytes(StandardCharsets.UTF_8);
   }
 
   @Override
