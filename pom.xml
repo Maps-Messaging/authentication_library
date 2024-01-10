@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright [ 2020 - 2023 ] [Matthew Buckton]
+  ~ Copyright [ 2020 - 2024 ] [Matthew Buckton]
   ~
   ~  Licensed under the Apache License, Version 2.0 (the "License");
   ~  you may not use this file except in compliance with the License.
@@ -338,6 +338,14 @@
       <artifactId>auth0</artifactId>
       <version>2.10.0</version>
     </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.77</version>
+    </dependency>
+
 
     <!-- TEST DEPENDENCIES -->
 
