@@ -16,7 +16,6 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
-import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.logging.AuthLogMessages;
@@ -24,10 +23,10 @@ import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.*;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Map;
+import javax.security.auth.callback.*;
 
 public class InitialState extends State {
 
@@ -93,11 +92,9 @@ public class InitialState extends State {
 
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
     context.setPasswordParser(passwordParser);
-    Radix64Encoder encoder = new Radix64Encoder.Default();
-    context.setPrepPassword(new String(encoder.encode(passwordParser.getPassword())));
-    context.setPasswordSalt(new String(encoder.encode(passwordParser.getSalt())));
-    int costs = passwordParser.getCost() == 0 ? 10000 : passwordParser.getCost();
-    context.setIterations(costs);
+    context.setPrepPassword(new String(passwordParser.getPassword()));
+    context.setPasswordSalt(new String(Base64.getEncoder().encode(passwordParser.getSalt())));
+    context.setIterations(passwordParser.getCost());
     context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
   }
 }

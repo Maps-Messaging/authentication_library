@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -38,7 +38,13 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
 
   @BeforeAll
   static void loadProperties() throws IOException {
-    properties = PropertiesLoader.getProperties("Auth0Identity.properties");
+    try {
+      properties = PropertiesLoader.getProperties("Auth0Identity.properties");
+    } catch (IOException e) {
+    }
+    if (properties == null) {
+      properties = new Properties();
+    }
   }
 
   Map<String, String> getOptions() {

@@ -16,27 +16,26 @@
 
 package io.mapsmessaging.security.sasl;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.unix.ShadowFileManager;
 import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import javax.security.sasl.Sasl;
-import javax.security.sasl.SaslClient;
-import javax.security.sasl.SaslException;
-import javax.security.sasl.SaslServer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslClient;
+import javax.security.sasl.SaslException;
+import javax.security.sasl.SaslServer;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class SimpleSaslTest extends BaseSasl {
 
@@ -62,7 +61,7 @@ class SimpleSaslTest extends BaseSasl {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"SCRAM-SHA-512"})
+  @ValueSource(strings = {"SCRAM-BCRYPT-SHA-512"})
   void simpleBCryptScramValidTest(String mechanism) throws IOException {
     testMechanism(mechanism, "test3", "This is an bcrypt password");
   }

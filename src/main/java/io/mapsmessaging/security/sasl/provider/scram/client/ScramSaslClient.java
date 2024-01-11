@@ -17,7 +17,10 @@
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
 import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
-import io.mapsmessaging.security.identity.parsers.sha.UnixSha512PasswordParser;
+import io.mapsmessaging.security.identity.parsers.pbkdf2.Pbkdf2Sha256PasswordParser;
+import io.mapsmessaging.security.identity.parsers.pbkdf2.Pbkdf2Sha3256PasswordParser;
+import io.mapsmessaging.security.identity.parsers.pbkdf2.Pbkdf2Sha512PasswordParser;
+import io.mapsmessaging.security.identity.parsers.pbkdf2.Pdkdf2Sha3512PasswordParser;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.client.state.InitialState;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
@@ -34,7 +37,15 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
       context.setPasswordParser(new BCrypt2yPasswordParser());
       algorithm = algorithm.substring("bcrypt-".length());
     } else {
-      context.setPasswordParser(new UnixSha512PasswordParser());
+      if (algorithm.equalsIgnoreCase("sha-256")) {
+        context.setPasswordParser(new Pbkdf2Sha256PasswordParser());
+      } else if (algorithm.equalsIgnoreCase("sha-512")) {
+        context.setPasswordParser(new Pbkdf2Sha512PasswordParser());
+      } else if (algorithm.equalsIgnoreCase("sha3-256")) {
+        context.setPasswordParser(new Pbkdf2Sha3256PasswordParser());
+      } else if (algorithm.equalsIgnoreCase("sha3-512")) {
+        context.setPasswordParser(new Pdkdf2Sha3512PasswordParser());
+      }
     }
     context.setMac(CryptoHelper.findMac(algorithm));
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));
