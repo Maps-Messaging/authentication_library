@@ -28,7 +28,6 @@ import java.io.IOException;
 
 public class ServerCallbackHandler implements CallbackHandler {
 
-  private String username;
   private char[] hashedPassword;
   private final String serverName;
 
@@ -47,7 +46,7 @@ public class ServerCallbackHandler implements CallbackHandler {
         ac.setAuthorized(true);
       } else if (cb instanceof NameCallback) {
         NameCallback nc = (NameCallback) cb;
-        username = nc.getDefaultName();
+        String username = nc.getDefaultName();
         hashedPassword = identityLookup.getPasswordHash(username);
         nc.setName(nc.getDefaultName());
       } else if (cb instanceof PasswordCallback) {
