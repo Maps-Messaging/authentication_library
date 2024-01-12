@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.parsers;
+package io.mapsmessaging.security.certificates;
 
-public interface PasswordParser {
+import io.mapsmessaging.security.certificates.pkcs11.Pkcs11Manager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-  PasswordParser create(String password);
+class Pkcs11ManagerTest {
 
-  String getKey();
+  private Pkcs11Manager pkcs11Manager;
 
-  boolean hasSalt();
-
-  byte[] transformPassword(byte[] password, byte[] salt, int cost);
-
-  byte[] getSalt();
-
-  byte[] getPassword();
-
-  char[] getFullPasswordHash();
-
-  String getName();
-
-  default int getCost() {
-    return 0;
+  @BeforeEach
+  void setUp() {
+    // Initialize pkcs11Manager with appropriate parameters
+    // pkcs11Manager = new Pkcs11Manager(...);
   }
 
+  @Test
+  void getCertificateTest() {
+    // Test retrieving a certificate
+    // assert relevant conditions
+  }
+
+  // Add more tests for other methods...
 }

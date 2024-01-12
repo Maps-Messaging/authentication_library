@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,8 +28,8 @@ import java.util.Map;
 
 public class ApacheBasicAuth implements IdentityLookup {
 
-  private final FileBaseIdentities passwdFileManager;
-  private final FileBaseGroups groupFileManager;
+  protected final FileBaseIdentities passwdFileManager;
+  protected final FileBaseGroups groupFileManager;
 
   public ApacheBasicAuth() {
     passwdFileManager = null;
@@ -40,6 +39,11 @@ public class ApacheBasicAuth implements IdentityLookup {
   public ApacheBasicAuth(String passwordFile, String groupFile) {
     passwdFileManager = new HtPasswdFileManager(passwordFile);
     groupFileManager = new HtGroupFileManager(groupFile);
+  }
+
+  protected ApacheBasicAuth(HtPasswdFileManager passwordFile, HtGroupFileManager groupFile) {
+    passwdFileManager = passwordFile;
+    groupFileManager = groupFile;
   }
 
   @Override
@@ -116,7 +120,9 @@ public class ApacheBasicAuth implements IdentityLookup {
   @Override
   public boolean createUser(String username, String password, PasswordParser passwordParser) throws IOException {
     String salt = PasswordGenerator.generateSalt(16);
-    byte[] hash = passwordParser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 12);
+    byte[] hash =
+        passwordParser.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 12);
     if (passwdFileManager != null) {
       passwdFileManager.addEntry(username, new String(hash));
     }

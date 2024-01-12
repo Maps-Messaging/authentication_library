@@ -55,7 +55,7 @@ class SimpleSaslTest extends BaseSasl {
     Sha1PasswordParser passwordParser = new Sha1PasswordParser();
     byte[] password = "This is a random password".getBytes(StandardCharsets.UTF_8);
     if (!mechanism.equalsIgnoreCase("PLAIN")) {
-      password = passwordParser.computeHash(password, null, 0);
+      password = passwordParser.transformPassword(password, null, 0);
     }
     testMechanism(mechanism, "fred2@google.com", new String(password));
   }
@@ -77,7 +77,9 @@ class SimpleSaslTest extends BaseSasl {
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
   void simpleWrongPasswordTest(String mechanism) {
     Sha1PasswordParser passwordParser = new Sha1PasswordParser();
-    byte[] password = passwordParser.computeHash("This is a wrong password".getBytes(StandardCharsets.UTF_8), null, 0);
+    byte[] password =
+        passwordParser.transformPassword(
+            "This is a wrong password".getBytes(StandardCharsets.UTF_8), null, 0);
     Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", new String(password)));
   }
 

@@ -17,9 +17,8 @@
 package io.mapsmessaging.security.identity.parsers.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import org.apache.commons.codec.digest.Crypt;
-
 import java.nio.charset.StandardCharsets;
+import org.apache.commons.codec.digest.Crypt;
 
 public abstract class UnixShaPasswordParser implements PasswordParser {
 
@@ -57,7 +56,7 @@ public abstract class UnixShaPasswordParser implements PasswordParser {
   }
 
   @Override
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     boolean headerOk = true;
     byte[] packedSalt = salt;
     byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);

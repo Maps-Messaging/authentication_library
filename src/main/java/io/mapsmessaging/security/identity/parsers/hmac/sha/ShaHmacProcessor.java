@@ -18,7 +18,6 @@ package io.mapsmessaging.security.identity.parsers.hmac.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.hmac.HmacData;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +41,7 @@ public abstract class ShaHmacProcessor implements PasswordParser {
     return hmacData.hasSalt();
   }
 
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     try {
       MessageDigest digest = MessageDigest.getInstance(getName());
       digest.reset();

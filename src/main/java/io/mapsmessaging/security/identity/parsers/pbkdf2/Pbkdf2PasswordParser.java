@@ -18,13 +18,12 @@ package io.mapsmessaging.security.identity.parsers.pbkdf2;
 
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 public abstract class Pbkdf2PasswordParser implements PasswordParser {
 
@@ -64,7 +63,7 @@ public abstract class Pbkdf2PasswordParser implements PasswordParser {
   }
 
   @Override
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     try {
       PBEKeySpec spec =
           new PBEKeySpec(new String(password).toCharArray(), salt, cost, getHashByteSize());

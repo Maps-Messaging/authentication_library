@@ -57,7 +57,7 @@ public class ChallengeState extends State {
       byte[] computedHash =
           context
               .getPasswordParser()
-              .computeHash(
+              .transformPassword(
                   context.getPrepPassword().getBytes(StandardCharsets.UTF_8),
                   salt,
                   context.getIterations());

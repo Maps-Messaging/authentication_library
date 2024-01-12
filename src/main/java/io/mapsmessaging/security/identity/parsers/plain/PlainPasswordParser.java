@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package io.mapsmessaging.security.identity.parsers.plain;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-
 import java.nio.charset.StandardCharsets;
 
 public class PlainPasswordParser implements PasswordParser {
@@ -52,7 +51,7 @@ public class PlainPasswordParser implements PasswordParser {
   }
 
   @Override
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     return (getName() + "$" + new String(password)).getBytes(StandardCharsets.UTF_8);
   }
 

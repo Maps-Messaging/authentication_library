@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.pkcs11;
+package io.mapsmessaging.security.certificates.pkcs11;
 
-
+import io.mapsmessaging.security.certificates.CertificateManager;
 import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 
-public class Pkcs11Manager {
+public class Pkcs11Manager implements CertificateManager {
+
   private final String pkcs11ConfigPath;
   private KeyStore keyStore;
   private final String providerName;
@@ -65,7 +67,7 @@ public class Pkcs11Manager {
     }
   }
 
-  public void storeCertificate(String alias, Certificate cert) {
+  public void addCertificate(String alias, Certificate cert) {
     try {
       if (keyStore.containsAlias(alias)) {
         throw new KeyStoreException("Alias already exist");
@@ -76,8 +78,23 @@ public class Pkcs11Manager {
     }
   }
 
-  public Object getKey(String alias, char[] password) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-    return keyStore.getKey(alias, password);
+  public PrivateKey getKey(String alias, char[] password) throws CertificateException {
+    try {
+      return (PrivateKey) keyStore.getKey(alias, password);
+    } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
+      throw new CertificateException(e);
+    }
+  }
+
+  @Override
+  public void addPrivateKey(
+      String alias, char[] password, PrivateKey privateKey, Certificate[] certChain)
+      throws CertificateException {
+    try {
+      keyStore.setKeyEntry(alias, privateKey, password, certChain);
+    } catch (KeyStoreException e) {
+      throw new CertificateException(e);
+    }
   }
 }
 

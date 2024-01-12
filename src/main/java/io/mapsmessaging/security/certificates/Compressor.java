@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.parsers;
+package io.mapsmessaging.security.certificates;
 
-public interface PasswordParser {
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.GZIPOutputStream;
 
-  PasswordParser create(String password);
+public class Compressor {
 
-  String getKey();
-
-  boolean hasSalt();
-
-  byte[] transformPassword(byte[] password, byte[] salt, int cost);
-
-  byte[] getSalt();
-
-  byte[] getPassword();
-
-  char[] getFullPasswordHash();
-
-  String getName();
-
-  default int getCost() {
-    return 0;
+  public static byte[] compress(byte[] data) throws IOException {
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+      gzipOutputStream.write(data);
+    }
+    return byteArrayOutputStream.toByteArray();
   }
-
 }

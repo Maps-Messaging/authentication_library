@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 package io.mapsmessaging.security.identity.parsers.sha;
 
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
-
-import java.nio.charset.StandardCharsets;
 
 public class Sha1PasswordParser implements PasswordParser {
 
@@ -50,7 +49,7 @@ public class Sha1PasswordParser implements PasswordParser {
 
   @SuppressWarnings("java:S4790") // this is weak but used to test
   @Override
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     return (getKey() + Base64.encodeBase64String(DigestUtils.sha1(password))).getBytes(StandardCharsets.UTF_8);
   }
 

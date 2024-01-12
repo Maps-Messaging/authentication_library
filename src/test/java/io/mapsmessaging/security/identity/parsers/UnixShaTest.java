@@ -19,10 +19,9 @@ package io.mapsmessaging.security.identity.parsers;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.parsers.sha.UnixSha256PasswordParser;
 import io.mapsmessaging.security.identity.parsers.sha.UnixSha512PasswordParser;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
 
 class UnixShaTest extends BaseHashFunctions {
 
@@ -31,10 +30,14 @@ class UnixShaTest extends BaseHashFunctions {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
     PasswordParser passwordParser = new UnixSha512PasswordParser();
-    byte[] hash = passwordParser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 5000);
+    byte[] hash =
+        passwordParser.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 5000);
 
     PasswordParser passwordCheck = new UnixSha512PasswordParser(new String(hash));
-    byte[] check = passwordCheck.computeHash(password.getBytes(StandardCharsets.UTF_8), passwordCheck.getSalt(), 5000);
+    byte[] check =
+        passwordCheck.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), passwordCheck.getSalt(), 5000);
     Assertions.assertArrayEquals(hash, check);
   }
 
@@ -43,10 +46,14 @@ class UnixShaTest extends BaseHashFunctions {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
     PasswordParser passwordParser = new UnixSha256PasswordParser();
-    byte[] hash = passwordParser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 5000);
+    byte[] hash =
+        passwordParser.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 5000);
 
     PasswordParser passwordCheck = new UnixSha256PasswordParser(new String(hash));
-    byte[] check = passwordCheck.computeHash(password.getBytes(StandardCharsets.UTF_8), passwordCheck.getSalt(), 5000);
+    byte[] check =
+        passwordCheck.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), passwordCheck.getSalt(), 5000);
     Assertions.assertArrayEquals(hash, check);
   }
 

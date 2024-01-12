@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,23 +16,22 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -71,7 +70,11 @@ public class IdentityLoginModule extends BaseLoginModule {
       passwordParser = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
     }
     String rawPassword = new String(password);
-    byte[] hash = passwordParser.computeHash(rawPassword.getBytes(StandardCharsets.UTF_8), passwordParser.getSalt(), passwordParser.getCost());
+    byte[] hash =
+        passwordParser.transformPassword(
+            rawPassword.getBytes(StandardCharsets.UTF_8),
+            passwordParser.getSalt(),
+            passwordParser.getCost());
     if (!Arrays.equals(hash, identityEntry.getPassword().getBytes(StandardCharsets.UTF_8))) {
       throw new LoginException("Invalid password");
     }

@@ -71,7 +71,7 @@ public class PlainSaslServer implements SaslServer {
     PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(passwordHash);
     String hash =
         new String(
-            passwordParser.computeHash(
+            passwordParser.transformPassword(
                 password, passwordParser.getSalt(), passwordParser.getCost()));
     if (!hash.equals(passwordHash)) {
       throw new SaslException("Invalid username or password");

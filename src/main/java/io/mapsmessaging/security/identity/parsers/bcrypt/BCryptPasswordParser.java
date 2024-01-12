@@ -20,7 +20,6 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-
 import java.nio.charset.StandardCharsets;
 
 public abstract class BCryptPasswordParser implements PasswordParser {
@@ -74,7 +73,7 @@ public abstract class BCryptPasswordParser implements PasswordParser {
   }
 
   @Override
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     return BCrypt.with(version).hash(cost, salt, password);
   }
 

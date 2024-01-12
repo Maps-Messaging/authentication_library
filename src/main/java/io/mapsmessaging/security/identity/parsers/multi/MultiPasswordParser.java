@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,12 +20,11 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import lombok.Getter;
-
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 
 public class MultiPasswordParser implements PasswordParser {
 
@@ -80,14 +79,14 @@ public class MultiPasswordParser implements PasswordParser {
   }
 
   @Override
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     List<String> hashes = new ArrayList<>();
     for (PasswordParser parser : parsers) {
       int localCost = cost;
       if (cost == 0) {
         localCost = parser.getCost();
       }
-      hashes.add(new String(parser.computeHash(password, salt, localCost)));
+      hashes.add(new String(parser.transformPassword(password, salt, localCost)));
     }
     this.password = new Gson().toJson(hashes);
     return (getName() + "$" + this.password).getBytes(StandardCharsets.UTF_8);

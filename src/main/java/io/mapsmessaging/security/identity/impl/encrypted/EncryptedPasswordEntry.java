@@ -14,28 +14,17 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.parsers;
+package io.mapsmessaging.security.identity.impl.encrypted;
 
-public interface PasswordParser {
+import io.mapsmessaging.security.identity.IdentityEntry;
 
-  PasswordParser create(String password);
+public class EncryptedPasswordEntry extends IdentityEntry {
 
-  String getKey();
-
-  boolean hasSalt();
-
-  byte[] transformPassword(byte[] password, byte[] salt, int cost);
-
-  byte[] getSalt();
-
-  byte[] getPassword();
-
-  char[] getFullPasswordHash();
-
-  String getName();
-
-  default int getCost() {
-    return 0;
+  public EncryptedPasswordEntry(String line, EncryptedPasswordParser parser) {
+    int usernamePos = line.indexOf(":");
+    username = line.substring(0, usernamePos);
+    line = line.substring(usernamePos + 1);
+    password = line;
+    passwordParser = parser.create(password);
   }
-
 }

@@ -18,11 +18,6 @@ package io.mapsmessaging.security.identity.parsers;
 
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.parsers.multi.MultiPasswordParser;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -33,6 +28,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class SimpleHashingTest {
 
@@ -49,11 +48,17 @@ public class SimpleHashingTest {
 
     List<PasswordParser> parsers = knownParsers().collect(Collectors.toList());
     MultiPasswordParser parser = new MultiPasswordParser(parsers);
-    byte[] hash = parser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 0);
+    byte[] hash =
+        parser.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 0);
     String storeHash = new String(hash);
     PasswordParser lookup = PasswordParserFactory.getInstance().parse(new String(hash));
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed = lookup.computeHash(generatePassword(16).getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
+    byte[] computed =
+        lookup.transformPassword(
+            generatePassword(16).getBytes(StandardCharsets.UTF_8),
+            lookup.getSalt(),
+            lookup.getCost());
     String computedString = new String(computed);
     Assertions.assertNotEquals(storeHash, computedString);
   }
@@ -64,11 +69,19 @@ public class SimpleHashingTest {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
     PasswordParser parser = base.create("");
-    byte[] hash = parser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), parser.getCost());
+    byte[] hash =
+        parser.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8),
+            salt.getBytes(StandardCharsets.UTF_8),
+            parser.getCost());
     String storeHash = new String(hash);
     PasswordParser lookup = PasswordParserFactory.getInstance().parse(storeHash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed = lookup.computeHash(generatePassword(16).getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
+    byte[] computed =
+        lookup.transformPassword(
+            generatePassword(16).getBytes(StandardCharsets.UTF_8),
+            lookup.getSalt(),
+            lookup.getCost());
     String computedString = new String(computed);
     Assertions.assertNotEquals(storeHash, computedString);
   }
@@ -79,11 +92,17 @@ public class SimpleHashingTest {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
     PasswordParser parser = base.create("");
-    byte[] hash = parser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), parser.getCost());
+    byte[] hash =
+        parser.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8),
+            salt.getBytes(StandardCharsets.UTF_8),
+            parser.getCost());
     String storeHash = new String(hash);
     PasswordParser lookup = PasswordParserFactory.getInstance().parse(storeHash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed = lookup.computeHash(password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
+    byte[] computed =
+        lookup.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
     String computedString = new String(computed);
     Assertions.assertEquals(storeHash, computedString);
   }
@@ -95,7 +114,11 @@ public class SimpleHashingTest {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
     PasswordParser parser = base.create("");
-    byte[] hash = parser.computeHash(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), parser.getCost());
+    byte[] hash =
+        parser.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8),
+            salt.getBytes(StandardCharsets.UTF_8),
+            parser.getCost());
     String storeHash = new String(hash);
     fileOutputStream.write(hash);
     fileOutputStream.write("\n".getBytes(StandardCharsets.UTF_8));
@@ -113,7 +136,9 @@ public class SimpleHashingTest {
     }
     for (String received : hashes) {
       PasswordParser lookup = PasswordParserFactory.getInstance().parse(received);
-      byte[] computed = lookup.computeHash(password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
+      byte[] computed =
+          lookup.transformPassword(
+              password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
       Assertions.assertArrayEquals(received.getBytes(StandardCharsets.UTF_8), computed);
     }
   }

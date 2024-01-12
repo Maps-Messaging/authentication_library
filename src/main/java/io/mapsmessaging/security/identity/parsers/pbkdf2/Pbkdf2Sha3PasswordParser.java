@@ -16,12 +16,11 @@
 
 package io.mapsmessaging.security.identity.parsers.pbkdf2;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 public abstract class Pbkdf2Sha3PasswordParser extends Pbkdf2PasswordParser {
 
@@ -34,7 +33,7 @@ public abstract class Pbkdf2Sha3PasswordParser extends Pbkdf2PasswordParser {
   }
 
   @Override
-  public byte[] computeHash(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     PKCS5S2ParametersGenerator generator =
         new PKCS5S2ParametersGenerator((new SHA3Digest(getHashByteSize() * 8)));
     generator.init(password, salt, cost);
