@@ -16,11 +16,18 @@
 
 package io.mapsmessaging.security.certificates;
 
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Map;
 
 public interface CertificateManager {
+
+  boolean isValid(Map<String, ?> config);
+
+  CertificateManager create(Map<String, ?> config) throws Exception;
+
   Certificate getCertificate(String alias) throws CertificateException;
 
   void addCertificate(String alias, Certificate certificate) throws CertificateException;
@@ -31,4 +38,6 @@ public interface CertificateManager {
 
   void addPrivateKey(String alias, char[] password, PrivateKey privateKey, Certificate[] certChain)
       throws CertificateException;
+
+  KeyStore getKeyStore();
 }

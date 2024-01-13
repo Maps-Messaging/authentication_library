@@ -16,28 +16,21 @@
 
 package io.mapsmessaging.security.certificates;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import io.mapsmessaging.security.certificates.keystore.KeyStoreManager;
-import java.io.File;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import org.junit.jupiter.api.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class KeyStoreManagerTest extends BaseCertificateTest {
 
-  private KeyStoreManager certificateManager;
-
-  @BeforeEach
-  void setUp() throws Exception {
-    File file = new File(KEYSTORE_PATH);
-    file.delete();
-    certificateManager = new KeyStoreManager(KEYSTORE_PATH, KEYSTORE_PASSWORD);
-  }
-
-  @Test
-  void testAddAndGetCertificate() throws Exception {
+  @ParameterizedTest
+  @MethodSource("knownTypes")
+  void testAddAndGetCertificate(String type) throws Exception {
+    setUp(type);
     CertificateUtils.CertificateWithPrivateKey testCert = addCert(certificateManager);
     Certificate retrievedCert = certificateManager.getCertificate(TEST_ALIAS);
     assertNotNull(retrievedCert, "Certificate should not be null");
@@ -47,16 +40,22 @@ class KeyStoreManagerTest extends BaseCertificateTest {
         "Retrieved certificate should match the original");
   }
 
-  @Test
-  void testInvalidAliasCertificate() throws Exception {
+  @ParameterizedTest
+  @MethodSource("knownTypes")
+  void testInvalidAliasCertificate(String type) throws Exception {
+    setUp(type);
+
     assertThrows(
         CertificateException.class,
         () -> certificateManager.getCertificate(TEST_ALIAS),
         "Should throw an exception when trying to retrieve a deleted certificate");
   }
 
-  @Test
-  void testGetKey() throws Exception {
+  @ParameterizedTest
+  @MethodSource("knownTypes")
+  void testGetKey(String type) throws Exception {
+    setUp(type);
+
     CertificateUtils.CertificateWithPrivateKey testCert = addCert(certificateManager);
     PrivateKey retrievedKey = certificateManager.getKey(TEST_ALIAS, KEY_PASSWORD);
     assertNotNull(retrievedKey, "Private key should not be null");

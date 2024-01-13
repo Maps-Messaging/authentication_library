@@ -16,17 +16,43 @@
 
 package io.mapsmessaging.security.certificates;
 
+import org.bouncycastle.operator.OperatorCreationException;
+
+import java.io.File;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import org.bouncycastle.operator.OperatorCreationException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class BaseCertificateTest {
 
-  protected static final String KEYSTORE_PATH = "./testkeystore.jks";
-  protected static final char[] KEYSTORE_PASSWORD = "testpassword".toCharArray();
+  protected static final String KEYSTORE_PATH = "./testkeystore";
+  protected static final String KEYSTORE_PASSWORD = "testpassword";
   protected static final String TEST_ALIAS = "testalias";
   protected static final char[] KEY_PASSWORD = "testalias_key".toCharArray();
+
+  private static int counter = 0;
+
+  protected CertificateManager certificateManager;
+
+  protected static String[] knownTypes() {
+    return new String[]{"JKS", "PKCS12", "JCEKS", "BKS", "UBER"};
+  }
+
+
+  protected void setUp(String type) throws Exception {
+    File file = new File(KEYSTORE_PATH + "_" + (counter++) + "." + type);
+    file.delete();
+    Map<String, String> config = new LinkedHashMap<>();
+    config.put("keystore.path", file.getName());
+    config.put("keystore.password", KEYSTORE_PASSWORD);
+    if (type.equals("BKS") || type.equals("UBER")) {
+      config.put("provider.name", "BC");
+    }
+    config.put("keystore.type", type);
+    certificateManager = CertificateManagerFactory.getInstance().getManager(config);
+  }
 
   protected static CertificateUtils.CertificateWithPrivateKey addCert(
       CertificateManager certificateManager)

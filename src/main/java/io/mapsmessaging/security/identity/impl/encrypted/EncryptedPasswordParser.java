@@ -17,26 +17,29 @@
 package io.mapsmessaging.security.identity.impl.encrypted;
 
 import io.mapsmessaging.security.certificates.BufferCipher;
-import io.mapsmessaging.security.certificates.pkcs11.Pkcs11Manager;
+import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 public class EncryptedPasswordParser implements PasswordParser {
 
   private byte[] password;
   private String alias;
 
-  @Getter @Setter private Pkcs11Manager pkcs11Manager;
+  @Getter
+  @Setter
+  private CertificateManager certificateManager;
 
-  public EncryptedPasswordParser(Pkcs11Manager pkcs11Manager) {
-    this.pkcs11Manager = pkcs11Manager;
+  public EncryptedPasswordParser(CertificateManager pkcs11Manager) {
+    this.certificateManager = pkcs11Manager;
   }
 
-  public EncryptedPasswordParser(Pkcs11Manager pkcs11Manager, String alias, byte[] password) {
-    this.pkcs11Manager = pkcs11Manager;
+  public EncryptedPasswordParser(CertificateManager certificateManager, String alias, byte[] password) {
+    this.certificateManager = certificateManager;
     this.alias = alias;
     this.password = password;
   }
@@ -47,7 +50,7 @@ public class EncryptedPasswordParser implements PasswordParser {
     int dollar = t.indexOf("$");
     String al = t.substring(0, dollar);
     byte[] pass = t.substring(dollar + 1).getBytes(StandardCharsets.UTF_8);
-    return new EncryptedPasswordParser(pkcs11Manager, al, pass);
+    return new EncryptedPasswordParser(certificateManager, al, pass);
   }
 
   @Override
@@ -62,7 +65,7 @@ public class EncryptedPasswordParser implements PasswordParser {
 
   @Override
   public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
-    BufferCipher bufferCipher = new BufferCipher(pkcs11Manager);
+    BufferCipher bufferCipher = new BufferCipher(certificateManager);
     if (salt.length > 256) {
       byte[] t = new byte[255];
       System.arraycopy(salt, 0, t, 0, t.length);
@@ -87,7 +90,7 @@ public class EncryptedPasswordParser implements PasswordParser {
 
   @Override
   public byte[] getPassword() {
-    BufferCipher bufferCipher = new BufferCipher(pkcs11Manager);
+    BufferCipher bufferCipher = new BufferCipher(certificateManager);
     byte[] decoded = Base64.getDecoder().decode(password);
     byte[] decrypted = bufferCipher.decrypt(alias, decoded, null);
 

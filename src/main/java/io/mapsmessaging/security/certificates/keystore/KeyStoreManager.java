@@ -17,23 +17,53 @@
 package io.mapsmessaging.security.certificates.keystore;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
+import lombok.Getter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Map;
 
 public class KeyStoreManager implements CertificateManager {
 
+  private static final String KEYSTORE_TYPE = "keystore.type";
+  private static final String KEYSTORE_PATH = "keystore.path";
+  private static final String KEYSTORE_PASSWORD = "keystore.password";
+  private static final String PROVIDER_NAME = "provider.name";
+
+  @Getter
   private final KeyStore keyStore;
   private final String keyStorePath;
   private final char[] keyStorePassword;
 
-  public KeyStoreManager(String keyStorePath, char[] keyStorePassword) throws Exception {
-    this.keyStorePath = keyStorePath;
-    this.keyStorePassword = keyStorePassword;
-    keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+  public KeyStoreManager() {
+    keyStore = null;
+    keyStorePath = "";
+    keyStorePassword = new char[0];
+  }
+
+  public boolean isValid(Map<String, ?> config) {
+    return config.containsKey(KEYSTORE_TYPE) &&
+        config.containsKey(KEYSTORE_PASSWORD) &&
+        config.containsKey(KEYSTORE_PATH);
+  }
+
+  public CertificateManager create(Map<String, ?> config) throws Exception {
+    return new KeyStoreManager(config);
+  }
+
+  protected KeyStoreManager(Map<String, ?> config) throws Exception {
+    String providerName = (String) config.get(PROVIDER_NAME);
+    if (providerName != null && !providerName.isEmpty() && "BC".equals(providerName)) {
+      Security.addProvider(new BouncyCastleProvider());
+    }
+    this.keyStorePath = config.get(KEYSTORE_PATH).toString();
+    this.keyStorePassword = config.get(KEYSTORE_PASSWORD).toString().toCharArray();
+    keyStore = KeyStore.getInstance(config.get(KEYSTORE_TYPE).toString());
 
     // Load the keystore
     try (FileInputStream fis = new FileInputStream(keyStorePath)) {

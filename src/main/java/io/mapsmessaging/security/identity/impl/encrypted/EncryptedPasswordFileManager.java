@@ -16,7 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.encrypted;
 
-import io.mapsmessaging.security.certificates.pkcs11.Pkcs11Manager;
+import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.impl.apache.HtPasswdFileManager;
 
@@ -26,7 +26,7 @@ public class EncryptedPasswordFileManager extends HtPasswdFileManager {
   private final EncryptedPasswordParser parser;
 
   public EncryptedPasswordFileManager(
-      String filepath, String certAlias, Pkcs11Manager pkcs11Manager) {
+      String filepath, String certAlias, CertificateManager pkcs11Manager) {
     super(filepath);
     this.parser = new EncryptedPasswordParser(pkcs11Manager);
     this.certAlias = certAlias;

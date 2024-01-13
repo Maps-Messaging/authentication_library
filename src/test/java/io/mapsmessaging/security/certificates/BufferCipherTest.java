@@ -16,34 +16,24 @@
 
 package io.mapsmessaging.security.certificates;
 
-import io.mapsmessaging.security.certificates.keystore.KeyStoreManager;
-import java.io.File;
-import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.Arrays;
 
 class BufferCipherTest extends BaseCertificateTest {
 
-  private static KeyStoreManager certificateManager;
-  private BufferCipher bufferCipher;
-
-  @BeforeAll
-  static void setupStore() throws Exception {
-    File file = new File(KEYSTORE_PATH);
-    file.delete();
-    certificateManager = new KeyStoreManager(KEYSTORE_PATH, KEYSTORE_PASSWORD);
+  void setupStore(String type) throws Exception {
+    super.setUp(type);
     addMultiCertificates(certificateManager);
   }
 
-  @BeforeEach
-  void setUp() {
-    bufferCipher = new BufferCipher(certificateManager);
-  }
-
-  @Test
-  void encryptTest() {
+  @ParameterizedTest
+  @MethodSource("knownTypes")
+  void encryptTest(String type) throws Exception {
+    setupStore(type);
+    BufferCipher bufferCipher = new BufferCipher(certificateManager);
     byte[] buffer = new byte[1024];
     for (int x = 0; x < buffer.length; x++) {
       buffer[x] = (byte) (x & 0x7f);

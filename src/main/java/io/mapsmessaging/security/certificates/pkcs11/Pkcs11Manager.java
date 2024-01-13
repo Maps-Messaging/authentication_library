@@ -17,21 +17,44 @@
 package io.mapsmessaging.security.certificates.pkcs11;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
+import lombok.Getter;
+
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.Map;
 
 public class Pkcs11Manager implements CertificateManager {
 
-  private final String pkcs11ConfigPath;
+  private static final String PKCS11_CONFIG = "pkcs11.cfg";
+  private static final String PROVIDER_NAME = "provider.name";
+
+  @Getter
   private KeyStore keyStore;
+  private final String pkcs11ConfigPath;
   private final String providerName;
 
-  public Pkcs11Manager(String pkcs11ConfigPath, String providerName) {
-    this.pkcs11ConfigPath = pkcs11ConfigPath;
-    this.providerName = providerName;
+  public Pkcs11Manager() {
+    pkcs11ConfigPath = "";
+    providerName = "";
+  }
+
+  public boolean isValid(Map<String, ?> config) {
+    return config.containsKey(PKCS11_CONFIG) &&
+        config.containsKey(PROVIDER_NAME);
+  }
+
+  @Override
+  public CertificateManager create(Map<String, ?> config) throws Exception {
+    return new Pkcs11Manager(config);
+  }
+
+  protected Pkcs11Manager(Map<String, ?> config) {
+    this.pkcs11ConfigPath = config.get(PKCS11_CONFIG).toString();
+    this.providerName = config.get(PROVIDER_NAME).toString();
     initializeKeyStore();
   }
+
 
   private void initializeKeyStore() {
     try {

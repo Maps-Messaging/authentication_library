@@ -16,10 +16,12 @@
 
 package io.mapsmessaging.security.identity.impl.encrypted;
 
-import io.mapsmessaging.security.certificates.pkcs11.Pkcs11Manager;
+import io.mapsmessaging.security.certificates.CertificateManager;
+import io.mapsmessaging.security.certificates.CertificateManagerFactory;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.apache.HtGroupFileManager;
+
 import java.io.File;
 import java.util.Map;
 
@@ -30,9 +32,9 @@ public class EncryptedAuth extends ApacheBasicAuth {
   }
 
   public EncryptedAuth(
-      String passwordFile, String groupFile, String alias, Pkcs11Manager pkcs11Manager) {
+      String passwordFile, String groupFile, String alias, CertificateManager certificateManager) {
     super(
-        new EncryptedPasswordFileManager(passwordFile, alias, pkcs11Manager),
+        new EncryptedPasswordFileManager(passwordFile, alias, certificateManager),
         new HtGroupFileManager(groupFile));
   }
 
@@ -65,23 +67,22 @@ public class EncryptedAuth extends ApacheBasicAuth {
       }
     }
     if (filePath != null) {
-      return construct(filePath, groupFile, config);
+      try {
+        return construct(filePath, groupFile, config);
+      } catch (Exception e) {
+        throw new RuntimeException("Unable to find certificate manager ", e);
+      }
     }
     return null;
   }
 
-  private EncryptedAuth construct(String passwordPath, String groupPath, Map<String, ?> config) {
-    String pkcs11ConfigPath = config.get("pkcs11ConfigPath").toString();
-    String providerName = "SunPKCS11";
+  private EncryptedAuth construct(String passwordPath, String groupPath, Map<String, ?> config) throws Exception {
     String alias = "";
     if (config.containsKey("alias")) {
       alias = config.get("alias").toString();
     }
-    if (config.containsKey("provider")) {
-      providerName = config.get("provider").toString();
-    }
-    Pkcs11Manager pkcs11Manager = new Pkcs11Manager(pkcs11ConfigPath, providerName);
+    CertificateManager certificateManager = CertificateManagerFactory.getInstance().getManager(config);
 
-    return new EncryptedAuth(passwordPath, groupPath, alias, pkcs11Manager);
+    return new EncryptedAuth(passwordPath, groupPath, alias, certificateManager);
   }
 }
