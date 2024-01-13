@@ -21,13 +21,14 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import io.mapsmessaging.security.identity.parsers.sha.UnixSha512PasswordParser;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.hashes.sha.UnixSha512PasswordHasher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 class UnixIdentifierTest {
 
@@ -42,8 +43,8 @@ class UnixIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
-    Assertions.assertEquals(UnixSha512PasswordParser.class, passwordParser.getClass());
+    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(pwd);
+    Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
   }
 
   @Test
@@ -54,7 +55,7 @@ class UnixIdentifierTest {
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", entry.toString());
-    Assertions.assertEquals(UnixSha512PasswordParser.class, entry.getPasswordParser().getClass());
+    Assertions.assertEquals(UnixSha512PasswordHasher.class, entry.getPasswordHasher().getClass());
   }
 
 

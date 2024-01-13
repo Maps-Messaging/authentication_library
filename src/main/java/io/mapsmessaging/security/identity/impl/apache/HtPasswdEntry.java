@@ -17,14 +17,14 @@
 package io.mapsmessaging.security.identity.impl.apache;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
 
 public class HtPasswdEntry extends IdentityEntry {
 
   public HtPasswdEntry(String username, String password) {
     this.username = username;
     this.password = password;
-    passwordParser = PasswordParserFactory.getInstance().parse(password);
+    passwordHasher = PasswordParserFactory.getInstance().parse(password);
   }
 
   public HtPasswdEntry(String line) {
@@ -32,7 +32,7 @@ public class HtPasswdEntry extends IdentityEntry {
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
     password = line;
-    passwordParser = PasswordParserFactory.getInstance().parse(password);
+    passwordHasher = PasswordParserFactory.getInstance().parse(password);
   }
 
 }

@@ -17,9 +17,9 @@
 package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
 import lombok.Getter;
 
 import javax.naming.NamingEnumeration;
@@ -42,7 +42,7 @@ public class LdapUser extends IdentityEntry {
   public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
     super.password = new String(password);
-    super.passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
+    super.passwordHasher = PasswordParserFactory.getInstance().parse(new String(password));
     this.attrs = attrs;
     NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();
     while (namingEnum.hasMoreElements()) {

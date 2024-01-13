@@ -17,27 +17,28 @@
 package io.mapsmessaging.security.identity.impl.encrypted;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordHasher;
 
 public class EncryptedPasswordEntry extends IdentityEntry {
 
-  public EncryptedPasswordEntry(String line, EncryptedPasswordParser parser) {
+  public EncryptedPasswordEntry(String line, EncryptedPasswordHasher parser) {
     int usernamePos = line.indexOf(":");
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
     password = line;
-    passwordParser = parser.create(password);
+    passwordHasher = parser.create(password);
   }
 
-  public EncryptedPasswordEntry(String username, String password, PasswordParser parser) {
+  public EncryptedPasswordEntry(String username, String password, PasswordHandler parser) {
     this.username = username;
     this.password = password;
-    this.passwordParser = parser;
+    this.passwordHasher = parser;
   }
 
   @Override
   public String getPassword() {
-    PasswordParser parser1 = passwordParser.create(password);
+    PasswordHandler parser1 = passwordHasher.create(password);
     return new String(parser1.getPassword());
   }
 }

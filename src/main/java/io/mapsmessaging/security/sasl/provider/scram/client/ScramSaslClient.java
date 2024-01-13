@@ -16,35 +16,36 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
-import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
-import io.mapsmessaging.security.identity.parsers.pbkdf2.Pbkdf2Sha256PasswordParser;
-import io.mapsmessaging.security.identity.parsers.pbkdf2.Pbkdf2Sha3256PasswordParser;
-import io.mapsmessaging.security.identity.parsers.pbkdf2.Pbkdf2Sha512PasswordParser;
-import io.mapsmessaging.security.identity.parsers.pbkdf2.Pdkdf2Sha3512PasswordParser;
+import io.mapsmessaging.security.passwords.hashes.bcrypt.BCrypt2YPasswordHasher;
+import io.mapsmessaging.security.passwords.hashes.pbkdf2.Pbkdf2Sha256PasswordHasher;
+import io.mapsmessaging.security.passwords.hashes.pbkdf2.Pbkdf2Sha3256PasswordHasher;
+import io.mapsmessaging.security.passwords.hashes.pbkdf2.Pbkdf2Sha512PasswordHasher;
+import io.mapsmessaging.security.passwords.hashes.pbkdf2.Pdkdf2Sha3512PasswordHasher;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.client.state.InitialState;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
-import java.security.NoSuchAlgorithmException;
-import java.util.Map;
+
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
+import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
   public ScramSaslClient(String algorithm, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws NoSuchAlgorithmException {
     if (algorithm.startsWith("bcrypt")) {
-      context.setPasswordParser(new BCrypt2yPasswordParser());
+      context.setPasswordHasher(new BCrypt2YPasswordHasher());
       algorithm = algorithm.substring("bcrypt-".length());
     } else {
       if (algorithm.equalsIgnoreCase("sha-256")) {
-        context.setPasswordParser(new Pbkdf2Sha256PasswordParser());
+        context.setPasswordHasher(new Pbkdf2Sha256PasswordHasher());
       } else if (algorithm.equalsIgnoreCase("sha-512")) {
-        context.setPasswordParser(new Pbkdf2Sha512PasswordParser());
+        context.setPasswordHasher(new Pbkdf2Sha512PasswordHasher());
       } else if (algorithm.equalsIgnoreCase("sha3-256")) {
-        context.setPasswordParser(new Pbkdf2Sha3256PasswordParser());
+        context.setPasswordHasher(new Pbkdf2Sha3256PasswordHasher());
       } else if (algorithm.equalsIgnoreCase("sha3-512")) {
-        context.setPasswordParser(new Pdkdf2Sha3512PasswordParser());
+        context.setPasswordHasher(new Pdkdf2Sha3512PasswordHasher());
       }
     }
     context.setMac(CryptoHelper.findMac(algorithm));

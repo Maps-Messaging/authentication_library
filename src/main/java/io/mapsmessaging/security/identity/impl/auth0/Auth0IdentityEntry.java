@@ -23,12 +23,12 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
   public Auth0IdentityEntry(Auth0Auth auth0Auth, String username) {
     super();
     this.username = username;
-    passwordParser = new Auth0PasswordParser(username, auth0Auth, this);
+    passwordHasher = new Auth0PasswordHasher(username, auth0Auth, this);
   }
 
   @Override
   public String getPassword() {
-    return new String(passwordParser.getPassword());
+    return new String(passwordHasher.getPassword());
   }
 
 }

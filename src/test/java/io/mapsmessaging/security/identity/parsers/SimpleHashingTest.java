@@ -17,7 +17,15 @@
 package io.mapsmessaging.security.identity.parsers;
 
 import io.mapsmessaging.security.identity.PasswordGenerator;
-import io.mapsmessaging.security.identity.parsers.multi.MultiPasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordHasher;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.hashes.multi.MultiPasswordHasher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -28,17 +36,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class SimpleHashingTest {
 
   private static final char[] PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=-\\|][{};:\"'/?.>,<`~".toCharArray();
 
-  private static Stream<PasswordParser> knownParsers() {
-    return PasswordParserFactory.getInstance().getPasswordParsers().stream().filter(passwordParser -> !(passwordParser instanceof MultiPasswordParser));
+  private static Stream<PasswordHandler> knownParsers() {
+    return PasswordParserFactory.getInstance().getPasswordHashers().stream().filter(passwordParser -> !(passwordParser instanceof MultiPasswordHasher) && (passwordParser instanceof PasswordHasher));
   }
 
   @Test
@@ -46,13 +50,13 @@ public class SimpleHashingTest {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
 
-    List<PasswordParser> parsers = knownParsers().collect(Collectors.toList());
-    MultiPasswordParser parser = new MultiPasswordParser(parsers);
+    List<PasswordHandler> parsers = knownParsers().collect(Collectors.toList());
+    MultiPasswordHasher parser = new MultiPasswordHasher(parsers);
     byte[] hash =
         parser.transformPassword(
             password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 0);
     String storeHash = new String(hash);
-    PasswordParser lookup = PasswordParserFactory.getInstance().parse(new String(hash));
+    PasswordHandler lookup = PasswordParserFactory.getInstance().parse(new String(hash));
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
     byte[] computed =
         lookup.transformPassword(
@@ -65,17 +69,17 @@ public class SimpleHashingTest {
 
   @ParameterizedTest
   @MethodSource("knownParsers")
-  void testHashAndValidateBadPassword(PasswordParser base) {
+  void testHashAndValidateBadPassword(PasswordHasher base) {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordParser parser = base.create("");
+    PasswordHandler parser = base.create("");
     byte[] hash =
         parser.transformPassword(
             password.getBytes(StandardCharsets.UTF_8),
             salt.getBytes(StandardCharsets.UTF_8),
             parser.getCost());
     String storeHash = new String(hash);
-    PasswordParser lookup = PasswordParserFactory.getInstance().parse(storeHash);
+    PasswordHandler lookup = PasswordParserFactory.getInstance().parse(storeHash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
     byte[] computed =
         lookup.transformPassword(
@@ -88,17 +92,17 @@ public class SimpleHashingTest {
 
   @ParameterizedTest
   @MethodSource("knownParsers")
-  void testHashAndValidate(PasswordParser base) {
+  void testHashAndValidate(PasswordHasher base) {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordParser parser = base.create("");
+    PasswordHandler parser = base.create("");
     byte[] hash =
         parser.transformPassword(
             password.getBytes(StandardCharsets.UTF_8),
             salt.getBytes(StandardCharsets.UTF_8),
             parser.getCost());
     String storeHash = new String(hash);
-    PasswordParser lookup = PasswordParserFactory.getInstance().parse(storeHash);
+    PasswordHandler lookup = PasswordParserFactory.getInstance().parse(storeHash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
     byte[] computed =
         lookup.transformPassword(
@@ -109,11 +113,11 @@ public class SimpleHashingTest {
 
   @ParameterizedTest
   @MethodSource("knownParsers")
-  void testFileLoadAndParse(PasswordParser base) throws IOException {
+  void testFileLoadAndParse(PasswordHasher base) throws IOException {
     FileOutputStream fileOutputStream = new FileOutputStream("hash.txt", false);
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordParser parser = base.create("");
+    PasswordHandler parser = base.create("");
     byte[] hash =
         parser.transformPassword(
             password.getBytes(StandardCharsets.UTF_8),
@@ -135,7 +139,7 @@ public class SimpleHashingTest {
       e.printStackTrace();
     }
     for (String received : hashes) {
-      PasswordParser lookup = PasswordParserFactory.getInstance().parse(received);
+      PasswordHandler lookup = PasswordParserFactory.getInstance().parse(received);
       byte[] computed =
           lookup.transformPassword(
               password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());

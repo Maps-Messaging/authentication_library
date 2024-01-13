@@ -21,16 +21,17 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import io.mapsmessaging.security.passwords.PasswordHandler;
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
@@ -186,7 +187,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   @Override
-  public boolean createUser(String username, String passwordHash, PasswordParser passwordParser) {
+  public boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher) {
     List<AttributeType> userAttributes = new ArrayList<>();
     if (username.contains("@")) {
       userAttributes.add(AttributeType.builder().name("email_verified").value("true").build());

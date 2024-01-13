@@ -21,8 +21,8 @@ import io.mapsmessaging.security.certificates.BaseCertificateTest;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
-import io.mapsmessaging.security.identity.impl.encrypted.EncryptedPasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordHasher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +36,7 @@ public class EncryptedAuthTest extends BaseCertificateTest {
     setUp("jks");
     addCert(certificateManager);
 
-    PasswordParser hasher = new EncryptedPasswordParser(certificateManager, TEST_ALIAS, new String(KEY_PASSWORD));
+    PasswordHandler hasher = new EncryptedPasswordHasher(certificateManager, TEST_ALIAS, new String(KEY_PASSWORD));
     EncryptedAuth auth = new EncryptedAuth("encryptedPasswords", "groups", TEST_ALIAS, certificateManager, new String(KEY_PASSWORD));
     Faker faker = new Faker();
     Map<String, String> users = new LinkedHashMap<>();

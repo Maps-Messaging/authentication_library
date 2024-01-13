@@ -17,9 +17,9 @@
 package io.mapsmessaging.security.identity.impl.unix;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -38,7 +38,7 @@ public class ShadowEntry extends IdentityEntry {
     line = line.substring(usernamePos + 1);
     int endOfPassword = line.indexOf(":");
     password = line.substring(0, endOfPassword);
-    passwordParser = PasswordParserFactory.getInstance().parse(password);
+    passwordHasher = PasswordParserFactory.getInstance().parse(password);
   }
 
   @Override

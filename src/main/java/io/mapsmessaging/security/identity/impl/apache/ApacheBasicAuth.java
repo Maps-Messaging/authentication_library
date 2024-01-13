@@ -19,7 +19,8 @@ package io.mapsmessaging.security.identity.impl.apache;
 import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +42,7 @@ public class ApacheBasicAuth implements IdentityLookup {
     groupFileManager = new HtGroupFileManager(groupFile);
   }
 
-  protected ApacheBasicAuth(HtPasswdFileManager passwordFile, HtGroupFileManager groupFile) {
+  protected ApacheBasicAuth(FileBaseIdentities passwordFile, HtGroupFileManager groupFile) {
     passwdFileManager = passwordFile;
     groupFileManager = groupFile;
   }
@@ -118,10 +119,10 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean createUser(String username, String password, PasswordParser passwordParser) throws IOException {
+  public boolean createUser(String username, String password, PasswordHandler handler) throws IOException {
     String salt = PasswordGenerator.generateSalt(16);
     byte[] hash =
-        passwordParser.transformPassword(
+        handler.transformPassword(
             password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 12);
     if (passwdFileManager != null) {
       passwdFileManager.addEntry(username, new String(hash));

@@ -16,12 +16,13 @@
 
 package io.mapsmessaging.security.identity;
 
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import org.apache.commons.lang3.NotImplementedException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.NotImplementedException;
 
 public interface IdentityLookup {
 
@@ -51,7 +52,7 @@ public interface IdentityLookup {
     throw new NotImplementedException("Unable to delete groups");
   }
 
-  default boolean createUser(String username, String passwordHash, PasswordParser passwordParser) throws IOException {
+  default boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher) throws IOException {
     throw new NotImplementedException("Unable to add users to an LDAP server");
   }
 

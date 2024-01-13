@@ -32,10 +32,10 @@ public class CognitoIdentityEntry extends JwtIdentityEntry {
     this.uuid = uuid;
     this.email = "";
     this.profile = "";
-    passwordParser = new CognitoPasswordParser(username, cognitoAuth, this);
+    passwordHasher = new CognitoPasswordHasher(username, cognitoAuth, this);
   }
 
   public String getPassword() {
-    return new String(passwordParser.getPassword());
+    return new String(passwordHasher.getPassword());
   }
 }

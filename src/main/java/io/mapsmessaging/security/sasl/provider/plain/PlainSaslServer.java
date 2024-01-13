@@ -16,13 +16,14 @@
 
 package io.mapsmessaging.security.sasl.provider.plain;
 
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+
 import javax.security.auth.callback.*;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class PlainSaslServer implements SaslServer {
 
@@ -68,11 +69,11 @@ public class PlainSaslServer implements SaslServer {
     // on the parsed info
     //
     complete = true;
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(passwordHash);
+    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(passwordHash);
     String hash =
         new String(
-            passwordParser.transformPassword(
-                password, passwordParser.getSalt(), passwordParser.getCost()));
+            passwordHasher.transformPassword(
+                password, passwordHasher.getSalt(), passwordHasher.getCost()));
     if (!hash.equals(passwordHash)) {
       throw new SaslException("Invalid username or password");
     }

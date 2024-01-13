@@ -18,20 +18,27 @@ package io.mapsmessaging.security.identity.impl.encrypted;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.impl.apache.HtPasswdFileManager;
+import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
+import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordHasher;
 
-public class EncryptedPasswordFileManager extends HtPasswdFileManager {
+public class EncryptedPasswordFileManager extends FileBaseIdentities {
 
-  private final EncryptedPasswordParser parser;
+  private final EncryptedPasswordHasher parser;
 
   public EncryptedPasswordFileManager(String filepath, String certAlias, CertificateManager pkcs11Manager, String privateKeyPassword) {
     super(filepath);
-    this.parser = new EncryptedPasswordParser(pkcs11Manager, certAlias, privateKeyPassword);
+    this.parser = new EncryptedPasswordHasher(pkcs11Manager, certAlias, privateKeyPassword);
+    load();
   }
 
   @Override
   protected IdentityEntry create(String username, String hash) {
     return new EncryptedPasswordEntry(username, hash, parser);
+  }
+
+  @Override
+  public String getDomain() {
+    return "Encrypted";
   }
 
   @Override

@@ -59,7 +59,7 @@ public class LdapUserManager {
   public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
     IdentityEntry entry = findEntry(username);
     if (entry != null) {
-      return entry.getPasswordParser().getFullPasswordHash();
+      return entry.getPasswordHasher().getFullPasswordHash();
     }
     throw new NoSuchUserFoundException("Password entry for " + username + " not found");
   }

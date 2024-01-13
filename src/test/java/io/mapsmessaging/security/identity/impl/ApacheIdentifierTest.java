@@ -21,9 +21,9 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import io.mapsmessaging.security.identity.parsers.md5.Md5PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.hashes.md5.Md5PasswordHasher;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,8 +43,8 @@ class ApacheIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals("$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", pwd);
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
-    Assertions.assertEquals(Md5PasswordParser.class, passwordParser.getClass());
+    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(pwd);
+    Assertions.assertEquals(Md5PasswordHasher.class, passwordHasher.getClass());
   }
 
   @Test
@@ -55,7 +55,7 @@ class ApacheIdentifierTest {
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", entry.toString());
-    Assertions.assertEquals(Md5PasswordParser.class, entry.getPasswordParser().getClass());
+    Assertions.assertEquals(Md5PasswordHasher.class, entry.getPasswordHasher().getClass());
   }
 
   @Test

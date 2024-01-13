@@ -16,17 +16,18 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.logging.AuthLogMessages;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
+
+import javax.security.auth.callback.*;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Map;
-import javax.security.auth.callback.*;
 
 public class InitialState extends State {
 
@@ -90,11 +91,11 @@ public class InitialState extends State {
     // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based on the parsed info
     //
 
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
-    context.setPasswordParser(passwordParser);
-    context.setPrepPassword(new String(passwordParser.getPassword()));
-    context.setPasswordSalt(new String(Base64.getEncoder().encode(passwordParser.getSalt())));
-    context.setIterations(passwordParser.getCost());
+    PasswordHandler handler = PasswordParserFactory.getInstance().parse(new String(password));
+    context.setPasswordHasher(handler);
+    context.setPrepPassword(new String(handler.getPassword()));
+    context.setPasswordSalt(new String(Base64.getEncoder().encode(handler.getSalt())));
+    context.setIterations(handler.getCost());
     context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
   }
 }

@@ -17,8 +17,8 @@
 package io.mapsmessaging.security.identity;
 
 import com.sun.security.auth.UserPrincipal;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
+import io.mapsmessaging.security.passwords.PasswordHandler;
 import lombok.Getter;
 
 import javax.security.auth.Subject;
@@ -67,7 +67,7 @@ public class IdentityEntry {
   @Getter
   protected String username;
   @Getter
-  protected PasswordParser passwordParser;
+  protected PasswordHandler passwordHasher;
   @Getter
   protected String password;
 

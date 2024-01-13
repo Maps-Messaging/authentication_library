@@ -26,14 +26,15 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
+import io.mapsmessaging.security.passwords.PasswordHasher;
+import lombok.Getter;
+
+import javax.security.auth.Subject;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
-import javax.security.auth.Subject;
-import lombok.Getter;
 
 public class IdentityAccessManager {
 
@@ -132,7 +133,7 @@ public class IdentityAccessManager {
     return identityLookup.findGroup(groupName);
   }
 
-  public UserIdMap createUser(String username, String hash, PasswordParser passwordParser)
+  public UserIdMap createUser(String username, String hash, PasswordHasher passwordHasher)
       throws IOException {
     IdentityEntry entry = identityLookup.findEntry(username);
     UserIdMap idMap = userMapManagement.get(identityLookup.getDomain() + ":" + username);
@@ -140,7 +141,7 @@ public class IdentityAccessManager {
       return idMap;
     }
     if (entry == null) {
-      identityLookup.createUser(username, hash, passwordParser);
+      identityLookup.createUser(username, hash, passwordHasher);
     }
     if (idMap == null) {
       idMap = new UserIdMap(UUID.randomUUID(), username, identityLookup.getDomain());
@@ -150,10 +151,10 @@ public class IdentityAccessManager {
     return idMap;
   }
 
-  public boolean updateUserPassword(String username, String hash, PasswordParser passwordParser) throws IOException {
+  public boolean updateUserPassword(String username, String hash, PasswordHasher passwordHasher) throws IOException {
     if (identityLookup.findEntry(username) != null) {
       identityLookup.deleteUser(username);
-      identityLookup.createUser(username, hash, passwordParser);
+      identityLookup.createUser(username, hash, passwordHasher);
       return true;
     }
     return false;

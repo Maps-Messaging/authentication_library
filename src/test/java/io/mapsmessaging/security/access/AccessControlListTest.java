@@ -24,18 +24,19 @@ import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
 import io.mapsmessaging.security.identity.PasswordGenerator;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.bcrypt.BCrypt2yPasswordParser;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
+import io.mapsmessaging.security.passwords.PasswordHasher;
+import io.mapsmessaging.security.passwords.hashes.bcrypt.BCrypt2YPasswordHasher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import javax.security.auth.Subject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.*;
-import javax.security.auth.Subject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 public class AccessControlListTest {
 
@@ -53,29 +54,29 @@ public class AccessControlListTest {
             userStore,
             groupStore);
 
-    PasswordParser passwordParser = new BCrypt2yPasswordParser();
+    PasswordHasher passwordHasher = new BCrypt2YPasswordHasher();
     byte[] hash =
-        passwordParser.transformPassword(
+        passwordHasher.transformPassword(
             "password1".getBytes(StandardCharsets.UTF_8),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
     UserIdMap usernameId =
-        identityAccessManager.createUser("username", new String(hash), passwordParser);
+        identityAccessManager.createUser("username", new String(hash), passwordHasher);
 
     hash =
-        passwordParser.transformPassword(
+        passwordHasher.transformPassword(
             "password2".getBytes(StandardCharsets.UTF_8),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
     UserIdMap username2Id =
-        identityAccessManager.createUser("username2", new String(hash), passwordParser);
+        identityAccessManager.createUser("username2", new String(hash), passwordHasher);
 
     hash =
-        passwordParser.transformPassword(
+        passwordHasher.transformPassword(
             "password3".getBytes(StandardCharsets.UTF_8),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
-    UserIdMap fredId = identityAccessManager.createUser("fred", new String(hash), passwordParser);
+    UserIdMap fredId = identityAccessManager.createUser("fred", new String(hash), passwordHasher);
 
     GroupIdMap group1IdMap = identityAccessManager.createGroup("group1");
     GroupIdMap group2IdMap = identityAccessManager.createGroup("group2");

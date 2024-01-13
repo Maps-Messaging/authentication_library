@@ -16,26 +16,27 @@
 
 package io.mapsmessaging.security.sasl;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.unix.ShadowFileManager;
-import io.mapsmessaging.security.identity.parsers.sha.Sha1PasswordParser;
+import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslClient;
+import javax.security.sasl.SaslException;
+import javax.security.sasl.SaslServer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import javax.security.sasl.Sasl;
-import javax.security.sasl.SaslClient;
-import javax.security.sasl.SaslException;
-import javax.security.sasl.SaslServer;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SimpleSaslTest extends BaseSasl {
 
@@ -52,7 +53,7 @@ class SimpleSaslTest extends BaseSasl {
   @ParameterizedTest
   @ValueSource(strings = {"PLAIN", "DIGEST-MD5", "CRAM-MD5"})
   void simpleDigestNonSaltValidTest(String mechanism) throws IOException {
-    Sha1PasswordParser passwordParser = new Sha1PasswordParser();
+    Sha1PasswordHasher passwordParser = new Sha1PasswordHasher();
     byte[] password = "This is a random password".getBytes(StandardCharsets.UTF_8);
     if (!mechanism.equalsIgnoreCase("PLAIN")) {
       password = passwordParser.transformPassword(password, null, 0);
@@ -76,7 +77,7 @@ class SimpleSaslTest extends BaseSasl {
   @ParameterizedTest
   @ValueSource(strings = {"DIGEST-MD5", "CRAM-MD5"})
   void simpleWrongPasswordTest(String mechanism) {
-    Sha1PasswordParser passwordParser = new Sha1PasswordParser();
+    Sha1PasswordHasher passwordParser = new Sha1PasswordHasher();
     byte[] password =
         passwordParser.transformPassword(
             "This is a wrong password".getBytes(StandardCharsets.UTF_8), null, 0);

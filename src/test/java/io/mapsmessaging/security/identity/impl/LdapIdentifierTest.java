@@ -20,18 +20,19 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.ldap.LdapAuth;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import io.mapsmessaging.security.identity.parsers.md5.Md5UnixPasswordParser;
 import io.mapsmessaging.security.jaas.PropertiesLoader;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.hashes.md5.Md5UnixPasswordHasher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import javax.naming.Context;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
-import javax.naming.Context;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 public class LdapIdentifierTest {
 
@@ -70,8 +71,8 @@ public class LdapIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals(properties.getProperty("hashedPassword"), pwd);
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
-    Assertions.assertEquals(Md5UnixPasswordParser.class, passwordParser.getClass());
+    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(pwd);
+    Assertions.assertEquals(Md5UnixPasswordHasher.class, passwordHasher.getClass());
   }
 
 }

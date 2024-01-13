@@ -19,6 +19,7 @@ package io.mapsmessaging.security.identity.impl.external;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.JwtPrincipal;
+
 import java.security.Principal;
 import java.util.Set;
 
@@ -27,8 +28,8 @@ public abstract class JwtIdentityEntry extends IdentityEntry {
   @Override
   protected Set<Principal> getPrincipals() {
     Set<Principal> principals = super.getPrincipals();
-    if (passwordParser instanceof JwtPasswordParser) {
-      JwtPasswordParser jwtPasswordParser = (JwtPasswordParser) passwordParser;
+    if (passwordHasher instanceof JwtPasswordHasher) {
+      JwtPasswordHasher jwtPasswordParser = (JwtPasswordHasher) passwordHasher;
       if (jwtPasswordParser.getJwt() != null) {
         DecodedJWT jwt = jwtPasswordParser.getJwt();
         principals.add(new JwtPrincipal(jwt));

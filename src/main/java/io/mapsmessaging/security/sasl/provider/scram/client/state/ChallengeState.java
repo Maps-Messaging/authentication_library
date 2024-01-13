@@ -16,17 +16,18 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client.state;
 
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
+
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
 
 public class ChallengeState extends State {
 
@@ -51,17 +52,17 @@ public class ChallengeState extends State {
     response.put(ChallengeResponse.CHANNEL_BINDING, "biws");
 
     String saltedPassword = "";
-    if (context.getPasswordParser() != null) {
+    if (context.getPasswordHasher() != null) {
       byte[] salt =
           Base64.getDecoder().decode(context.getPasswordSalt().getBytes(StandardCharsets.UTF_8));
       byte[] computedHash =
           context
-              .getPasswordParser()
+              .getPasswordHasher()
               .transformPassword(
                   context.getPrepPassword().getBytes(StandardCharsets.UTF_8),
                   salt,
                   context.getIterations());
-      PasswordParser breakDown = context.getPasswordParser().create(new String(computedHash));
+      PasswordHandler breakDown = context.getPasswordHasher().create(new String(computedHash));
       saltedPassword = new String(breakDown.getPassword());
     }
 

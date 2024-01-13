@@ -16,22 +16,23 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
-
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -65,16 +66,16 @@ public class IdentityLoginModule extends BaseLoginModule {
       throw new LoginException("Login failed: No such user");
     }
 
-    PasswordParser passwordParser = identityEntry.getPasswordParser();
-    if (passwordParser == null) {
-      passwordParser = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
+    PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
+    if (passwordHasher == null) {
+      passwordHasher = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
     }
     String rawPassword = new String(password);
     byte[] hash =
-        passwordParser.transformPassword(
+        passwordHasher.transformPassword(
             rawPassword.getBytes(StandardCharsets.UTF_8),
-            passwordParser.getSalt(),
-            passwordParser.getCost());
+            passwordHasher.getSalt(),
+            passwordHasher.getCost());
     if (!Arrays.equals(hash, identityEntry.getPassword().getBytes(StandardCharsets.UTF_8))) {
       throw new LoginException("Invalid password");
     }
