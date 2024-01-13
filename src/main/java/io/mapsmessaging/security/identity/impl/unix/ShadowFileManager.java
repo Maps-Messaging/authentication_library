@@ -36,4 +36,9 @@ public class ShadowFileManager extends FileBaseIdentities {
     return new ShadowEntry(line);
   }
 
+  @Override
+  protected IdentityEntry create(String username, String hash) {
+    return new ShadowEntry(hash);
+  }
+
 }

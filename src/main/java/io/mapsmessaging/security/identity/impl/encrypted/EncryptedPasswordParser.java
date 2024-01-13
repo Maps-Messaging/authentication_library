@@ -28,20 +28,27 @@ import java.util.Base64;
 public class EncryptedPasswordParser implements PasswordParser {
 
   private byte[] password;
-  private String alias;
+
+  private String privateKeyPassword;
+
+  @Getter
+  private final String alias;
 
   @Getter
   @Setter
   private CertificateManager certificateManager;
 
-  public EncryptedPasswordParser(CertificateManager pkcs11Manager) {
+  public EncryptedPasswordParser(CertificateManager pkcs11Manager, String alias, String privateKeyPassword) {
     this.certificateManager = pkcs11Manager;
+    this.alias = alias;
+    this.privateKeyPassword = privateKeyPassword;
   }
 
-  public EncryptedPasswordParser(CertificateManager certificateManager, String alias, byte[] password) {
+  public EncryptedPasswordParser(CertificateManager certificateManager, String alias, byte[] password, String privateKeyPassword) {
     this.certificateManager = certificateManager;
     this.alias = alias;
     this.password = password;
+    this.privateKeyPassword = privateKeyPassword;
   }
 
   @Override
@@ -50,7 +57,7 @@ public class EncryptedPasswordParser implements PasswordParser {
     int dollar = t.indexOf("$");
     String al = t.substring(0, dollar);
     byte[] pass = t.substring(dollar + 1).getBytes(StandardCharsets.UTF_8);
-    return new EncryptedPasswordParser(certificateManager, al, pass);
+    return new EncryptedPasswordParser(certificateManager, al, pass, privateKeyPassword);
   }
 
   @Override
@@ -92,7 +99,7 @@ public class EncryptedPasswordParser implements PasswordParser {
   public byte[] getPassword() {
     BufferCipher bufferCipher = new BufferCipher(certificateManager);
     byte[] decoded = Base64.getDecoder().decode(password);
-    byte[] decrypted = bufferCipher.decrypt(alias, decoded, null);
+    byte[] decrypted = bufferCipher.decrypt(alias, decoded, privateKeyPassword.toCharArray());
 
     int saltLength = decrypted[0];
     byte[] salt = new byte[saltLength];

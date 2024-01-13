@@ -31,10 +31,9 @@ public class EncryptedAuth extends ApacheBasicAuth {
     super();
   }
 
-  public EncryptedAuth(
-      String passwordFile, String groupFile, String alias, CertificateManager certificateManager) {
+  public EncryptedAuth(String passwordFile, String groupFile, String alias, CertificateManager certificateManager, String keyPassword) {
     super(
-        new EncryptedPasswordFileManager(passwordFile, alias, certificateManager),
+        new EncryptedPasswordFileManager(passwordFile, alias, certificateManager, keyPassword),
         new HtGroupFileManager(groupFile));
   }
 
@@ -82,7 +81,7 @@ public class EncryptedAuth extends ApacheBasicAuth {
       alias = config.get("alias").toString();
     }
     CertificateManager certificateManager = CertificateManagerFactory.getInstance().getManager(config);
-
-    return new EncryptedAuth(passwordPath, groupPath, alias, certificateManager);
+    String keyPassword = (String) config.get("privateKeyPassword");
+    return new EncryptedAuth(passwordPath, groupPath, alias, certificateManager, keyPassword);
   }
 }

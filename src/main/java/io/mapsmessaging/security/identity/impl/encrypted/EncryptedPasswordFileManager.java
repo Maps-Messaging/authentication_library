@@ -22,14 +22,16 @@ import io.mapsmessaging.security.identity.impl.apache.HtPasswdFileManager;
 
 public class EncryptedPasswordFileManager extends HtPasswdFileManager {
 
-  private final String certAlias;
   private final EncryptedPasswordParser parser;
 
-  public EncryptedPasswordFileManager(
-      String filepath, String certAlias, CertificateManager pkcs11Manager) {
+  public EncryptedPasswordFileManager(String filepath, String certAlias, CertificateManager pkcs11Manager, String privateKeyPassword) {
     super(filepath);
-    this.parser = new EncryptedPasswordParser(pkcs11Manager);
-    this.certAlias = certAlias;
+    this.parser = new EncryptedPasswordParser(pkcs11Manager, certAlias, privateKeyPassword);
+  }
+
+  @Override
+  protected IdentityEntry create(String username, String hash) {
+    return new EncryptedPasswordEntry(username, hash, parser);
   }
 
   @Override

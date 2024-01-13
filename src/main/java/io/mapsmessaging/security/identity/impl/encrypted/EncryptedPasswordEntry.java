@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.identity.impl.encrypted;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.parsers.PasswordParser;
 
 public class EncryptedPasswordEntry extends IdentityEntry {
 
@@ -26,5 +27,17 @@ public class EncryptedPasswordEntry extends IdentityEntry {
     line = line.substring(usernamePos + 1);
     password = line;
     passwordParser = parser.create(password);
+  }
+
+  public EncryptedPasswordEntry(String username, String password, PasswordParser parser) {
+    this.username = username;
+    this.password = password;
+    this.passwordParser = parser;
+  }
+
+  @Override
+  public String getPassword() {
+    PasswordParser parser1 = passwordParser.create(password);
+    return new String(parser1.getPassword());
   }
 }
