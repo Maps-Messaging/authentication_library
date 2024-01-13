@@ -16,8 +16,8 @@
 
 package io.mapsmessaging.security.identity.impl.encrypted;
 
-import io.mapsmessaging.security.certificates.BufferCipher;
 import io.mapsmessaging.security.certificates.CertificateManager;
+import io.mapsmessaging.security.cipher.BufferCipher;
 import io.mapsmessaging.security.identity.parsers.PasswordParser;
 import lombok.Getter;
 import lombok.Setter;

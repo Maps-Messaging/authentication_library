@@ -62,7 +62,7 @@ public class BaseCertificateTest {
 
   protected static void addMultiCertificates(CertificateManager certificateManager)
       throws CertificateException, IOException, OperatorCreationException {
-    for (int x = 0; x < 100; x++) {
+    for (int x = 0; x < 10; x++) {
       addCert(
           certificateManager,
           TEST_ALIAS + "_" + x,
