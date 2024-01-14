@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,16 +16,15 @@
 
 package io.mapsmessaging.security.passwords;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_PARSER_LOADED;
+
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_PARSER_LOADED;
+import lombok.Getter;
 
 public class PasswordParserFactory {
 
@@ -57,15 +56,31 @@ public class PasswordParserFactory {
     return null;
   }
 
-  public PasswordHandler parse(String password) {
+  public PasswordHandler parse(char[] password) {
     for (PasswordHandler handler : passwordHandlers) {
       if (!handler.getName().equals("PLAIN")
-          && password.length() >= handler.getKey().length()
-          && password.startsWith(handler.getKey())) {
-        return handler.create(password);
+          && password.length >= handler.getKey().length()
+          && startWith(password, handler.getKey().toCharArray())) {
+        return handler.create(new String(password));
       }
     }
-    return new PlainPasswordHasher(password);
+    return new PlainPasswordHasher(new String(password));
+  }
+
+  private boolean startWith(char[] longString, char[] start) {
+    if (start.length >= longString.length) {
+      return false;
+    }
+    for (int x = 0; x < start.length; x++) {
+      if (longString[x] != start[x]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public PasswordHandler parse(String password) {
+    return parse(password.toCharArray());
   }
 
 }
