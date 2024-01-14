@@ -61,6 +61,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
     this.privateKeyPassword = privateKeyPassword;
   }
 
+
   @Override
   public PasswordHandler create(String password) {
     String t = password.substring(getKey().length());

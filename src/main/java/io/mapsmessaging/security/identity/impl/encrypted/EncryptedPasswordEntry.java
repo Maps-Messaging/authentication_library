@@ -41,4 +41,12 @@ public class EncryptedPasswordEntry extends IdentityEntry {
     PasswordHandler parser1 = passwordHasher.create(password);
     return new String(parser1.getPassword());
   }
+
+  @Override
+  public PasswordHandler getPasswordHasher() {
+    EncryptedPasswordCipher base = (EncryptedPasswordCipher) passwordHasher;
+    EncryptedPasswordCipher response = (EncryptedPasswordCipher) passwordHasher.create(password);
+    response.setCertificateManager(base.getCertificateManager());
+    return response;
+  }
 }
