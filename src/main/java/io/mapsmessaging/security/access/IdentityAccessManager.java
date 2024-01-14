@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,21 +26,26 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
+import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import io.mapsmessaging.security.passwords.PasswordHasher;
-import lombok.Getter;
-
-import javax.security.auth.Subject;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
+import javax.security.auth.Subject;
+import lombok.Getter;
+import lombok.Setter;
 
 public class IdentityAccessManager {
 
   @Getter private final IdentityLookup identityLookup;
   private final GroupMapManagement groupMapManagement;
   private final UserMapManagement userMapManagement;
+
+  @Getter @Setter private PasswordHandler passwordHandler;
 
   public IdentityAccessManager(
       String identity,
@@ -52,6 +57,16 @@ public class IdentityAccessManager {
     userMapManagement = new UserMapManagement(userStore);
     for (IdentityEntry entry : identityLookup.getEntries()) {
       mapUser(entry);
+    }
+    String handlerName = (String) config.get("passwordHander");
+    if (handlerName == null || handlerName.isEmpty()) {
+      handlerName = "Pbkdf2Sha512PasswordHasher";
+    }
+    PasswordHandler baseHandler = PasswordParserFactory.getInstance().getByClassName(handlerName);
+    if (baseHandler instanceof EncryptedPasswordCipher && identityLookup instanceof EncryptedAuth) {
+      passwordHandler = ((EncryptedAuth) identityLookup).getPasswordHandler();
+    } else {
+      passwordHandler = baseHandler;
     }
     userMapManagement.save();
     groupMapManagement.save();
@@ -133,15 +148,14 @@ public class IdentityAccessManager {
     return identityLookup.findGroup(groupName);
   }
 
-  public UserIdMap createUser(String username, String hash, PasswordHasher passwordHasher)
-      throws IOException {
+  public UserIdMap createUser(String username, String hash) throws IOException {
     IdentityEntry entry = identityLookup.findEntry(username);
     UserIdMap idMap = userMapManagement.get(identityLookup.getDomain() + ":" + username);
     if (entry != null && idMap != null) {
       return idMap;
     }
     if (entry == null) {
-      identityLookup.createUser(username, hash, passwordHasher);
+      identityLookup.createUser(username, hash, passwordHandler);
     }
     if (idMap == null) {
       idMap = new UserIdMap(UUID.randomUUID(), username, identityLookup.getDomain());
@@ -151,7 +165,8 @@ public class IdentityAccessManager {
     return idMap;
   }
 
-  public boolean updateUserPassword(String username, String hash, PasswordHasher passwordHasher) throws IOException {
+  public boolean updateUserPassword(String username, String hash, PasswordHandler passwordHasher)
+      throws IOException {
     if (identityLookup.findEntry(username) != null) {
       identityLookup.deleteUser(username);
       identityLookup.createUser(username, hash, passwordHasher);

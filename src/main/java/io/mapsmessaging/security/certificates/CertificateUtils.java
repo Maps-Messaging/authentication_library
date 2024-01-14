@@ -24,7 +24,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.Date;
 import javax.security.auth.x500.X500Principal;
-import lombok.Getter;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.*;
@@ -94,20 +93,4 @@ public class CertificateUtils {
     }
   }
 
-  public static void main(String[] args)
-      throws OperatorCreationException, IOException, CertificateException {
-    System.err.println(generateSelfSignedCertificateSecret("fred"));
-  }
-
-  @Getter
-  public static class CertificateWithPrivateKey {
-    private final java.security.cert.Certificate certificate;
-    private final PrivateKey privateKey;
-
-    public CertificateWithPrivateKey(
-        java.security.cert.Certificate certificate, PrivateKey privateKey) {
-      this.certificate = certificate;
-      this.privateKey = privateKey;
-    }
-  }
 }

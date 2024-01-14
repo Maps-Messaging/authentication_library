@@ -17,12 +17,11 @@
 package io.mapsmessaging.security.certificates.pkcs11;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
-import lombok.Getter;
-
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Map;
+import lombok.Getter;
 
 public class Pkcs11Manager implements CertificateManager {
 
@@ -118,6 +117,11 @@ public class Pkcs11Manager implements CertificateManager {
     } catch (KeyStoreException e) {
       throw new CertificateException(e);
     }
+  }
+
+  @Override
+  public boolean getExists() {
+    return true;
   }
 }
 

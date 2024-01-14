@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,12 +22,11 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordHasher;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
+import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class EncryptedAuthTest extends BaseCertificateTest {
 
@@ -36,7 +35,8 @@ public class EncryptedAuthTest extends BaseCertificateTest {
     setUp("jks");
     addCert(certificateManager);
 
-    PasswordHandler hasher = new EncryptedPasswordHasher(certificateManager, TEST_ALIAS, new String(KEY_PASSWORD));
+    PasswordHandler hasher =
+        new EncryptedPasswordCipher(certificateManager, TEST_ALIAS, new String(KEY_PASSWORD));
     EncryptedAuth auth = new EncryptedAuth("encryptedPasswords", "groups", TEST_ALIAS, certificateManager, new String(KEY_PASSWORD));
     Faker faker = new Faker();
     Map<String, String> users = new LinkedHashMap<>();

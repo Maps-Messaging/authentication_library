@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,13 +20,12 @@ import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.cipher.BufferCipher;
 import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
-public class EncryptedPasswordHasher implements PasswordCipher {
+public class EncryptedPasswordCipher implements PasswordCipher {
 
   private byte[] password;
 
@@ -39,18 +38,23 @@ public class EncryptedPasswordHasher implements PasswordCipher {
   @Setter
   private CertificateManager certificateManager;
 
-  public EncryptedPasswordHasher() {
+  public EncryptedPasswordCipher() {
     alias = "";
 
   }
 
-  public EncryptedPasswordHasher(CertificateManager pkcs11Manager, String alias, String privateKeyPassword) {
-    this.certificateManager = pkcs11Manager;
+  public EncryptedPasswordCipher(
+      CertificateManager certificateManager, String alias, String privateKeyPassword) {
+    this.certificateManager = certificateManager;
     this.alias = alias;
     this.privateKeyPassword = privateKeyPassword;
   }
 
-  public EncryptedPasswordHasher(CertificateManager certificateManager, String alias, byte[] password, String privateKeyPassword) {
+  public EncryptedPasswordCipher(
+      CertificateManager certificateManager,
+      String alias,
+      byte[] password,
+      String privateKeyPassword) {
     this.certificateManager = certificateManager;
     this.alias = alias;
     this.password = password;
@@ -63,7 +67,7 @@ public class EncryptedPasswordHasher implements PasswordCipher {
     int dollar = t.indexOf("$");
     String al = t.substring(0, dollar);
     byte[] pass = t.substring(dollar + 1).getBytes(StandardCharsets.UTF_8);
-    return new EncryptedPasswordHasher(certificateManager, al, pass, privateKeyPassword);
+    return new EncryptedPasswordCipher(certificateManager, al, pass, privateKeyPassword);
   }
 
   @Override

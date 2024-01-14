@@ -40,4 +40,6 @@ public interface CertificateManager {
       throws CertificateException;
 
   KeyStore getKeyStore();
+
+  boolean getExists();
 }

@@ -17,9 +17,7 @@
 package io.mapsmessaging.security.certificates.keystore;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
-import lombok.Getter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,6 +25,8 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Map;
+import lombok.Getter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class KeyStoreManager implements CertificateManager {
 
@@ -39,11 +39,13 @@ public class KeyStoreManager implements CertificateManager {
   private final KeyStore keyStore;
   private final String keyStorePath;
   private final char[] keyStorePassword;
+  private final boolean existed;
 
   public KeyStoreManager() {
     keyStore = null;
     keyStorePath = "";
     keyStorePassword = new char[0];
+    existed = true;
   }
 
   public boolean isValid(Map<String, ?> config) {
@@ -64,7 +66,8 @@ public class KeyStoreManager implements CertificateManager {
     this.keyStorePath = config.get(KEYSTORE_PATH).toString();
     this.keyStorePassword = config.get(KEYSTORE_PASSWORD).toString().toCharArray();
     keyStore = KeyStore.getInstance(config.get(KEYSTORE_TYPE).toString());
-
+    File file = new File(keyStorePath);
+    existed = file.exists();
     // Load the keystore
     try (FileInputStream fis = new FileInputStream(keyStorePath)) {
       keyStore.load(fis, keyStorePassword);
@@ -134,6 +137,11 @@ public class KeyStoreManager implements CertificateManager {
     } catch (KeyStoreException e) {
       throw new CertificateException("Exception saving private key", e);
     }
+  }
+
+  @Override
+  public boolean getExists() {
+    return existed;
   }
 
   private void saveKeyStore() throws CertificateException {

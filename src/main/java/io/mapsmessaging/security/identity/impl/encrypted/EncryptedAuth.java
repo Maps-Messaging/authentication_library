@@ -16,13 +16,17 @@
 
 package io.mapsmessaging.security.identity.impl.encrypted;
 
+import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.CertificateManagerFactory;
+import io.mapsmessaging.security.certificates.CertificateWithPrivateKey;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.apache.HtGroupFileManager;
-
+import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.File;
+import java.security.cert.Certificate;
 import java.util.Map;
 
 public class EncryptedAuth extends ApacheBasicAuth {
@@ -75,13 +79,30 @@ public class EncryptedAuth extends ApacheBasicAuth {
     return null;
   }
 
-  private EncryptedAuth construct(String passwordPath, String groupPath, Map<String, ?> config) throws Exception {
+  private EncryptedAuth construct(String passwordPath, String groupPath, Map<String, ?> topConfig)
+      throws Exception {
+    Map<String, ?> config = (Map) topConfig.get("certificateStore");
     String alias = "";
-    if (config.containsKey("alias")) {
-      alias = config.get("alias").toString();
+    if (config.containsKey("certificate.alias")) {
+      alias = config.get("certificate.alias").toString();
     }
     CertificateManager certificateManager = CertificateManagerFactory.getInstance().getManager(config);
-    String keyPassword = (String) config.get("privateKeyPassword");
+    String keyPassword = (String) config.get("privateKey.password");
+    String privateKeyName = (String) config.get("privateKey.name");
+    char[] privateKey = ((String) config.get("privateKey.password")).toCharArray();
+    if (!certificateManager.getExists()) {
+      CertificateWithPrivateKey certAndKey = generateSelfSignedCertificateSecret(alias);
+      certificateManager.addCertificate(alias, certAndKey.getCertificate());
+      certificateManager.addPrivateKey(
+          privateKeyName,
+          privateKey,
+          certAndKey.getPrivateKey(),
+          new Certificate[] {certAndKey.getCertificate()});
+    }
     return new EncryptedAuth(passwordPath, groupPath, alias, certificateManager, keyPassword);
+  }
+
+  public PasswordHandler getPasswordHandler() {
+    return ((EncryptedPasswordFileManager) passwdFileManager).getCipher();
   }
 }

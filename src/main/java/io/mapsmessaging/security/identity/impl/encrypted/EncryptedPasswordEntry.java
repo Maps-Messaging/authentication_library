@@ -18,11 +18,11 @@ package io.mapsmessaging.security.identity.impl.encrypted;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordHasher;
+import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 
 public class EncryptedPasswordEntry extends IdentityEntry {
 
-  public EncryptedPasswordEntry(String line, EncryptedPasswordHasher parser) {
+  public EncryptedPasswordEntry(String line, EncryptedPasswordCipher parser) {
     int usernamePos = line.indexOf(":");
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);

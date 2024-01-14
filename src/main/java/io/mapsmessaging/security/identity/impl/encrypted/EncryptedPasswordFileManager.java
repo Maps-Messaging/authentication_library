@@ -19,21 +19,26 @@ package io.mapsmessaging.security.identity.impl.encrypted;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
-import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordHasher;
+import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
+import lombok.Getter;
 
 public class EncryptedPasswordFileManager extends FileBaseIdentities {
 
-  private final EncryptedPasswordHasher parser;
+  @Getter private final EncryptedPasswordCipher cipher;
 
-  public EncryptedPasswordFileManager(String filepath, String certAlias, CertificateManager pkcs11Manager, String privateKeyPassword) {
+  public EncryptedPasswordFileManager(
+      String filepath,
+      String certAlias,
+      CertificateManager certificateManager,
+      String privateKeyPassword) {
     super(filepath);
-    this.parser = new EncryptedPasswordHasher(pkcs11Manager, certAlias, privateKeyPassword);
+    this.cipher = new EncryptedPasswordCipher(certificateManager, certAlias, privateKeyPassword);
     load();
   }
 
   @Override
   protected IdentityEntry create(String username, String hash) {
-    return new EncryptedPasswordEntry(username, hash, parser);
+    return new EncryptedPasswordEntry(username, hash, cipher);
   }
 
   @Override
@@ -43,6 +48,6 @@ public class EncryptedPasswordFileManager extends FileBaseIdentities {
 
   @Override
   protected IdentityEntry load(String line) {
-    return new EncryptedPasswordEntry(line, parser);
+    return new EncryptedPasswordEntry(line, cipher);
   }
 }

@@ -16,14 +16,13 @@
 
 package io.mapsmessaging.security.certificates;
 
-import org.bouncycastle.operator.OperatorCreationException;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.bouncycastle.operator.OperatorCreationException;
 
 public class BaseCertificateTest {
 
@@ -54,8 +53,7 @@ public class BaseCertificateTest {
     certificateManager = CertificateManagerFactory.getInstance().getManager(config);
   }
 
-  protected static CertificateUtils.CertificateWithPrivateKey addCert(
-      CertificateManager certificateManager)
+  protected static CertificateWithPrivateKey addCert(CertificateManager certificateManager)
       throws CertificateException, IOException, OperatorCreationException {
     return addCert(certificateManager, TEST_ALIAS, KEY_PASSWORD);
   }
@@ -70,10 +68,10 @@ public class BaseCertificateTest {
     }
   }
 
-  protected static CertificateUtils.CertificateWithPrivateKey addCert(
+  protected static CertificateWithPrivateKey addCert(
       CertificateManager certificateManager, String alias, char[] password)
       throws CertificateException, IOException, OperatorCreationException {
-    CertificateUtils.CertificateWithPrivateKey testCert =
+    CertificateWithPrivateKey testCert =
         CertificateUtils.generateSelfSignedCertificateSecret("Testing.fred.org");
     certificateManager.addCertificate(alias, testCert.getCertificate());
     certificateManager.addPrivateKey(
