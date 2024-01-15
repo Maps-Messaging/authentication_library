@@ -19,6 +19,7 @@ package io.mapsmessaging.security.access;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.github.javafaker.Faker;
+import io.mapsmessaging.security.MapsSecurityProvider;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
@@ -26,24 +27,32 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.jaas.IdentityLoginModule;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
+import io.mapsmessaging.security.sasl.SaslTester;
 import java.io.File;
 import java.io.IOException;
+import java.security.Security;
 import java.util.*;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
+  @BeforeAll
+  static void register() {
+    System.setProperty("sasl.test", "true");
+    Security.insertProviderAt(new MapsSecurityProvider(), 1);
+  }
 
   private static List<Arguments> configurations() {
     List<Arguments> arguments = new ArrayList<>();
     Map<String, Object> apacheConfig = new LinkedHashMap<>();
     apacheConfig.put("passwordFile", "htpasswordFile");
     apacheConfig.put("groupFile", "htgroupFile");
-    apacheConfig.put("passwordHander", "UnixSha512PasswordHasher");
+    apacheConfig.put("passwordHander", "Pbkdf2Sha512PasswordHasher");
 
     Map<String, Object> cipherConfig = new LinkedHashMap<>();
     Map<String, Object> baseConfig = new LinkedHashMap<>();
@@ -59,14 +68,14 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     cipherConfig.put("keystore.path", "test.jks");
     cipherConfig.put("keystore.password", "8 5Tr0Ng C3rt!f1c8t3 P855sw0rd!!!!");
 
-    arguments.add(arguments("Encrypted-Auth", baseConfig));
     arguments.add(arguments("Apache-Basic-Auth", apacheConfig));
+    arguments.add(arguments("Encrypted-Auth", baseConfig));
     return arguments;
   }
 
   @ParameterizedTest
   @MethodSource("configurations")
-  void testUserManagement(String auth, Map<String, ?> config) throws IOException, LoginException {
+  void testUserManagement(String auth, Map<String, ?> config) throws IOException {
     File userFile = new File("userMap");
     userFile.delete();
     File groupFile = new File("groupMap");
@@ -98,7 +107,6 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       while (identityAccessManager.getGroup(group) != null) {
         group = faker.starTrek().specie();
       }
-      System.err.println("New Group::" + group);
       identityAccessManager.createGroup(group);
       groupNames.add(group);
     }
@@ -126,7 +134,6 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
         }
         count++;
       }
-      System.err.println("New user::" + username);
       String password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20)));
       identityAccessManager.createUser(username, password);
       String group = groupNames.get(Math.abs(random.nextInt(groupNames.size())));
@@ -141,6 +148,17 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       Assertions.assertFalse(validateLogin(auth, user.getKey(), user.getValue() + "_bad_password"));
     }
 
+    if (auth.equals("Encrypted-Auth")) {
+      for (Map.Entry<String, String> user : userPasswordMap.entrySet()) {
+        SaslTester saslTester = new SaslTester();
+        saslTester.testMechanism(
+            identityAccessManager.getIdentityLookup(),
+            "SCRAM-SHA-512",
+            user.getKey(),
+            user.getValue());
+      }
+    }
+
     for (UserIdMap userIdMap : identityAccessManager.getAllUsers()) {
       identityAccessManager.deleteUser(userIdMap.getUsername());
     }
@@ -152,8 +170,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     Assertions.assertEquals(0, identityAccessManager.getAllGroups().size());
   }
 
-  private boolean validateLogin(String auth, String username, String password)
-      throws LoginException {
+  private boolean validateLogin(String auth, String username, String password) {
     Map<String, String> initMap = new LinkedHashMap<>();
     initMap.put("siteWide", auth);
     Subject subject = new Subject();

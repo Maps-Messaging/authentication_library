@@ -23,11 +23,10 @@ import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.*;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Map;
+import javax.security.auth.callback.*;
 
 public class InitialState extends State {
 
@@ -93,7 +92,9 @@ public class InitialState extends State {
 
     PasswordHandler handler = PasswordParserFactory.getInstance().parse(new String(password));
     context.setPasswordHasher(handler);
-    context.setPrepPassword(new String(handler.getPassword()));
+    String prep = new String(handler.getPassword());
+    System.err.println("Server Pass:" + prep);
+    context.setPrepPassword(prep);
     context.setPasswordSalt(new String(Base64.getEncoder().encode(handler.getSalt())));
     context.setIterations(handler.getCost());
     context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));

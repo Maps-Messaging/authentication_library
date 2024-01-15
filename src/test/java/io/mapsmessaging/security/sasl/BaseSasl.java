@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -60,12 +60,23 @@ public class BaseSasl {
     byte[] response = new byte[0];
 
     while (!saslClient.isComplete() && !saslServer.isComplete()) {
+      if (response.length > 0) {
+        System.err.println("Client>" + new String(response));
+      }
       challenge = saslServer.evaluateResponse(response);
+      if (challenge != null && challenge.length > 0) {
+        System.err.println("Server>" + new String(challenge));
+      }
       response = saslClient.evaluateChallenge(challenge);
     }
     if (response != null) {
+      if (response.length > 0) {
+        System.err.println("Client>" + new String(response));
+      }
       saslServer.evaluateResponse(response);
     }
+    System.err.println(
+        "---------------------------------------------------------------------------------------------");
   }
 
   @AfterEach

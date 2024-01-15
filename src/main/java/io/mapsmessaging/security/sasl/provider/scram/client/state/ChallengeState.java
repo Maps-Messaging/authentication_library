@@ -83,7 +83,7 @@ public class ChallengeState extends State {
       saslException.initCause(e);
       throw saslException;
     }
-
+    System.err.println("Setting password:" + saltedPassword);
     context.setPrepPassword(saltedPassword);
     context.setState(new FinalValidationState(this));
     return response;

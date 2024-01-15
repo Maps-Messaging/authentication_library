@@ -20,23 +20,13 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.unix.ShadowFileManager;
 import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import javax.security.sasl.SaslException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import javax.security.sasl.Sasl;
-import javax.security.sasl.SaslClient;
-import javax.security.sasl.SaslException;
-import javax.security.sasl.SaslServer;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SimpleSaslTest extends BaseSasl {
 
@@ -89,108 +79,8 @@ class SimpleSaslTest extends BaseSasl {
   }
 
   void testMechanism(IdentityLookup identityLookup, String mechanism, String user, String password) throws IOException {
-    Map<String, String> props = new HashMap<>();
-    props.put(Sasl.QOP, QOP_LEVEL);
-    createServer(identityLookup, mechanism, PROTOCOL, SERVER_NAME, props);
-    createClient(
-        user,
-        password,
-        new String[]{mechanism},
-        PROTOCOL,
-        AUTHORIZATION_ID,
-        SERVER_NAME,
-        props
-    );
-    simpleValidation(user);
+    SaslTester saslTester = new SaslTester();
+    saslTester.testMechanism(identityLookup, mechanism, user, password);
   }
 
-  void simpleValidation(String user) throws IOException {
-    assertNotNull(saslServer, "This should not be null");
-    assertNotNull(saslClient, "This should not be null");
-    runAuth();
-    assertTrue(saslServer.isComplete());
-    assertTrue(saslClient.isComplete());
-
-    String qop = (String) saslClient.getNegotiatedProperty(Sasl.QOP);
-    Assertions.assertEquals(saslServer.getAuthorizationID(), user);
-    Assertions.assertTrue(qop.startsWith("auth"), "We should have an authorised SASL session");
-
-    if (qop.equalsIgnoreCase("auth-conf")) {
-      byte[] testBuffer = new byte[2048];
-      for (int x = 0; x < testBuffer.length; x++) {
-        testBuffer[x] = ((byte) (x & 0xff));
-      }
-      ClientWriter clientWriter = new ClientWriter(saslClient);
-      writeInIncrements(clientWriter, testBuffer, 17);
-      byte[] wrapped = writeInIncrements(clientWriter, testBuffer, 17);
-
-      ServerWriter serverWriter = new ServerWriter(saslServer);
-      byte[] unwrapped = writeInIncrements(serverWriter, wrapped, 43);
-      Assertions.assertArrayEquals(testBuffer, unwrapped);
-    }
-  }
-
-  private byte[] writeInIncrements(Writer writer, byte[] testBuffer, int inc) throws IOException {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    int pos = 0;
-    int len = inc;
-    int end = len;
-
-    while (pos < testBuffer.length) {
-      byte[] t = writer.wrap(testBuffer, pos, len);
-      byteArrayOutputStream.write(t);
-      pos += inc;
-      end += inc;
-      if (end > testBuffer.length) {
-        len = testBuffer.length - pos;
-        inc = len;
-      }
-    }
-    return byteArrayOutputStream.toByteArray();
-  }
-
-  private interface Writer {
-
-    byte[] unwrap(byte[] incoming, int offset, int len) throws SaslException;
-
-    byte[] wrap(byte[] incoming, int offset, int len) throws SaslException;
-  }
-
-  private class ClientWriter implements Writer {
-
-    private final SaslClient client;
-
-    public ClientWriter(SaslClient client) {
-      this.client = client;
-    }
-
-    @Override
-    public byte[] unwrap(byte[] incoming, int offset, int len) throws SaslException {
-      return client.unwrap(incoming, offset, len);
-    }
-
-    @Override
-    public byte[] wrap(byte[] incoming, int offset, int len) throws SaslException {
-      return client.wrap(incoming, offset, len);
-    }
-  }
-
-  private class ServerWriter implements Writer {
-
-    private final SaslServer server;
-
-    public ServerWriter(SaslServer server) {
-      this.server = server;
-    }
-
-    @Override
-    public byte[] unwrap(byte[] incoming, int offset, int len) throws SaslException {
-      return server.unwrap(incoming, offset, len);
-    }
-
-    @Override
-    public byte[] wrap(byte[] incoming, int offset, int len) throws SaslException {
-      return server.wrap(incoming, offset, len);
-    }
-  }
 }
