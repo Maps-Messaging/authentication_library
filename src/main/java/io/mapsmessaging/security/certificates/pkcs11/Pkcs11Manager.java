@@ -17,30 +17,23 @@
 package io.mapsmessaging.security.certificates.pkcs11;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
+import io.mapsmessaging.security.certificates.keystore.KeyStoreManager;
+import java.io.IOException;
 import java.security.*;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Map;
-import lombok.Getter;
 
-public class Pkcs11Manager implements CertificateManager {
+public class Pkcs11Manager extends KeyStoreManager {
 
   private static final String PKCS11_CONFIG = "pkcs11.cfg";
   private static final String PROVIDER_NAME = "provider.name";
 
-  @Getter
-  private KeyStore keyStore;
-  private final String pkcs11ConfigPath;
-  private final String providerName;
-
   public Pkcs11Manager() {
-    pkcs11ConfigPath = "";
-    providerName = "";
+    super();
   }
 
-  public boolean isValid(Map<String, ?> config) {
-    return config.containsKey(PKCS11_CONFIG) &&
-        config.containsKey(PROVIDER_NAME);
+  protected Pkcs11Manager(Map<String, ?> config) throws Exception {
+    super(config);
   }
 
   @Override
@@ -48,80 +41,30 @@ public class Pkcs11Manager implements CertificateManager {
     return new Pkcs11Manager(config);
   }
 
-  protected Pkcs11Manager(Map<String, ?> config) {
-    this.pkcs11ConfigPath = config.get(PKCS11_CONFIG).toString();
-    this.providerName = config.get(PROVIDER_NAME).toString();
-    initializeKeyStore();
-  }
-
-
-  private void initializeKeyStore() {
-    try {
-      Provider provider = Security.getProvider(providerName);
-      provider = provider.configure(pkcs11ConfigPath);
-      Security.addProvider(provider);
-      this.keyStore = KeyStore.getInstance("PKCS11", provider);
-      keyStore.load(null, null); // typically, no IO stream or password is used for PKCS#11 keystores
-    } catch (Exception e) {
-      throw new RuntimeException("Error initializing PKCS#11 Keystore", e);
-    }
-  }
-
-  public Certificate getCertificate(String alias) {
-    try {
-      if (!keyStore.containsAlias(alias)) {
-        throw new KeyStoreException("Alias does not exist");
-      }
-      return keyStore.getCertificate(alias);
-    } catch (KeyStoreException e) {
-      throw new RuntimeException("Error retrieving certificate", e);
-    }
-  }
-
-  public void deleteCertificate(String alias) {
-    try {
-      if (!keyStore.containsAlias(alias)) {
-        throw new KeyStoreException("Alias does not exist");
-      }
-      keyStore.deleteEntry(alias);
-    } catch (KeyStoreException e) {
-      throw new RuntimeException("Error retrieving certificate", e);
-    }
-  }
-
-  public void addCertificate(String alias, Certificate cert) {
-    try {
-      if (keyStore.containsAlias(alias)) {
-        throw new KeyStoreException("Alias already exist");
-      }
-      keyStore.setCertificateEntry(alias, cert);
-    } catch (KeyStoreException e) {
-      throw new RuntimeException("Error storing certificate", e);
-    }
-  }
-
-  public PrivateKey getKey(String alias, char[] password) throws CertificateException {
-    try {
-      return (PrivateKey) keyStore.getKey(alias, password);
-    } catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableKeyException e) {
-      throw new CertificateException(e);
-    }
+  public boolean isValid(Map<String, ?> config) {
+    return config.containsKey(PKCS11_CONFIG)
+        && config.containsKey(PROVIDER_NAME)
+        && config.containsKey(KEYSTORE_TYPE)
+        && config.get(KEYSTORE_TYPE).toString().equalsIgnoreCase("PKCS11");
   }
 
   @Override
-  public void addPrivateKey(
-      String alias, char[] password, PrivateKey privateKey, Certificate[] certChain)
-      throws CertificateException {
-    try {
-      keyStore.setKeyEntry(alias, privateKey, password, certChain);
-    } catch (KeyStoreException e) {
-      throw new CertificateException(e);
+  protected KeyStore createKeyStore(
+      String type, String path, char[] password, Map<String, ?> config)
+      throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+    String pkcs11ConfigPath = config.get(PKCS11_CONFIG).toString();
+    String providerName = config.get(PROVIDER_NAME).toString();
+
+    Provider provider = Security.getProvider(providerName);
+    if (provider == null) {
+      throw new IOException("Provider " + providerName + " not found");
     }
+    provider = provider.configure(pkcs11ConfigPath);
+    Security.addProvider(provider);
+    KeyStore store = KeyStore.getInstance(type, provider);
+    store.load(null, null); // typically, no IO stream or password is used for PKCS#11 keystores
+    return store;
   }
 
-  @Override
-  public boolean getExists() {
-    return true;
-  }
 }
 

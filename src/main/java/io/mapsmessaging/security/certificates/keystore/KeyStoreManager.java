@@ -30,10 +30,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class KeyStoreManager implements CertificateManager {
 
-  private static final String KEYSTORE_TYPE = "keystore.type";
-  private static final String KEYSTORE_PATH = "keystore.path";
-  private static final String KEYSTORE_PASSWORD = "keystore.password";
-  private static final String PROVIDER_NAME = "provider.name";
+  protected static final String KEYSTORE_TYPE = "keystore.type";
+  protected static final String KEYSTORE_PATH = "keystore.path";
+  protected static final String KEYSTORE_PASSWORD = "keystore.password";
+  protected static final String PROVIDER_NAME = "provider.name";
 
   @Getter
   private final KeyStore keyStore;
@@ -63,18 +63,35 @@ public class KeyStoreManager implements CertificateManager {
     if (providerName != null && !providerName.isEmpty() && "BC".equals(providerName)) {
       Security.addProvider(new BouncyCastleProvider());
     }
-    this.keyStorePath = config.get(KEYSTORE_PATH).toString();
-    this.keyStorePassword = config.get(KEYSTORE_PASSWORD).toString().toCharArray();
-    keyStore = KeyStore.getInstance(config.get(KEYSTORE_TYPE).toString());
-    File file = new File(keyStorePath);
-    existed = file.exists();
-    // Load the keystore
-    try (FileInputStream fis = new FileInputStream(keyStorePath)) {
-      keyStore.load(fis, keyStorePassword);
-    } catch (IOException e) {
-      // If the keystore does not exist, initialize a new one
-      keyStore.load(null, null);
+
+    keyStorePath = (String) config.get(KEYSTORE_PATH);
+    String t = (String) config.get(KEYSTORE_PASSWORD);
+    if (t == null) {
+      t = "";
     }
+    this.keyStorePassword = t.toCharArray();
+    if (keyStorePath != null) {
+      File file = new File(keyStorePath);
+      existed = file.exists();
+    } else {
+      existed = true;
+    }
+    String type = (String) config.get(KEYSTORE_TYPE);
+    keyStore = createKeyStore(type, keyStorePath, keyStorePassword, config);
+  }
+
+  protected KeyStore createKeyStore(
+      String type, String path, char[] password, Map<String, ?> config)
+      throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+    KeyStore store = KeyStore.getInstance(type);
+    if (path != null && existed) {
+      try (FileInputStream fis = new FileInputStream(path)) {
+        store.load(fis, password);
+        return store;
+      }
+    }
+    store.load(null, null);
+    return store;
   }
 
   @Override
