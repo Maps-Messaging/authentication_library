@@ -44,12 +44,12 @@ public class BaseCertificateTest {
     File file = new File(KEYSTORE_PATH + "_" + (counter++) + "." + type);
     file.delete();
     Map<String, String> config = new LinkedHashMap<>();
-    config.put("keystore.path", file.getName());
-    config.put("keystore.password", KEYSTORE_PASSWORD);
+    config.put("path", file.getName());
+    config.put("passphrase", KEYSTORE_PASSWORD);
     if (type.equals("BKS") || type.equals("UBER")) {
-      config.put("provider.name", "BC");
+      config.put("providerName", "BC");
     }
-    config.put("keystore.type", type);
+    config.put("type", type);
     certificateManager = CertificateManagerFactory.getInstance().getManager(config);
   }
 
