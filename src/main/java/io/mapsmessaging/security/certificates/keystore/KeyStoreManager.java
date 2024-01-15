@@ -30,10 +30,10 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class KeyStoreManager implements CertificateManager {
 
-  protected static final String KEYSTORE_TYPE = "keystore.type";
-  protected static final String KEYSTORE_PATH = "keystore.path";
-  protected static final String KEYSTORE_PASSWORD = "keystore.password";
-  protected static final String PROVIDER_NAME = "provider.name";
+  protected static final String KEYSTORE_TYPE = "type";
+  protected static final String KEYSTORE_PATH = "path";
+  protected static final String KEYSTORE_PASSWORD = "passphrase";
+  protected static final String PROVIDER_NAME = "providerName";
 
   @Getter
   private final KeyStore keyStore;
@@ -54,11 +54,7 @@ public class KeyStoreManager implements CertificateManager {
         config.containsKey(KEYSTORE_PATH);
   }
 
-  public CertificateManager create(Map<String, ?> config) throws Exception {
-    return new KeyStoreManager(config);
-  }
-
-  protected KeyStoreManager(Map<String, ?> config) throws Exception {
+  protected KeyStoreManager(Map<String, ?> config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     String providerName = (String) config.get(PROVIDER_NAME);
     if (providerName != null && !providerName.isEmpty() && "BC".equals(providerName)) {
       Security.addProvider(new BouncyCastleProvider());
@@ -78,6 +74,10 @@ public class KeyStoreManager implements CertificateManager {
     }
     String type = (String) config.get(KEYSTORE_TYPE);
     keyStore = createKeyStore(type, keyStorePath, keyStorePassword, config);
+  }
+
+  public CertificateManager create(Map<String, ?> config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+    return new KeyStoreManager(config);
   }
 
   protected KeyStore createKeyStore(

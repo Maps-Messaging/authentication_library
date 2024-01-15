@@ -25,19 +25,20 @@ import java.util.Map;
 
 public class Pkcs11Manager extends KeyStoreManager {
 
-  private static final String PKCS11_CONFIG = "pkcs11.cfg";
-  private static final String PROVIDER_NAME = "provider.name";
+  private static final String PKCS11_CONFIG = "configPath";
 
   public Pkcs11Manager() {
     super();
   }
 
-  protected Pkcs11Manager(Map<String, ?> config) throws Exception {
+  protected Pkcs11Manager(Map<String, ?> config)
+      throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     super(config);
   }
 
   @Override
-  public CertificateManager create(Map<String, ?> config) throws Exception {
+  public CertificateManager create(Map<String, ?> config)
+      throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     return new Pkcs11Manager(config);
   }
 
