@@ -18,7 +18,7 @@ package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
 import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
@@ -87,10 +87,11 @@ public class InitialState extends State {
 
     char[] password = ((PasswordCallback) callbacks[1]).getPassword();
     //
-    // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based on the parsed info
+    // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based
+    // on the parsed info
     //
 
-    PasswordHandler handler = PasswordParserFactory.getInstance().parse(new String(password));
+    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(new String(password));
     context.setPasswordHasher(handler);
     context.setPrepPassword(new String(handler.getPassword()));
     context.setPasswordSalt(new String(Base64.getEncoder().encode(handler.getSalt())));

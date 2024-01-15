@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,14 +19,13 @@ package io.mapsmessaging.security.passwords.hashes.multi;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.PasswordHasher;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
-import lombok.Getter;
-
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 
 public class MultiPasswordHasher implements PasswordHasher {
 
@@ -42,7 +41,7 @@ public class MultiPasswordHasher implements PasswordHasher {
   public MultiPasswordHasher(List<PasswordHandler> list) {
     parsers = new ArrayList<>();
     for (PasswordHandler handler : list) {
-      parsers.add((PasswordHasher) handler.create("")); // do a copy
+      parsers.add(handler.create("")); // do a copy
     }
     password = "";
   }
@@ -57,7 +56,7 @@ public class MultiPasswordHasher implements PasswordHasher {
       }.getType();
       List<String> hashes = new Gson().fromJson(this.password, listType);
       for (String hash : hashes) {
-        parsers.add((PasswordHasher) PasswordParserFactory.getInstance().parse(hash));
+        parsers.add(PasswordHandlerFactory.getInstance().parse(hash));
       }
     }
   }

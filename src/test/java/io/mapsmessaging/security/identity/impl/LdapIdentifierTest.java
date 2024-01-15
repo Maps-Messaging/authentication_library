@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.ldap.LdapAuth;
 import io.mapsmessaging.security.jaas.PropertiesLoader;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.md5.Md5UnixPasswordHasher;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import javax.naming.Context;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.naming.Context;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class LdapIdentifierTest {
 
@@ -71,7 +70,7 @@ public class LdapIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals(properties.getProperty("hashedPassword"), pwd);
-    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
     Assertions.assertEquals(Md5UnixPasswordHasher.class, passwordHasher.getClass());
   }
 

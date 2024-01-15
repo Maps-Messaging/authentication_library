@@ -17,11 +17,10 @@
 package io.mapsmessaging.security.identity.parsers;
 
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
-import org.junit.jupiter.api.Assertions;
-
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import org.junit.jupiter.api.Assertions;
 
 public class BaseHashFunctions {
 
@@ -33,7 +32,7 @@ public class BaseHashFunctions {
     //
     // We parse the password string to extract the public SALT, so we can pass to the client
     //
-    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(passwordHashString);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(passwordHashString);
 
     // This would be done on the client side of this
     byte[] hash =

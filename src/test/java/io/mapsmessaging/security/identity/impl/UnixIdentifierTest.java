@@ -22,13 +22,12 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.UnixSha512PasswordHasher;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class UnixIdentifierTest {
 
@@ -43,7 +42,7 @@ class UnixIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
-    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
     Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
   }
 

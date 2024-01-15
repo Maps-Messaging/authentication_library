@@ -26,15 +26,14 @@ import java.util.List;
 import java.util.ServiceLoader;
 import lombok.Getter;
 
-public class PasswordParserFactory {
+public class PasswordHandlerFactory {
 
-  @Getter
-  private static final PasswordParserFactory instance = new PasswordParserFactory();
+  @Getter private static final PasswordHandlerFactory instance = new PasswordHandlerFactory();
 
   private final List<PasswordHandler> passwordHandlers;
-  private final Logger logger = LoggerFactory.getLogger(PasswordParserFactory.class);
+  private final Logger logger = LoggerFactory.getLogger(PasswordHandlerFactory.class);
 
-  private PasswordParserFactory() {
+  private PasswordHandlerFactory() {
     passwordHandlers = new ArrayList<>();
     ServiceLoader<PasswordHandler> list = ServiceLoader.load(PasswordHandler.class);
     for (PasswordHandler parser : list) {

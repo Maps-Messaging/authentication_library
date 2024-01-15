@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,16 +18,15 @@ package io.mapsmessaging.security.sasl;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
-
+import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
-import java.io.IOException;
 
 public class ServerCallbackHandler implements CallbackHandler {
 
@@ -51,7 +50,7 @@ public class ServerCallbackHandler implements CallbackHandler {
         NameCallback nc = (NameCallback) cb;
         String username = nc.getDefaultName();
         hashedPassword = identityLookup.getPasswordHash(username);
-        PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(hashedPassword);
+        PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hashedPassword);
         if (passwordHasher instanceof PlainPasswordHasher) {
           hashedPassword = new String(passwordHasher.getPassword()).toCharArray();
         }

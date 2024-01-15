@@ -30,7 +30,7 @@ import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import java.io.IOException;
 import java.security.Principal;
@@ -62,7 +62,7 @@ public class IdentityAccessManager {
     if (handlerName == null || handlerName.isEmpty()) {
       handlerName = "Pbkdf2Sha512PasswordHasher";
     }
-    PasswordHandler baseHandler = PasswordParserFactory.getInstance().getByClassName(handlerName);
+    PasswordHandler baseHandler = PasswordHandlerFactory.getInstance().getByClassName(handlerName);
     if (baseHandler instanceof EncryptedPasswordCipher && identityLookup instanceof EncryptedAuth) {
       passwordHandler = ((EncryptedAuth) identityLookup).getPasswordHandler();
     } else {

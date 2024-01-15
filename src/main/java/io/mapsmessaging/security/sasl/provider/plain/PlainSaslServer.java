@@ -17,13 +17,12 @@
 package io.mapsmessaging.security.sasl.provider.plain;
 
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
-
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import javax.security.auth.callback.*;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 public class PlainSaslServer implements SaslServer {
 
@@ -69,7 +68,7 @@ public class PlainSaslServer implements SaslServer {
     // on the parsed info
     //
     complete = true;
-    PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(passwordHash);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(passwordHash);
     String hash =
         new String(
             passwordHasher.transformPassword(

@@ -16,25 +16,24 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -72,7 +71,7 @@ public class IdentityLoginModule extends BaseLoginModule {
 
     PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
     if (passwordHasher == null) {
-      passwordHasher = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
+      passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
     }
 
     if (passwordHasher instanceof PasswordCipher || passwordHasher instanceof PlainPasswordHasher) {

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@
 package io.mapsmessaging.security.identity.impl.apache;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 
 public class HtPasswdEntry extends IdentityEntry {
 
   public HtPasswdEntry(String username, String password) {
     this.username = username;
     this.password = password;
-    passwordHasher = PasswordParserFactory.getInstance().parse(password);
+    passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
   }
 
   public HtPasswdEntry(String line) {
@@ -32,7 +32,7 @@ public class HtPasswdEntry extends IdentityEntry {
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
     password = line;
-    passwordHasher = PasswordParserFactory.getInstance().parse(password);
+    passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
   }
 
 }

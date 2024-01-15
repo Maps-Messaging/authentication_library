@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@ package io.mapsmessaging.security.identity.impl.ldap;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
-import io.mapsmessaging.security.passwords.PasswordParserFactory;
-import lombok.Getter;
-
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import java.security.Principal;
+import java.util.Enumeration;
+import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Set;
+import lombok.Getter;
 
 public class LdapUser extends IdentityEntry {
 
@@ -42,7 +41,7 @@ public class LdapUser extends IdentityEntry {
   public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
     super.password = new String(password);
-    super.passwordHasher = PasswordParserFactory.getInstance().parse(new String(password));
+    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(new String(password));
     this.attrs = attrs;
     NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();
     while (namingEnum.hasMoreElements()) {
