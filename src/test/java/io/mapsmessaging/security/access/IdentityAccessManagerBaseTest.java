@@ -16,8 +16,6 @@
 
 package io.mapsmessaging.security.access;
 
-import static org.junit.jupiter.params.provider.Arguments.arguments;
-
 import com.github.javafaker.Faker;
 import io.mapsmessaging.security.MapsSecurityProvider;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
@@ -28,17 +26,20 @@ import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.jaas.IdentityLoginModule;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import io.mapsmessaging.security.sasl.SaslTester;
-import java.io.File;
-import java.io.IOException;
-import java.security.Security;
-import java.util.*;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.IOException;
+import java.security.Security;
+import java.util.*;
+
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
   @BeforeAll
@@ -52,7 +53,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     Map<String, Object> apacheConfig = new LinkedHashMap<>();
     apacheConfig.put("passwordFile", "htpasswordFile");
     apacheConfig.put("groupFile", "htgroupFile");
-    apacheConfig.put("passwordHander", "Pbkdf2Sha512PasswordHasher");
+    apacheConfig.put("passwordHander", "PlainPasswordHasher");
 
     Map<String, Object> cipherConfig = new LinkedHashMap<>();
     Map<String, Object> baseConfig = new LinkedHashMap<>();
@@ -68,9 +69,9 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     cipherConfig.put("keystore.path", "test.jks");
     cipherConfig.put("keystore.password", "8 5Tr0Ng C3rt!f1c8t3 P855sw0rd!!!!");
 
-    arguments.add(arguments("Apache-Basic-Auth", apacheConfig, ""));
     String[] mechanisms = new String[] {"SCRAM-SHA-512", "SCRAM-SHA-256", "DIGEST-MD5", "CRAM-MD5"};
     for (String sasl : mechanisms) {
+      arguments.add(arguments("Apache-Basic-Auth", apacheConfig, sasl));
       arguments.add(arguments("Encrypted-Auth", baseConfig, sasl));
     }
     return arguments;
@@ -154,7 +155,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       Assertions.assertFalse(validateLogin(auth, user.getKey(), user.getValue() + "_bad_password"));
     }
 
-    if (auth.equals("Encrypted-Auth")) {
+    if (!mechanism.isEmpty()) {
       for (Map.Entry<String, String> user : userPasswordMap.entrySet()) {
         SaslTester saslTester = new SaslTester();
         saslTester.testMechanism(

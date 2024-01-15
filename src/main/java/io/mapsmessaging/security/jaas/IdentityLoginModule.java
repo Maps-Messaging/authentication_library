@@ -16,8 +16,6 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
-
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
@@ -26,14 +24,17 @@ import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordParserFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -66,7 +67,7 @@ public class IdentityLoginModule extends BaseLoginModule {
     if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
-    byte[] actualPassword = new byte[0];
+    byte[] actualPassword;
     byte[] remotePassword = new String(password).getBytes(StandardCharsets.UTF_8);
 
     PasswordHandler passwordHasher = identityEntry.getPasswordHasher();

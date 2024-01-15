@@ -18,14 +18,15 @@ package io.mapsmessaging.security.sasl;
 
 import io.mapsmessaging.security.MapsSecurityProvider;
 import io.mapsmessaging.security.identity.IdentityLookup;
-import java.security.Security;
-import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import java.security.Security;
+import java.util.Map;
 
 @SuppressWarnings("java:S2187") // Ignore the no test rule
 
@@ -66,8 +67,6 @@ public class BaseSasl {
     if (response != null) {
       saslServer.evaluateResponse(response);
     }
-    System.err.println(
-        "---------------------------------------------------------------------------------------------");
   }
 
   @AfterEach

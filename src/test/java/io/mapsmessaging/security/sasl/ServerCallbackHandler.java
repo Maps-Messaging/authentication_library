@@ -17,6 +17,9 @@
 package io.mapsmessaging.security.sasl;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordParserFactory;
+import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -48,6 +51,10 @@ public class ServerCallbackHandler implements CallbackHandler {
         NameCallback nc = (NameCallback) cb;
         String username = nc.getDefaultName();
         hashedPassword = identityLookup.getPasswordHash(username);
+        PasswordHandler passwordHasher = PasswordParserFactory.getInstance().parse(hashedPassword);
+        if (passwordHasher instanceof PlainPasswordHasher) {
+          hashedPassword = new String(passwordHasher.getPassword()).toCharArray();
+        }
         nc.setName(nc.getDefaultName());
       } else if (cb instanceof PasswordCallback) {
         PasswordCallback pc = (PasswordCallback) cb;
