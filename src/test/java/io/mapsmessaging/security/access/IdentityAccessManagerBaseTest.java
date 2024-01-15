@@ -16,6 +16,8 @@
 
 package io.mapsmessaging.security.access;
 
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+
 import com.github.javafaker.Faker;
 import io.mapsmessaging.security.MapsSecurityProvider;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
@@ -26,20 +28,17 @@ import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.jaas.IdentityLoginModule;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import io.mapsmessaging.security.sasl.SaslTester;
+import java.io.File;
+import java.io.IOException;
+import java.security.Security;
+import java.util.*;
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
-import java.io.File;
-import java.io.IOException;
-import java.security.Security;
-import java.util.*;
-
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
   @BeforeAll
@@ -65,9 +64,9 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     cipherConfig.put("certificate.alias", "alias");
     cipherConfig.put("privateKey.password", "8 5tr0ng pr1v8t3 k3y p855w0rd!@#$%");
     cipherConfig.put("privateKey.name", "alias");
-    cipherConfig.put("keystore.type", "JKS");
-    cipherConfig.put("keystore.path", "test.jks");
-    cipherConfig.put("keystore.password", "8 5Tr0Ng C3rt!f1c8t3 P855sw0rd!!!!");
+    cipherConfig.put("type", "JKS");
+    cipherConfig.put("path", "test.jks");
+    cipherConfig.put("passphrase", "8 5Tr0Ng C3rt!f1c8t3 P855sw0rd!!!!");
 
     String[] mechanisms = new String[] {"SCRAM-SHA-512", "SCRAM-SHA-256", "DIGEST-MD5", "CRAM-MD5"};
     for (String sasl : mechanisms) {
