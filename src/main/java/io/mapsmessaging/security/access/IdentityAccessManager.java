@@ -126,12 +126,12 @@ public class IdentityAccessManager {
   }
 
   public boolean deleteGroup(String groupName) throws IOException {
-    if (groupMapManagement.get(groupName) != null) {
-      if (identityLookup.deleteGroup(groupName)) {
-        groupMapManagement.delete(identityLookup.getDomain() + ":" + groupName);
-        groupMapManagement.save();
-        return true;
-      }
+    GroupEntry groupEntry = identityLookup.findGroup(groupName);
+    if (groupEntry != null) {
+      identityLookup.deleteGroup(groupName);
+      groupMapManagement.delete(identityLookup.getDomain() + ":" + groupName);
+      groupMapManagement.save();
+      return true;
     }
     return false;
   }

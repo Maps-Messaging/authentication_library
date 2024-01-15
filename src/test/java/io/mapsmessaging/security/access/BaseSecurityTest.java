@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ public class BaseSecurityTest {
     List<String> aclEntries = new ArrayList<>();
     Faker faker = new Faker();
     for (int i = 0; i < numEntries; i++) {
-      String userName = "group" + i;
       UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), faker.name().username(), "test");
       userMapManagement.add(userIdMap);
       String entry = userIdMap.getAuthId() + " = Read|Write|Delete";
