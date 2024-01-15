@@ -68,14 +68,17 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     cipherConfig.put("keystore.path", "test.jks");
     cipherConfig.put("keystore.password", "8 5Tr0Ng C3rt!f1c8t3 P855sw0rd!!!!");
 
-    arguments.add(arguments("Apache-Basic-Auth", apacheConfig));
-    arguments.add(arguments("Encrypted-Auth", baseConfig));
+    arguments.add(arguments("Apache-Basic-Auth", apacheConfig, ""));
+    String[] mechanisms = new String[] {"SCRAM-SHA-512", "SCRAM-SHA-256", "DIGEST-MD5", "CRAM-MD5"};
+    for (String sasl : mechanisms) {
+      arguments.add(arguments("Encrypted-Auth", baseConfig, sasl));
+    }
     return arguments;
   }
 
   @ParameterizedTest
   @MethodSource("configurations")
-  void testUserManagement(String auth, Map<String, ?> config) throws IOException {
+  void testUserManagement(String auth, Map<String, ?> config, String mechanism) throws IOException {
     File userFile = new File("userMap");
     userFile.delete();
     File groupFile = new File("groupMap");
@@ -115,6 +118,8 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     for (int x = 0; x < 100; x++) {
       Assertions.assertEquals(x, identityAccessManager.getAllUsers().size());
       String username = faker.starTrek().character();
+      username = username.replaceAll(" ", "_");
+
       int count = 0;
       while (identityAccessManager.getUser(username) != null) {
         if (count > 90) {
@@ -133,6 +138,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
           username = faker.starTrek().character();
         }
         count++;
+        username = username.replaceAll(" ", "_");
       }
       String password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20)));
       identityAccessManager.createUser(username, password);
@@ -152,10 +158,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       for (Map.Entry<String, String> user : userPasswordMap.entrySet()) {
         SaslTester saslTester = new SaslTester();
         saslTester.testMechanism(
-            identityAccessManager.getIdentityLookup(),
-            "SCRAM-SHA-512",
-            user.getKey(),
-            user.getValue());
+            identityAccessManager.getIdentityLookup(), mechanism, user.getKey(), user.getValue());
       }
     }
 

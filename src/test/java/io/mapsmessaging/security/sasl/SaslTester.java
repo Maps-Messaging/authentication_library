@@ -45,7 +45,6 @@ public class SaslTester extends BaseSasl {
     createServer(identityLookup, mechanism, PROTOCOL, SERVER_NAME, props);
     createClient(
         user, password, new String[] {mechanism}, PROTOCOL, AUTHORIZATION_ID, SERVER_NAME, props);
-    System.err.println("testing User:" + user + " Password:" + password);
     simpleValidation(user);
   }
 

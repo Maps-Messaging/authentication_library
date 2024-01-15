@@ -60,19 +60,10 @@ public class BaseSasl {
     byte[] response = new byte[0];
 
     while (!saslClient.isComplete() && !saslServer.isComplete()) {
-      if (response.length > 0) {
-        System.err.println("Client>" + new String(response));
-      }
       challenge = saslServer.evaluateResponse(response);
-      if (challenge != null && challenge.length > 0) {
-        System.err.println("Server>" + new String(challenge));
-      }
       response = saslClient.evaluateChallenge(challenge);
     }
     if (response != null) {
-      if (response.length > 0) {
-        System.err.println("Client>" + new String(response));
-      }
       saslServer.evaluateResponse(response);
     }
     System.err.println(

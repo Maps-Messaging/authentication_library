@@ -92,9 +92,7 @@ public class InitialState extends State {
 
     PasswordHandler handler = PasswordParserFactory.getInstance().parse(new String(password));
     context.setPasswordHasher(handler);
-    String prep = new String(handler.getPassword());
-    System.err.println("Server Pass:" + prep);
-    context.setPrepPassword(prep);
+    context.setPrepPassword(new String(handler.getPassword()));
     context.setPasswordSalt(new String(Base64.getEncoder().encode(handler.getSalt())));
     context.setIterations(handler.getCost());
     context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));

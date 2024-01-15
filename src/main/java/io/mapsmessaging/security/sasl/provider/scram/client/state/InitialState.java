@@ -60,10 +60,7 @@ public class InitialState extends State {
     String rawPassword = new String((((PasswordCallback) callbacks[1]).getPassword()));
 
     context.setUsername(((NameCallback) callbacks[0]).getName());
-    String prep = SaslPrep.getInstance().stringPrep(rawPassword);
-    System.err.println("Setting password -2:" + prep);
-
-    context.setPrepPassword(prep);
+    context.setPrepPassword(SaslPrep.getInstance().stringPrep(rawPassword));
 
     //
     // Set up the initial challenge
