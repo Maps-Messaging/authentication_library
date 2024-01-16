@@ -83,13 +83,13 @@ public class EncryptedAuth extends ApacheBasicAuth {
       throws Exception {
     Map<String, ?> config = (Map) topConfig.get("certificateStore");
     String alias = "";
-    if (config.containsKey("certificate.alias")) {
-      alias = config.get("certificate.alias").toString();
+    if (config.containsKey("alias")) {
+      alias = config.get("alias").toString();
     }
     CertificateManager certificateManager = CertificateManagerFactory.getInstance().getManager(config);
-    String keyPassword = (String) config.get("privateKey.password");
+    String keyPassword = (String) config.get("privateKey.passphrase");
     String privateKeyName = (String) config.get("privateKey.name");
-    char[] privateKey = ((String) config.get("privateKey.password")).toCharArray();
+    char[] privateKey = keyPassword.toCharArray();
     if (!certificateManager.getExists()) {
       CertificateWithPrivateKey certAndKey = generateSelfSignedCertificateSecret(alias);
       certificateManager.addCertificate(alias, certAndKey.getCertificate());

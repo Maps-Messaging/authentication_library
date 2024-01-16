@@ -61,8 +61,8 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     baseConfig.put("groupFile", "htgroupFile-enc");
     baseConfig.put("passwordHander", "EncryptedPasswordCipher");
 
-    cipherConfig.put("certificate.alias", "alias");
-    cipherConfig.put("privateKey.password", "8 5tr0ng pr1v8t3 k3y p855w0rd!@#$%");
+    cipherConfig.put("alias", "alias");
+    cipherConfig.put("privateKey.passphrase", "8 5tr0ng pr1v8t3 k3y p855w0rd!@#$%");
     cipherConfig.put("privateKey.name", "alias");
     cipherConfig.put("type", "JKS");
     cipherConfig.put("path", "test.jks");
