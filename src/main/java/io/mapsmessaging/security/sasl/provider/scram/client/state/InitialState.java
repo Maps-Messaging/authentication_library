@@ -68,7 +68,7 @@ public class InitialState extends State {
     firstClientChallenge.put(ChallengeResponse.USERNAME, context.getUsername());
     firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
     context.setState(new ChallengeState(this));
-    context.setInitialClientChallenge(firstClientChallenge.toString());
+    context.setInitialClientChallenge(firstClientChallenge.getOriginalRequest());
     firstClientChallenge.setGs2Header(GS2_HEADER);
     return firstClientChallenge;
   }

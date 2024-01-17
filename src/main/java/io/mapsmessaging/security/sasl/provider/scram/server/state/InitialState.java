@@ -16,14 +16,17 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.server.state;
 
+import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import io.mapsmessaging.security.sasl.SaslPrep;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 import javax.security.auth.callback.*;
@@ -53,7 +56,7 @@ public class InitialState extends State {
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.ITERATION_COUNT, String.valueOf(context.getIterations()));
-    response.put(ChallengeResponse.SALT, context.getPasswordSalt());
+    response.put(ChallengeResponse.SALT, new String(context.getPasswordSalt()));
     context.setState(new ValidationState(this));
     context.setInitialServerChallenge(response.toString());
     return response;
@@ -64,7 +67,7 @@ public class InitialState extends State {
     if (response.isEmpty()) {
       return;
     }
-    context.setInitialClientChallenge(response.toString());
+    context.setInitialClientChallenge(response.getOriginalRequest());
 
     //
     // Set up the context with the received information
@@ -93,9 +96,17 @@ public class InitialState extends State {
 
     PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(new String(password));
     context.setPasswordHasher(handler);
-    context.setPrepPassword(new String(handler.getPassword()));
-    context.setPasswordSalt(new String(Base64.getEncoder().encode(handler.getSalt())));
-    context.setIterations(handler.getCost());
+    context.setPrepPassword(SaslPrep.getInstance().stringPrep(new String(handler.getPassword())));
+    byte[] salt = handler.getSalt();
+    if (salt == null || salt.length == 0) {
+      salt = PasswordGenerator.generateSalt(64).getBytes(StandardCharsets.UTF_8);
+    }
+    context.setPasswordSalt(Base64.getEncoder().encode(salt));
+    int iterations = handler.getCost();
+    if (iterations == 0) {
+      iterations = 10_000;
+    }
+    context.setIterations(iterations);
     context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
   }
 }

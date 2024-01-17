@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
@@ -52,8 +53,7 @@ public class ChallengeState extends State {
 
     String saltedPassword = "";
     if (context.getPasswordHasher() != null) {
-      byte[] salt =
-          Base64.getDecoder().decode(context.getPasswordSalt().getBytes(StandardCharsets.UTF_8));
+      byte[] salt = Base64.getDecoder().decode(context.getPasswordSalt());
       byte[] computedHash =
           context
               .getPasswordHasher()
@@ -70,7 +70,7 @@ public class ChallengeState extends State {
     //
     try {
       String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
-      context.computeClientHashes(saltedPassword.getBytes(), authString);
+      context.computeClientHashes(saltedPassword, authString);
       response.put(ChallengeResponse.PROOF, Base64.getEncoder().encodeToString(context.getClientProof()));
 
       //
@@ -82,6 +82,8 @@ public class ChallengeState extends State {
       SaslException saslException = new SaslException(e.getMessage());
       saslException.initCause(e);
       throw saslException;
+    } catch (InvalidKeySpecException e) {
+      throw new RuntimeException(e);
     }
     context.setPrepPassword(saltedPassword);
     context.setState(new FinalValidationState(this));
@@ -92,7 +94,7 @@ public class ChallengeState extends State {
   public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
     context.setInitialServerChallenge(response.toString());
     context.setServerNonce(response.get(ChallengeResponse.NONCE));
-    context.setPasswordSalt(response.get(ChallengeResponse.SALT));
+    context.setPasswordSalt(response.get(ChallengeResponse.SALT).getBytes(StandardCharsets.UTF_8));
     context.setIterations(Integer.parseInt(response.get(ChallengeResponse.ITERATION_COUNT)));
   }
 }

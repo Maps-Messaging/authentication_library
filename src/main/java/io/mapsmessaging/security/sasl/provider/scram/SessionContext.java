@@ -18,16 +18,20 @@ package io.mapsmessaging.security.sasl.provider.scram;
 
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
-import lombok.Data;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.security.sasl.SaslException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.Base64;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.sasl.SaslException;
+import lombok.Data;
 
 @Data
 public class SessionContext {
@@ -35,7 +39,7 @@ public class SessionContext {
   private boolean receivedClientMessage = false;
   private String clientNonce;
   private String serverNonce;
-  private String passwordSalt;
+  private byte[] passwordSalt;
   private String username;
   private State state;
   private int iterations;
@@ -59,7 +63,7 @@ public class SessionContext {
     passwordHasher = null;
 
     username = "";
-    passwordSalt = "";
+    passwordSalt = new byte[0];
     clientNonce = "";
     serverNonce = "";
     initialServerChallenge = "";
@@ -87,6 +91,17 @@ public class SessionContext {
     }
   }
 
+  public byte[] generateSaltedPassword(byte[] password, byte[] salt, int iterations, int keyLength)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
+    SecretKeyFactory factory =
+        SecretKeyFactory.getInstance(
+            "PBKDF2WithHmacSHA" + keyLength); // Use the appropriate algorithm
+    PBEKeySpec spec =
+        new PBEKeySpec(new String(password).toCharArray(), salt, iterations, keyLength);
+    SecretKey key = factory.generateSecret(spec);
+    return key.getEncoded();
+  }
+
   public byte[] computeHmac(byte[] key, String string) throws InvalidKeyException {
     mac.reset();
     SecretKeySpec secretKey = new SecretKeySpec(key, mac.getAlgorithm());
@@ -95,15 +110,29 @@ public class SessionContext {
     return mac.doFinal();
   }
 
-  public void computeServerSignature(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
-    byte[] serverKey = computeHmac(password, "Server Key");
+  public void computeServerSignature(byte[] password, String authString)
+      throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
+    byte[] saltedPassword =
+        generateSaltedPassword(
+            password,
+            Base64.getDecoder().decode(passwordSalt),
+            iterations,
+            512); // key length depends on the hash function used
+    byte[] serverKey = computeHmac(saltedPassword, "Server Key");
     MessageDigest messageDigest = CryptoHelper.findDigest(algorithm);
     byte[] tmp = messageDigest.digest(serverKey);
     serverSignature = computeHmac(tmp, authString);
   }
 
-  public void computeClientKey(byte[] password) throws InvalidKeyException {
-    clientKey = computeHmac(password, "Client Key");
+  public void computeClientKey(byte[] password)
+      throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
+    byte[] saltedPassword =
+        generateSaltedPassword(
+            password,
+            Base64.getDecoder().decode(passwordSalt),
+            iterations,
+            512); // key length depends on the hash function used
+    clientKey = computeHmac(saltedPassword, "Client Key");
   }
 
   public void computeStoredKeyAndSignature(String authString) throws NoSuchAlgorithmException, InvalidKeyException {
@@ -112,8 +141,9 @@ public class SessionContext {
     clientSignature = computeHmac(storedKey, authString);
   }
 
-  public void computeClientHashes(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
-    computeClientKey(password);
+  public void computeClientHashes(String password, String authString)
+      throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
+    computeClientKey(password.getBytes(StandardCharsets.UTF_8));
     computeStoredKeyAndSignature(authString);
     clientProof = clientKey.clone();
     for (int i = 0; i < clientProof.length; i++) {
