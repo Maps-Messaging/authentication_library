@@ -68,13 +68,17 @@ public class InitialState extends State {
     firstClientChallenge.put(ChallengeResponse.USERNAME, context.getUsername());
     firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
     context.setState(new ChallengeState(this));
-    context.setInitialClientChallenge(firstClientChallenge.getOriginalRequest());
+    String first = firstClientChallenge.toString();
+    if (first.startsWith("n,,")) first = first.substring(3);
+
+    context.setInitialClientChallenge(first);
     firstClientChallenge.setGs2Header(GS2_HEADER);
     return firstClientChallenge;
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+  public void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException {
     // This is the first state, there is no challenge or response
   }
 }

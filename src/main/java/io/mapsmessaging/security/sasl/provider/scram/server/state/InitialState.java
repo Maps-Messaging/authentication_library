@@ -49,7 +49,7 @@ public class InitialState extends State {
   }
 
   @Override
-  public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
+  public ChallengeResponse produceChallenge(SessionContext context) {
     if (!context.isReceivedClientMessage()) {
       return null;
     }
@@ -63,7 +63,8 @@ public class InitialState extends State {
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+  public void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException {
     if (response.isEmpty()) {
       return;
     }

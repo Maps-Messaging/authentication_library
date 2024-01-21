@@ -85,13 +85,13 @@ public class ChallengeState extends State {
     } catch (InvalidKeySpecException e) {
       throw new RuntimeException(e);
     }
-    context.setPrepPassword(saltedPassword);
     context.setState(new FinalValidationState(this));
     return response;
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+  public void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException {
     context.setInitialServerChallenge(response.toString());
     context.setServerNonce(response.get(ChallengeResponse.NONCE));
     context.setPasswordSalt(response.get(ChallengeResponse.SALT).getBytes(StandardCharsets.UTF_8));

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2022 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ package io.mapsmessaging.security.sasl.provider.scram;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.util.Map;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 public abstract class State {
 
@@ -56,5 +55,6 @@ public abstract class State {
 
   public abstract ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException;
 
-  public abstract void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException;
+  public abstract void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException;
 }

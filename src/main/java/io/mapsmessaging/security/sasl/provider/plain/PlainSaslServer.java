@@ -16,8 +16,6 @@
 
 package io.mapsmessaging.security.sasl.provider.plain;
 
-import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import javax.security.auth.callback.*;
@@ -67,13 +65,11 @@ public class PlainSaslServer implements SaslServer {
     // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based
     // on the parsed info
     //
+
     complete = true;
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(passwordHash);
-    String hash =
-        new String(
-            passwordHasher.transformPassword(
-                password, passwordHasher.getSalt(), passwordHasher.getCost()));
-    if (!hash.equals(passwordHash)) {
+    String clientPassword = new String(password);
+    String localPassword = passwordHash;
+    if (!clientPassword.equals(localPassword)) {
       throw new SaslException("Invalid username or password");
     }
     return null;

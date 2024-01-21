@@ -60,7 +60,8 @@ public class ValidationState extends State {
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+  public void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException {
     String proofString = response.remove(ChallengeResponse.PROOF);
     byte[] proof = Base64.getDecoder().decode(proofString);
     String client = context.getInitialClientChallenge();
@@ -80,7 +81,10 @@ public class ValidationState extends State {
       if (!Arrays.equals(expectedClientProof, proof)) {
         throw new SaslException("Invalid password");
       }
-      context.setServerSignature(context.getClientSignature());
+
+      context.computeServerSignature(
+          context.getPrepPassword().getBytes(StandardCharsets.UTF_8), authString);
+      context.setServerSignature(context.getServerSignature());
     } catch (InvalidKeyException | NoSuchAlgorithmException e) {
       SaslException saslException = new SaslException(e.getMessage());
       saslException.initCause(e);

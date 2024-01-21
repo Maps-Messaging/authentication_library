@@ -46,6 +46,7 @@ public class SessionContext {
   private String prepPassword;
   private Mac mac;
   private String algorithm;
+  private int keySize;
   private PasswordHandler passwordHasher;
   private String initialClientChallenge;
   private String initialServerChallenge;
@@ -68,6 +69,7 @@ public class SessionContext {
     serverNonce = "";
     initialServerChallenge = "";
     algorithm = "";
+    keySize = 0;
     prepPassword = "";
 
     Arrays.fill(clientKey, (byte) 0);
@@ -89,15 +91,13 @@ public class SessionContext {
     if (algorithm.toLowerCase().startsWith("sha") && !algorithm.toLowerCase().startsWith("sha-")) {
       algorithm = algorithm.substring(0, "sha".length()) + "-" + algorithm.substring("sha".length());
     }
+    keySize = Integer.parseInt(algorithm.substring("sha-".length()));
   }
 
-  public byte[] generateSaltedPassword(byte[] password, byte[] salt, int iterations, int keyLength)
+  public byte[] generateSaltedPassword(byte[] password, byte[] salt, int iterations)
       throws NoSuchAlgorithmException, InvalidKeySpecException {
-    SecretKeyFactory factory =
-        SecretKeyFactory.getInstance(
-            "PBKDF2WithHmacSHA" + keyLength); // Use the appropriate algorithm
-    PBEKeySpec spec =
-        new PBEKeySpec(new String(password).toCharArray(), salt, iterations, keyLength);
+    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA" + keySize);
+    PBEKeySpec spec = new PBEKeySpec(new String(password).toCharArray(), salt, iterations, keySize);
     SecretKey key = factory.generateSecret(spec);
     return key.getEncoded();
   }
@@ -113,11 +113,7 @@ public class SessionContext {
   public void computeServerSignature(byte[] password, String authString)
       throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
     byte[] saltedPassword =
-        generateSaltedPassword(
-            password,
-            Base64.getDecoder().decode(passwordSalt),
-            iterations,
-            512); // key length depends on the hash function used
+        generateSaltedPassword(password, Base64.getDecoder().decode(passwordSalt), iterations);
     byte[] serverKey = computeHmac(saltedPassword, "Server Key");
     MessageDigest messageDigest = CryptoHelper.findDigest(algorithm);
     byte[] tmp = messageDigest.digest(serverKey);
@@ -127,11 +123,7 @@ public class SessionContext {
   public void computeClientKey(byte[] password)
       throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
     byte[] saltedPassword =
-        generateSaltedPassword(
-            password,
-            Base64.getDecoder().decode(passwordSalt),
-            iterations,
-            512); // key length depends on the hash function used
+        generateSaltedPassword(password, Base64.getDecoder().decode(passwordSalt), iterations);
     clientKey = computeHmac(saltedPassword, "Client Key");
   }
 

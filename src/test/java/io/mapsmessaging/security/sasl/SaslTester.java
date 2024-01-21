@@ -100,7 +100,7 @@ public class SaslTester extends BaseSasl {
     byte[] wrap(byte[] incoming, int offset, int len) throws SaslException;
   }
 
-  private class ClientWriter implements Writer {
+  private static class ClientWriter implements Writer {
 
     private final SaslClient client;
 
@@ -119,7 +119,7 @@ public class SaslTester extends BaseSasl {
     }
   }
 
-  private class ServerWriter implements Writer {
+  private static class ServerWriter implements Writer {
 
     private final SaslServer server;
 
