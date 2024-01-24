@@ -36,6 +36,8 @@ import lombok.Data;
 @Data
 public class SessionContext {
 
+  private static final String[] HMAC_NAMES = {"sha3", "sha"};
+
   private boolean receivedClientMessage = false;
   private String clientNonce;
   private String serverNonce;
@@ -88,10 +90,16 @@ public class SessionContext {
   public void setMac(Mac mac) {
     this.mac = mac;
     algorithm = mac.getAlgorithm().substring("hmac".length());
-    if (algorithm.toLowerCase().startsWith("sha") && !algorithm.toLowerCase().startsWith("sha-")) {
-      algorithm = algorithm.substring(0, "sha".length()) + "-" + algorithm.substring("sha".length());
+    String name = algorithm.toLowerCase();
+    name = name.replace("-", "");
+    String keyLen = "";
+    for (String test : HMAC_NAMES) {
+      if (name.startsWith(test)) {
+        keyLen = name.substring(test.length());
+        break;
+      }
     }
-    keySize = Integer.parseInt(algorithm.substring("sha-".length()));
+    keySize = Integer.parseInt(keyLen);
   }
 
   public byte[] generateSaltedPassword(byte[] password, byte[] salt, int iterations)
