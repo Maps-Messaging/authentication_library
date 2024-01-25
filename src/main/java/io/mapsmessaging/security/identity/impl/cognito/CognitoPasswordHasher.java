@@ -16,22 +16,21 @@
 
 package io.mapsmessaging.security.identity.impl.cognito;
 
+import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
+
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.UrlJwkProvider;
 import io.mapsmessaging.security.identity.impl.external.JwtPasswordHasher;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
 import io.mapsmessaging.security.jaas.aws.AwsAuthHelper;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthRequest;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
-import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthenticationResultType;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Map;
-
-import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthRequest;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
+import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthenticationResultType;
 
 public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenProvider {
 
@@ -85,8 +84,7 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
         return password;
       }
     } catch (Exception ex) {
-      ex.printStackTrace();
-      // todo log
+      // This is an invalid user, lets not log entries since DDOS lets just fail it
     }
     // If the above code executes without throwing an exception,
     // the JWT token is valid for the given user
