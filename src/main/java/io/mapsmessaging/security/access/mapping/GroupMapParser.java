@@ -29,8 +29,8 @@ public class GroupMapParser extends MapParser<GroupIdMap> {
     String[] keyValue = identifier.split("=");
     UUID uuid = UUID.fromString(keyValue[0].trim());
     String[] groups = keyValue[1].split(":");
-    String authDomain = groups[0];
-    String groupName = groups[1];
+    String authDomain = groups[0].trim();
+    String groupName = groups[1].trim();
     return new GroupIdMap(uuid, groupName, authDomain);
   }
 }
