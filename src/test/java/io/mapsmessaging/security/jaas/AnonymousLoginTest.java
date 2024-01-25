@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.jaas;
 
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
+import java.security.Principal;
 import java.util.LinkedHashMap;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
@@ -29,13 +30,34 @@ public class AnonymousLoginTest {
   @Test
   void simpleLoginTest() throws LoginException {
     Subject subject = new Subject();
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("","", "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("", "", "");
     LoginModule module = new AnonymousLoginModule();
     module.initialize(subject, clientCallbackHandler, new LinkedHashMap<>(), new LinkedHashMap<>());
+
+    // Test login
     Assertions.assertTrue(module.login());
+
+    // Check subject before commit
     Assertions.assertTrue(subject.getPrincipals().isEmpty());
+
+    // Test commit
     Assertions.assertTrue(module.commit());
+
+    // Check subject after commit
     Assertions.assertFalse(subject.getPrincipals().isEmpty());
+
+    // Ensure the principal is of the correct type
+    Principal principal = subject.getPrincipals().iterator().next();
+    Assertions.assertTrue(principal instanceof AnonymousPrincipal, "Principal is not of type AnonymousPrincipal");
+
+    // Test the functionality of AnonymousPrincipal
+    AnonymousPrincipal anonymousPrincipal = (AnonymousPrincipal) principal;
+    Assertions.assertNotNull(anonymousPrincipal.getName(), "Principal name should not be null");
+    Assertions.assertEquals("anonymous", anonymousPrincipal.getName(), "Principal name does not match");
+
+    // Test the toString method
+    String expectedToString = "AnonymousPrincipal User:" + anonymousPrincipal.getName();
+    Assertions.assertEquals(expectedToString, anonymousPrincipal.toString(), "toString method does not match expected format");
   }
 
 }

@@ -89,10 +89,8 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     MapFileStore<UserIdMap> users = new MapFileStore<>("userMap");
     MapFileStore<GroupIdMap> groups = new MapFileStore<>("groupMap");
 
-    IdentityAccessManager identityAccessManager =
-        new IdentityAccessManager(auth, config, users, groups);
-    IdentityLookupFactory.getInstance()
-        .registerSiteIdentityLookup(auth, identityAccessManager.getIdentityLookup());
+    IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups);
+    IdentityLookupFactory.getInstance().registerSiteIdentityLookup(auth, identityAccessManager.getIdentityLookup());
 
     for (UserIdMap userIdMap : identityAccessManager.getAllUsers()) {
       identityAccessManager.deleteUser(userIdMap.getUsername());
