@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 
 public class BufferCipher {
 
-  private static final String RSA_CIPHER_MODE = "RSA/ECB/PKCS1Padding";
+  private static final String RSA_CIPHER_MODE = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
   private static final String KEY_GENERATOR_ALGORITHM = "AES";
   private static final String CIPHER_NAME = "AES/GCM/NoPadding";
   private static final int AES_KEY_SIZE = 256;
