@@ -49,8 +49,7 @@ public enum AuthLogMessages implements LogMessage {
 
   // <editor-fold desc="Password file messages">
   PASSWORD_FILE_LOADED(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Successfully loaded {} entries for {}"),
-  PASSWORD_FILE_LOAD_EXCEPTION(
-      LEVEL.INFO, Auth_Category.AUTHENTICATION, "Password load failed for {} at line number {} "),
+  PASSWORD_FILE_LOAD_EXCEPTION(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Password load failed for {} at line number {} "),
   PASSWORD_FILE_CHANGE_DETECTED(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Password file change detected on {}"),
   CHECKING_PASSWORD_STORE(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Scanning for password file changes on file {}");
   // </editor-fold>
