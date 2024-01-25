@@ -38,6 +38,29 @@ class UnixIdentifierTest {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/nix");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
+    Assertions.assertNotNull(lookup.findGroup("admin.dojo"));
+    Assertions.assertNull(lookup.findGroup("admin"));
+    Assertions.assertEquals(lookup.getDomain(), "unix");
+    Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
+    char[] hash = lookup.getPasswordHash("test");
+    Assertions.assertNotNull(hash);
+    Assertions.assertNotEquals(0, hash.length);
+    String pwd = new String(hash);
+    Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
+  }
+
+  @Test
+  void simpleLoad2() throws IOException, GeneralSecurityException {
+    Map<String, String> map = new LinkedHashMap<>();
+    map.put("passwd", "./src/test/resources/nix/passwd");
+    map.put("passwordFile", "./src/test/resources/nix/shadow");
+    map.put("groupFile", "./src/test/resources/nix/group");
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
+    Assertions.assertNotNull(lookup.findGroup("admin.dojo"));
+    Assertions.assertNull(lookup.findGroup("admin"));
+    Assertions.assertEquals(lookup.getDomain(), "unix");
     Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
     char[] hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
