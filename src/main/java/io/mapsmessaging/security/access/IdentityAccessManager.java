@@ -33,6 +33,7 @@ import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.*;
 import javax.security.auth.Subject;
@@ -148,7 +149,8 @@ public class IdentityAccessManager {
     return identityLookup.findGroup(groupName);
   }
 
-  public UserIdMap createUser(String username, String hash) throws IOException {
+  public UserIdMap createUser(String username, String hash)
+      throws IOException, GeneralSecurityException {
     IdentityEntry entry = identityLookup.findEntry(username);
     UserIdMap idMap = userMapManagement.get(identityLookup.getDomain() + ":" + username);
     if (entry != null && idMap != null) {
@@ -166,7 +168,7 @@ public class IdentityAccessManager {
   }
 
   public boolean updateUserPassword(String username, String hash, PasswordHandler passwordHasher)
-      throws IOException {
+      throws IOException, GeneralSecurityException {
     if (identityLookup.findEntry(username) != null) {
       identityLookup.deleteUser(username);
       identityLookup.createUser(username, hash, passwordHasher);

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package io.mapsmessaging.security.identity.impl.cognito;
 
 import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,7 +37,7 @@ public class CognitoIdentityEntry extends JwtIdentityEntry {
     passwordHasher = new CognitoPasswordHasher(username, cognitoAuth, this);
   }
 
-  public String getPassword() {
+  public String getPassword() throws GeneralSecurityException, IOException {
     return new String(passwordHasher.getPassword());
   }
 }

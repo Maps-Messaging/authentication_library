@@ -30,6 +30,7 @@ import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import io.mapsmessaging.security.sasl.SaslTester;
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.*;
 import javax.security.auth.Subject;
@@ -78,7 +79,8 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
 
   @ParameterizedTest
   @MethodSource("configurations")
-  void testUserManagement(String auth, Map<String, ?> config, String mechanism) throws IOException {
+  void testUserManagement(String auth, Map<String, ?> config, String mechanism)
+      throws IOException, GeneralSecurityException {
     File userFile = new File("userMap");
     userFile.delete();
     File groupFile = new File("groupMap");

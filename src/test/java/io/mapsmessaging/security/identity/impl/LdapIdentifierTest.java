@@ -18,13 +18,13 @@ package io.mapsmessaging.security.identity.impl;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
-import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.ldap.LdapAuth;
 import io.mapsmessaging.security.jaas.PropertiesLoader;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.md5.Md5UnixPasswordHasher;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -43,7 +43,7 @@ public class LdapIdentifierTest {
   }
 
   @Test
-  void simpleLoad() throws NoSuchUserFoundException {
+  void simpleLoad() throws IOException, GeneralSecurityException {
     if (properties == null || properties.isEmpty()) {
       return;
     }

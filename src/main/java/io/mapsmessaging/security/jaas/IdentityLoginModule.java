@@ -26,7 +26,9 @@ import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Map;
@@ -69,25 +71,33 @@ public class IdentityLoginModule extends BaseLoginModule {
     byte[] actualPassword;
     byte[] remotePassword = new String(password).getBytes(StandardCharsets.UTF_8);
 
-    PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
-    if (passwordHasher == null) {
-      passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
+    try {
+      PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
+      if (passwordHasher == null) {
+        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
+      }
+
+      if (passwordHasher instanceof PasswordCipher
+          || passwordHasher instanceof PlainPasswordHasher) {
+        actualPassword = passwordHasher.getPassword();
+      } else {
+        remotePassword =
+            passwordHasher.transformPassword(
+                remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
+        actualPassword = new String(passwordHasher.getFullPasswordHash()).getBytes();
+      }
+      boolean result = Arrays.equals(actualPassword, remotePassword);
+      Arrays.fill(actualPassword, (byte) 0x0);
+      Arrays.fill(remotePassword, (byte) 0x0);
+      if (!result) {
+        throw new LoginException("Invalid password");
+      }
+    } catch (IOException | GeneralSecurityException error) {
+      LoginException lg = new LoginException("Error raised while processing");
+      lg.initCause(error);
+      throw lg;
     }
 
-    if (passwordHasher instanceof PasswordCipher || passwordHasher instanceof PlainPasswordHasher) {
-      actualPassword = passwordHasher.getPassword();
-    } else {
-      remotePassword =
-          passwordHasher.transformPassword(
-              remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
-      actualPassword = new String(passwordHasher.getFullPasswordHash()).getBytes();
-    }
-    boolean result = Arrays.equals(actualPassword, remotePassword);
-    Arrays.fill(actualPassword, (byte) 0x0);
-    Arrays.fill(remotePassword, (byte) 0x0);
-    if (!result) {
-      throw new LoginException("Invalid password");
-    }
     succeeded = true;
     if (debug) {
       logger.log(USER_LOGGED_IN, username);

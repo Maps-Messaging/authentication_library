@@ -21,6 +21,7 @@ import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -49,10 +50,18 @@ public class ServerCallbackHandler implements CallbackHandler {
       } else if (cb instanceof NameCallback) {
         NameCallback nc = (NameCallback) cb;
         String username = nc.getDefaultName();
-        hashedPassword = identityLookup.getPasswordHash(username);
+        try {
+          hashedPassword = identityLookup.getPasswordHash(username);
+        } catch (GeneralSecurityException e) {
+          throw new IOException(e);
+        }
         PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hashedPassword);
         if (passwordHasher instanceof PlainPasswordHasher) {
-          hashedPassword = new String(passwordHasher.getPassword()).toCharArray();
+          try {
+            hashedPassword = new String(passwordHasher.getPassword()).toCharArray();
+          } catch (GeneralSecurityException e) {
+            throw new IOException(e);
+          }
         }
         nc.setName(nc.getDefaultName());
       } else if (cb instanceof PasswordCallback) {

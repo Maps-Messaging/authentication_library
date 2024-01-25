@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package io.mapsmessaging.security.identity;
 
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import org.apache.commons.lang3.NotImplementedException;
-
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.NotImplementedException;
 
 public interface IdentityLookup {
 
@@ -30,7 +30,7 @@ public interface IdentityLookup {
 
   String getDomain();
 
-  char[] getPasswordHash(String username) throws NoSuchUserFoundException;
+  char[] getPasswordHash(String username) throws IOException, GeneralSecurityException;
 
   IdentityEntry findEntry(String username);
 
@@ -52,7 +52,8 @@ public interface IdentityLookup {
     throw new NotImplementedException("Unable to delete groups");
   }
 
-  default boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher) throws IOException {
+  default boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher)
+      throws IOException, GeneralSecurityException {
     throw new NotImplementedException("Unable to add users to an LDAP server");
   }
 

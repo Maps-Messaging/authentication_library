@@ -16,17 +16,19 @@
 
 package io.mapsmessaging.security.identity.parsers;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import org.junit.jupiter.api.Test;
 
 class BCryptTest extends BaseHashFunctions {
 
   @Test
-  void checkBcryptHash() {
+  void checkBcryptHash() throws GeneralSecurityException, IOException {
     testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password");
   }
 
   @Test
-  void checkBcryptHashWrongPassword() {
+  void checkBcryptHashWrongPassword() throws GeneralSecurityException, IOException {
     testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is a wrong password", false);
   }
 

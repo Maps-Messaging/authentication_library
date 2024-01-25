@@ -16,17 +16,19 @@
 
 package io.mapsmessaging.security.identity.parsers;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import org.junit.jupiter.api.Test;
 
 class Md5Test extends BaseHashFunctions {
 
   @Test
-  void checkMd5Hash() {
+  void checkMd5Hash() throws GeneralSecurityException, IOException {
     testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is an md5 password");
   }
 
   @Test
-  void checkMd5HashWithBadPassword() {
+  void checkMd5HashWithBadPassword() throws GeneralSecurityException, IOException {
     testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is wrong", false);
   }
 

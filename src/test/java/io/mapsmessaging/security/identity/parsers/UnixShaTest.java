@@ -20,15 +20,16 @@ import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.sha.UnixSha256PasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.sha.UnixSha512PasswordHasher;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
 
 class UnixShaTest extends BaseHashFunctions {
 
   @Test
-  void testCreateAndTest512() {
+  void testCreateAndTest512() throws GeneralSecurityException, IOException {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
     PasswordHasher passwordHasher = new UnixSha512PasswordHasher();
@@ -44,7 +45,7 @@ class UnixShaTest extends BaseHashFunctions {
   }
 
   @Test
-  void testCreateAndTest256() {
+  void testCreateAndTest256() throws GeneralSecurityException, IOException {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
     PasswordHasher passwordHasher = new UnixSha256PasswordHasher();
@@ -60,17 +61,17 @@ class UnixShaTest extends BaseHashFunctions {
   }
 
   @Test
-  void checkSha512Hash() {
+  void checkSha512Hash() throws GeneralSecurityException, IOException {
     testHashing("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", "onewordpassword");
   }
 
   @Test
-  void checkSha512HashWithSpaces() {
+  void checkSha512HashWithSpaces() throws GeneralSecurityException, IOException {
     testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "this has spaces");
   }
 
   @Test
-  void checkSha512HashBadPassword() {
+  void checkSha512HashBadPassword() throws GeneralSecurityException, IOException {
     testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "just wrong", false);
   }
 }

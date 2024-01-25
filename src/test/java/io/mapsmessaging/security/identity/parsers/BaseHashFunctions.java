@@ -18,17 +18,21 @@ package io.mapsmessaging.security.identity.parsers;
 
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 
 public class BaseHashFunctions {
 
-  protected void testHashing(String passwordHashString, String rawPassword) {
+  protected void testHashing(String passwordHashString, String rawPassword)
+      throws GeneralSecurityException, IOException {
     testHashing(passwordHashString, rawPassword, true);
   }
 
-  protected void testHashing(String passwordHashString, String rawPassword, boolean shouldPass) {
+  protected void testHashing(String passwordHashString, String rawPassword, boolean shouldPass)
+      throws GeneralSecurityException, IOException {
     //
     // We parse the password string to extract the public SALT, so we can pass to the client
     //

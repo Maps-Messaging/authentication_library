@@ -31,6 +31,7 @@ import io.mapsmessaging.security.passwords.hashes.bcrypt.BCrypt2YPasswordHasher;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.*;
 import javax.security.auth.Subject;
@@ -40,7 +41,7 @@ import org.junit.jupiter.api.Test;
 public class AccessControlListTest {
 
   @Test
-  public void testAccessControlListCreation() throws IOException {
+  public void testAccessControlListCreation() throws IOException, GeneralSecurityException {
     File file = new File("./target/test/security");
     file.mkdirs();
     MapStore<UserIdMap> userStore = new MapFileStore<>("./target/test/security/userMap");

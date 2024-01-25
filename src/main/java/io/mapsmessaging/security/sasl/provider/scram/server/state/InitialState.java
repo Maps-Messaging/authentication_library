@@ -27,6 +27,7 @@ import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.Map;
 import javax.security.auth.callback.*;
@@ -95,19 +96,23 @@ public class InitialState extends State {
     // on the parsed info
     //
 
-    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(new String(password));
-    context.setPasswordHasher(handler);
-    context.setPrepPassword(SaslPrep.getInstance().stringPrep(new String(handler.getPassword())));
-    byte[] salt = handler.getSalt();
-    if (salt == null || salt.length == 0) {
-      salt = PasswordGenerator.generateSalt(64).getBytes(StandardCharsets.UTF_8);
+    try {
+      PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(new String(password));
+      context.setPasswordHasher(handler);
+      context.setPrepPassword(SaslPrep.getInstance().stringPrep(new String(handler.getPassword())));
+      byte[] salt = handler.getSalt();
+      if (salt == null || salt.length == 0) {
+        salt = PasswordGenerator.generateSalt(64).getBytes(StandardCharsets.UTF_8);
+      }
+      context.setPasswordSalt(Base64.getEncoder().encode(salt));
+      int iterations = handler.getCost();
+      if (iterations == 0) {
+        iterations = 10_000;
+      }
+      context.setIterations(iterations);
+      context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
+    } catch (IOException | GeneralSecurityException e) {
+      throw new RuntimeException(e);
     }
-    context.setPasswordSalt(Base64.getEncoder().encode(salt));
-    int iterations = handler.getCost();
-    if (iterations == 0) {
-      iterations = 10_000;
-    }
-    context.setIterations(iterations);
-    context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
   }
 }

@@ -20,7 +20,9 @@ import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.cipher.BufferCipher;
 import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
@@ -82,7 +84,8 @@ public class EncryptedPasswordCipher implements PasswordCipher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost)
+      throws GeneralSecurityException, IOException {
     BufferCipher bufferCipher = new BufferCipher(certificateManager);
     if (salt.length > 256) {
       byte[] t = new byte[255];
@@ -107,7 +110,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
   }
 
   @Override
-  public byte[] getPassword() {
+  public byte[] getPassword() throws GeneralSecurityException, IOException {
     BufferCipher bufferCipher = new BufferCipher(certificateManager);
     byte[] decoded = Base64.getDecoder().decode(password);
     byte[] decrypted = bufferCipher.decrypt(alias, decoded, privateKeyPassword.toCharArray());

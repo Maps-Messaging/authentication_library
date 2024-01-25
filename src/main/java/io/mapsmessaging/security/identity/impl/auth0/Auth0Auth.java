@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,13 +29,13 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -140,7 +140,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
   @Override
   public boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher)
-      throws IOException {
+      throws IOException, GeneralSecurityException {
     return super.createUser(username, passwordHash, passwordHasher);
   }
 

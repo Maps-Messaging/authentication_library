@@ -27,6 +27,7 @@ import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -83,7 +84,7 @@ class SimpleSaslTest extends BaseSasl {
         "SCRAM-SHA3-256",
         "SCRAM-SHA3-512"
       })
-  void validateSaslMechanisms(String mechanism) throws IOException {
+  void validateSaslMechanisms(String mechanism) throws IOException, GeneralSecurityException {
     testMechanism(mechanism, faker.backToTheFuture().character(), faker.backToTheFuture().quote());
   }
 
@@ -95,7 +96,8 @@ class SimpleSaslTest extends BaseSasl {
     Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", new String(password)));
   }
 
-  void testMechanism(String mechanism, String user, String password) throws IOException {
+  void testMechanism(String mechanism, String user, String password)
+      throws IOException, GeneralSecurityException {
     user = user.replaceAll(" ", "_");
     if (identityAccessManager.getUser(user) != null) {
       identityAccessManager.deleteUser(user);

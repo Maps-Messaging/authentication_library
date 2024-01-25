@@ -24,6 +24,8 @@ import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.md5.Md5PasswordHasher;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +34,7 @@ import org.junit.jupiter.api.Test;
 class ApacheIdentifierTest {
 
   @Test
-  void simpleLoad() throws NoSuchUserFoundException {
+  void simpleLoad() throws IOException, GeneralSecurityException {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);

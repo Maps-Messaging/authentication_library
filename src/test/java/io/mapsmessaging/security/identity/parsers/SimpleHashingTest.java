@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -49,7 +50,7 @@ public class SimpleHashingTest {
   }
 
   @Test
-  void testMultiParser() {
+  void testMultiParser() throws GeneralSecurityException, IOException {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
 
@@ -72,7 +73,8 @@ public class SimpleHashingTest {
 
   @ParameterizedTest
   @MethodSource("knownParsers")
-  void testHashAndValidateBadPassword(PasswordHasher base) {
+  void testHashAndValidateBadPassword(PasswordHasher base)
+      throws GeneralSecurityException, IOException {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
     PasswordHandler parser = base.create("");
@@ -95,7 +97,7 @@ public class SimpleHashingTest {
 
   @ParameterizedTest
   @MethodSource("knownParsers")
-  void testHashAndValidate(PasswordHasher base) {
+  void testHashAndValidate(PasswordHasher base) throws GeneralSecurityException, IOException {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
     PasswordHandler parser = base.create("");
@@ -116,7 +118,7 @@ public class SimpleHashingTest {
 
   @ParameterizedTest
   @MethodSource("knownParsers")
-  void testFileLoadAndParse(PasswordHasher base) throws IOException {
+  void testFileLoadAndParse(PasswordHasher base) throws IOException, GeneralSecurityException {
     FileOutputStream fileOutputStream = new FileOutputStream("hash.txt", false);
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);

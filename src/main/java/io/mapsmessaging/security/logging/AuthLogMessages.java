@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,9 +43,14 @@ public enum AuthLogMessages implements LogMessage {
   USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out"),
   // </editor-fold>
 
+  FAILED_TO_CREATE_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to create new file {}"),
+  FAILED_TO_DELETE_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to delete existing file {}"),
+  FAILED_TO_RENAME_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to rename file {} to {}"),
+
   // <editor-fold desc="Password file messages">
   PASSWORD_FILE_LOADED(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Successfully loaded {} entries for {}"),
-  PASSWORD_FILE_LOAD_EXCEPTION(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Password load failed for {}"),
+  PASSWORD_FILE_LOAD_EXCEPTION(
+      LEVEL.INFO, Auth_Category.AUTHENTICATION, "Password load failed for {} at line number {} "),
   PASSWORD_FILE_CHANGE_DETECTED(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Password file change detected on {}"),
   CHECKING_PASSWORD_STORE(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Scanning for password file changes on file {}");
   // </editor-fold>
@@ -73,6 +78,7 @@ public enum AuthLogMessages implements LogMessage {
   }
 
   public enum Auth_Category implements Category {
+    SUPPORT("Support"),
     AUTHORISATION("Authorisation"),
     AUTHENTICATION("Authentication"),
     SASL("Sasl"),

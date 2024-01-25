@@ -24,6 +24,8 @@ import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.UnixSha512PasswordHasher;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +34,7 @@ import org.junit.jupiter.api.Test;
 class UnixIdentifierTest {
 
   @Test
-  void simpleLoad() throws NoSuchUserFoundException {
+  void simpleLoad() throws IOException, GeneralSecurityException {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/nix");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ package io.mapsmessaging.security.identity.impl.unix;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
-
 import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +56,7 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
     return passwordFileIdentities.getPasswordHash(username);
   }
 

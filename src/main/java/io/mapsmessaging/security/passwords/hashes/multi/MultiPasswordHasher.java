@@ -21,8 +21,10 @@ import com.google.gson.reflect.TypeToken;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.PasswordHasher;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -80,7 +82,8 @@ public class MultiPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public byte[] transformPassword(byte[] password, byte[] salt, int cost)
+      throws GeneralSecurityException, IOException {
     List<String> hashes = new ArrayList<>();
     for (PasswordHandler handler : parsers) {
       int localCost = cost;

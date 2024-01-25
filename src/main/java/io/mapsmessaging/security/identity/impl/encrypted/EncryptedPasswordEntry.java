@@ -19,6 +19,8 @@ package io.mapsmessaging.security.identity.impl.encrypted;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public class EncryptedPasswordEntry extends IdentityEntry {
 
@@ -37,7 +39,7 @@ public class EncryptedPasswordEntry extends IdentityEntry {
   }
 
   @Override
-  public String getPassword() {
+  public String getPassword() throws GeneralSecurityException, IOException {
     PasswordHandler parser1 = passwordHasher.create(password);
     return new String(parser1.getPassword());
   }

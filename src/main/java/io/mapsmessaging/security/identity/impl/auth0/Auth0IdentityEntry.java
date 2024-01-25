@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package io.mapsmessaging.security.identity.impl.auth0;
 
 import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 public class Auth0IdentityEntry extends JwtIdentityEntry {
 
@@ -28,7 +30,13 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
 
   @Override
   public String getPassword() {
-    return new String(passwordHasher.getPassword());
+    try {
+      return new String(passwordHasher.getPassword());
+    } catch (GeneralSecurityException e) {
+      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

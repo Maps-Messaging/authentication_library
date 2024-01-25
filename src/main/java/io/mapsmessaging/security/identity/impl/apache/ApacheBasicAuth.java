@@ -20,10 +20,10 @@ import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +58,7 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
     if (passwdFileManager == null) {
       throw new NoSuchUserFoundException(username);
     }
@@ -119,7 +119,8 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean createUser(String username, String password, PasswordHandler handler) throws IOException {
+  public boolean createUser(String username, String password, PasswordHandler handler)
+      throws IOException, GeneralSecurityException {
     String salt = PasswordGenerator.generateSalt(16);
     byte[] hash =
         handler.transformPassword(
