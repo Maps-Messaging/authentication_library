@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@ package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-
+import java.util.*;
+import java.util.Map.Entry;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
-import java.util.*;
-import java.util.Map.Entry;
 
 public class LdapUserManager {
 
@@ -102,7 +101,7 @@ public class LdapUserManager {
         try {
           directoryContext.close();
         } catch (NamingException e) {
-          throw new RuntimeException(e);
+          // we can ignore the close exception here
         }
       }
     }
@@ -125,9 +124,6 @@ public class LdapUserManager {
         if (groupName != null) {
           Set<String> memberList = new TreeSet<>();
           memberList.add(userId);
-          // ToDo
-          // GroupEntry group = new GroupEntry((String)groupName.get(), memberList);
-          // ldapUser.addGroup(group);
         }
       }
     }
