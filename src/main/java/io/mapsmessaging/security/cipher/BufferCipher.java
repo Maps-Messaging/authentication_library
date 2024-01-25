@@ -28,6 +28,32 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * The {@code BufferCipher} class provides functionality for secure encryption and decryption of data,
+ * employing a combination of RSA and AES cryptographic algorithms to ensure data confidentiality and integrity.
+ *
+ * <p>Key functionalities of this class include:
+ * <ul>
+ *   <li><b>Compression/Decompression:</b> Data is compressed before encryption and decompressed after decryption
+ *       to improve efficiency and reduce storage/transmission requirements.</li>
+ *   <li><b>RSA Encryption of AES Key and IV:</b> The AES key and initialization vector (IV) are securely
+ *       encrypted using RSA with the ECB mode and OAEP padding scheme. The 'RSA/ECB/OAEPWithSHA-256AndMGF1Padding'
+ *       mode provides strong security by using OAEP (Optimal Asymmetric Encryption Padding) with SHA-256 hash
+ *       function and MGF1 (Mask Generation Function) padding. This method offers better security than traditional
+ *       PKCS#1 v1.5 padding and protects against various attacks such as padding oracle attacks.</li>
+ *   <li><b>AES Encryption of Data:</b> Data is encrypted using the AES algorithm in GCM (Galois/Counter Mode) with
+ *       'AES/GCM/NoPadding'. GCM is an authenticated encryption mode that not only ensures confidentiality but also
+ *       provides data integrity and authenticity. The 'NoPadding' specification is used as GCM mode handles padding
+ *       internally and does not require explicit padding of input data.</li>
+ * </ul>
+ *
+ * <p>Usage of this class involves initializing it with the necessary RSA public/private keys and then
+ * using the provided methods for encrypting or decrypting data. The class handles all aspects of the
+ * cryptographic process, including key generation, IV generation, and the application of compression algorithms.
+ *
+ * @author Matthew Buckton
+ */
+
 public class BufferCipher {
 
   private static final String RSA_CIPHER_MODE = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
@@ -59,8 +85,7 @@ public class BufferCipher {
     byte[] encryptedKeyAndIv = encryptRsaPartition(rsaPartition, publicKey);
 
     // Prepend the length of the encrypted key and IV
-    ByteBuffer buffer =
-        ByteBuffer.allocate(HEADER_SIZE + encryptedKeyAndIv.length + encryptedData.length);
+    ByteBuffer buffer = ByteBuffer.allocate(HEADER_SIZE + encryptedKeyAndIv.length + encryptedData.length);
     buffer.putInt(encryptedKeyAndIv.length);
     buffer.put(encryptedKeyAndIv);
     buffer.put(encryptedData);
@@ -115,8 +140,7 @@ public class BufferCipher {
     return rsaCipher.doFinal(rsaPartition.encode());
   }
 
-  private RsaPartition decryptRsaPartition(byte[] buffer, PrivateKey privateKey)
-      throws GeneralSecurityException {
+  private RsaPartition decryptRsaPartition(byte[] buffer, PrivateKey privateKey) throws GeneralSecurityException {
     Cipher rsaCipher = Cipher.getInstance(RSA_CIPHER_MODE);
     rsaCipher.init(Cipher.DECRYPT_MODE, privateKey);
     byte[] decrypted = rsaCipher.doFinal(buffer);
@@ -145,6 +169,4 @@ public class BufferCipher {
       return combined;
     }
   }
-
-  // CertificateManager and other required classes...
 }
