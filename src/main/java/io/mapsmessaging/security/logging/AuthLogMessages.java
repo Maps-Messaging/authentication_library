@@ -43,9 +43,15 @@ public enum AuthLogMessages implements LogMessage {
   USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out"),
   // </editor-fold>
 
+  // <editor-fold desc="File management log entries">
   FAILED_TO_CREATE_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to create new file {}"),
   FAILED_TO_DELETE_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to delete existing file {}"),
   FAILED_TO_RENAME_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to rename file {} to {}"),
+  // </editor-fold>
+
+  // <editor-fold desc="Auth0 messages">
+  AUTH0_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to get user list"),
+  // </editor-fold>
 
   // <editor-fold desc="Password file messages">
   PASSWORD_FILE_LOADED(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Successfully loaded {} entries for {}"),

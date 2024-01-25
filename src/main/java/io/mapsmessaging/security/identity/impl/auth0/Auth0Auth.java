@@ -16,6 +16,8 @@
 
 package io.mapsmessaging.security.identity.impl.auth0;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_FAILURE;
+
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
@@ -23,6 +25,8 @@ import com.auth0.json.auth.TokenHolder;
 import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.net.TokenRequest;
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -41,6 +45,7 @@ import lombok.Setter;
 @Setter
 public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
+  private final Logger logger = LoggerFactory.getLogger(Auth0Auth.class);
   private final String auth0Domain;
   private final String clientId;
   private final String clientSecret;
@@ -180,7 +185,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
         groupEntryMap.put(role.getName(), groupEntry);
       }
     } catch (Auth0Exception e) {
-      throw new RuntimeException(e);
+      logger.log(AUTH0_FAILURE, e);
     }
   }
 
@@ -199,8 +204,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
         identityEntries.add(entry);
       }
     } catch (Exception ex) {
-      // todo
-      ex.printStackTrace();
+      logger.log(AUTH0_FAILURE,ex);
     }
     loadGroups();
   }
