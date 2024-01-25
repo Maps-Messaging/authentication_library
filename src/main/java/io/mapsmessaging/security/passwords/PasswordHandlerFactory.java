@@ -57,7 +57,6 @@ public class PasswordHandlerFactory {
 
   public PasswordHandler parse(char[] password) {
     for (PasswordHandler handler : passwordHandlers) {
-      System.err.println("testing.."+ handler.getClass());
       if (!handler.getName().equals("PLAIN")
           && password.length >= handler.getKey().length()
           && startWith(password, handler.getKey().toCharArray())) {
