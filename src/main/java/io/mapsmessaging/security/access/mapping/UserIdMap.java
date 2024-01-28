@@ -17,9 +17,7 @@
 package io.mapsmessaging.security.access.mapping;
 
 import java.util.UUID;
-import lombok.ToString;
 
-@ToString
 public class UserIdMap extends DomainIdMapping {
 
   public UserIdMap(UUID authId, String username, String authDomain) {
