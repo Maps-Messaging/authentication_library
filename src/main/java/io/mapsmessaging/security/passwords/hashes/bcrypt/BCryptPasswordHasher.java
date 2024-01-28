@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,12 +20,11 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.security.passwords.PasswordHasher;
-
 import java.nio.charset.StandardCharsets;
 
 public abstract class BCryptPasswordHasher implements PasswordHasher {
 
-  private static int DEFAULT_COST = 12;
+  private static final int DEFAULT_COST = 12;
 
   private final Version version;
   private final byte[] password;
@@ -58,7 +57,7 @@ public abstract class BCryptPasswordHasher implements PasswordHasher {
       cost = Integer.parseInt(t.substring(0, dollar));
       t = t.substring(dollar + 1);
       String s = t.substring(0, 22);
-      String p = t.substring(23);
+      String p = t.substring(22);
       Radix64Encoder encoder = new Radix64Encoder.Default();
       salt = encoder.decode(s.getBytes(StandardCharsets.UTF_8));
       this.password = encoder.decode(p.getBytes(StandardCharsets.UTF_8));

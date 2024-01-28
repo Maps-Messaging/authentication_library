@@ -148,6 +148,16 @@ public class SimpleHashingTest {
     Assertions.assertTrue(lookup.hasSalt());
     Assertions.assertNotNull(lookup.getSalt());
     Assertions.assertTrue(lookup.getSalt().length != 0);
+
+
+    String hashed = new String(lookup.getFullPasswordHash());
+    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(hashed);
+    Assertions.assertEquals(handler.getClass(), lookup.getClass());
+    Assertions.assertArrayEquals(handler.getSalt(), lookup.getSalt());
+    Assertions.assertEquals(handler.getCost(), lookup.getCost());
+    Assertions.assertArrayEquals(handler.getPassword(), lookup.getPassword());
+    Assertions.assertEquals(handler.getKey(), lookup.getKey());
+
   }
 
   @ParameterizedTest
@@ -169,6 +179,13 @@ public class SimpleHashingTest {
     Assertions.assertEquals(storeHash, computedString);
     Assertions.assertFalse(lookup.hasSalt());
     Assertions.assertEquals(0, lookup.getSalt().length);
+    String hashed = new String(lookup.getFullPasswordHash());
+    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(hashed);
+    Assertions.assertEquals(handler.getClass(), lookup.getClass());
+    Assertions.assertArrayEquals(handler.getSalt(), lookup.getSalt());
+    Assertions.assertEquals(handler.getCost(), lookup.getCost());
+    Assertions.assertArrayEquals(handler.getPassword(), lookup.getPassword());
+    Assertions.assertEquals(handler.getKey(), lookup.getKey());
   }
 
   @ParameterizedTest
