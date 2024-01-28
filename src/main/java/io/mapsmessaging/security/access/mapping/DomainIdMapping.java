@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package io.mapsmessaging.security.identity.principals;
+package io.mapsmessaging.security.access.mapping;
 
-import java.security.Principal;
+import java.util.UUID;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter
-public class TokenPrincipal implements Principal {
+@EqualsAndHashCode(callSuper = true)
+public class DomainIdMapping extends IdMap {
 
-  private final String token;
+  @Getter
+  private final String authDomain;
+  protected final String id;
 
-  public TokenPrincipal(String token) {
-    this.token = token;
-  }
-
-  public String getName() {
-    return "token";
+  public DomainIdMapping(UUID authId, String id, String authDomain) {
+    super(authId);
+    this.id = id;
+    this.authDomain = authDomain;
   }
 
   @Override
-  public String toString() {
-    return "Token: " + token;
+  protected String getKey() {
+    return authDomain + ":" + id;
   }
 }
