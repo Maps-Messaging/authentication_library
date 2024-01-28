@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,9 +17,8 @@
 package io.mapsmessaging.security.passwords.hashes.sha;
 
 import io.mapsmessaging.security.passwords.PasswordHasher;
-import org.apache.commons.codec.digest.Crypt;
-
 import java.nio.charset.StandardCharsets;
+import org.apache.commons.codec.digest.Crypt;
 
 public abstract class UnixShaPasswordHasher implements PasswordHasher {
 
@@ -53,7 +52,7 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
 
   @Override
   public boolean hasSalt() {
-    return salt == null || salt.isEmpty();
+    return salt != null && !salt.isEmpty();
   }
 
   @Override
