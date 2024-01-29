@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
+import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import java.util.*;
@@ -32,6 +33,7 @@ public class LdapUserManager {
   private final String groupSearchBase;
 
   private final Map<String, LdapUser> userMap;
+  private final Map<String, LdapGroup> groupMap;
   private final Map<String, String> map;
 
   public LdapUserManager(Map<String, ?> config) throws NamingException {
@@ -42,6 +44,7 @@ public class LdapUserManager {
     passwordName = config.get("passwordKeyName").toString();
 
     userMap = new LinkedHashMap<>();
+    groupMap = new LinkedHashMap<>();
     searchBase = config.get("searchBase").toString();
     groupSearchBase = config.get("groupSearchBase").toString();
   }
@@ -121,13 +124,25 @@ public class LdapUserManager {
       if (attrs.size() > 0) {
         Attribute groupName = attrs.get("cn");
         if (groupName != null) {
-          Set<String> memberList = new TreeSet<>();
-          memberList.add(userId);
+          String name = groupName.get().toString();
+          LdapGroup groupEntry = groupMap.get(name);
+          if(groupEntry == null){
+            groupEntry = new LdapGroup(name);
+            groupMap.put(groupEntry.getName(), groupEntry);
+          }
+          if(!groupEntry.isInGroup(userId)){
+            groupEntry.addUser(userId);
+          }
+          if (!ldapUser.isInGroup(name)) {
+            ldapUser.addGroup(groupEntry);
+          }
         }
       }
     }
 
   }
 
-
+  public GroupEntry findGroup(String groupName) {
+    return groupMap.get(groupName);
+  }
 }

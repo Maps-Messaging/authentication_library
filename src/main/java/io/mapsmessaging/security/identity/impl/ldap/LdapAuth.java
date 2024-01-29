@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 public class LdapAuth implements IdentityLookup {
 
@@ -50,7 +49,7 @@ public class LdapAuth implements IdentityLookup {
 
   @Override
   public GroupEntry findGroup(String groupName) {
-    return null;//ldapUserManager.findGroup(groupName);
+    return ldapUserManager.findGroup(groupName);
   }
 
   @Override

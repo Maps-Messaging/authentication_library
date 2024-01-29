@@ -25,16 +25,15 @@ import io.mapsmessaging.security.jaas.PropertiesLoader;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.md5.Md5UnixPasswordHasher;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import javax.naming.Context;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import javax.naming.Context;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class LdapIdentifierTest {
 
@@ -86,6 +85,7 @@ public class LdapIdentifierTest {
     Assertions.assertNotNull(ldapUser.getHomeDirectory());
     Assertions.assertNotNull(ldapUser.getSubject());
     Assertions.assertNotNull(ldapUser.getGroups());
+    Assertions.assertFalse(ldapUser.getGroups().isEmpty());
   }
 
 }
