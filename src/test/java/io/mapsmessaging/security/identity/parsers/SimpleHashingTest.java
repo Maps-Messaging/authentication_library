@@ -21,6 +21,7 @@ import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.multi.MultiPasswordHasher;
+import io.mapsmessaging.security.passwords.hashes.pbkdf2.Pbkdf2PasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
 import java.io.BufferedReader;
@@ -104,6 +105,10 @@ public class SimpleHashingTest {
             lookup.getCost());
     String computedString = new String(computed);
     Assertions.assertNotEquals(storeHash, computedString);
+    if(lookup instanceof Pbkdf2PasswordHasher){
+      Assertions.assertEquals(((Pbkdf2PasswordHasher)parser).getAlgorithm(), ((Pbkdf2PasswordHasher)lookup).getAlgorithm());
+
+    }
   }
 
   @ParameterizedTest

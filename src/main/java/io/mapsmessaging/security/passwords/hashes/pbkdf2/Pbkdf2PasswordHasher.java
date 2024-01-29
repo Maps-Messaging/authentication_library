@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,13 +18,12 @@ package io.mapsmessaging.security.passwords.hashes.pbkdf2;
 
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.passwords.PasswordHasher;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
 
@@ -47,7 +46,7 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
     }
   }
 
-  protected abstract String getAlgorithm();
+  public abstract String getAlgorithm();
 
   protected abstract int getIterationCount();
 
@@ -66,18 +65,10 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
   @Override
   public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     try {
-      PBEKeySpec spec =
-          new PBEKeySpec(new String(password).toCharArray(), salt, cost, getHashByteSize());
+      PBEKeySpec spec = new PBEKeySpec(new String(password).toCharArray(), salt, cost, getHashByteSize());
       SecretKeyFactory skf = SecretKeyFactory.getInstance(getAlgorithm());
       byte[] hash = skf.generateSecret(spec).getEncoded();
-      return (getKey()
-              + "$"
-              + cost
-              + "$"
-              + Base64.getEncoder().encodeToString(salt)
-              + "$"
-              + Base64.getEncoder().encodeToString(hash))
-          .getBytes(StandardCharsets.UTF_8);
+      return (getKey() + "$" + cost + "$" + Base64.getEncoder().encodeToString(salt) + "$" + Base64.getEncoder().encodeToString(hash)).getBytes(StandardCharsets.UTF_8);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new RuntimeException("Error while hashing password", e);
     }
@@ -95,14 +86,7 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey()
-            + "$"
-            + cost
-            + "$"
-            + Base64.getEncoder().encodeToString(salt)
-            + "$"
-            + Base64.getEncoder().encodeToString(hash))
-        .toCharArray();
+    return (getKey() + "$" + cost + "$" + Base64.getEncoder().encodeToString(salt) + "$" + Base64.getEncoder().encodeToString(hash)).toCharArray();
   }
 
   @Override
