@@ -17,9 +17,9 @@
 package io.mapsmessaging.security.identity.impl.external;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class WebResult {
   private final Object result;
