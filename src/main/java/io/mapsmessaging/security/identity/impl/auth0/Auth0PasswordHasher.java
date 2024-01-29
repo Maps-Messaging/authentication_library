@@ -35,7 +35,7 @@ import java.util.Arrays;
 
 public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvider {
 
-  private final static Logger logger = LoggerFactory.getLogger(Auth0PasswordHasher.class);
+  private static final Logger logger = LoggerFactory.getLogger(Auth0PasswordHasher.class);
   private final Auth0Auth auth;
   private final Auth0IdentityEntry identityEntry;
   private final String username;

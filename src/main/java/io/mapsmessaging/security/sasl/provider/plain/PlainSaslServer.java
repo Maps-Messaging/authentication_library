@@ -28,7 +28,7 @@ public class PlainSaslServer implements SaslServer {
   private String authorizationId;
   private boolean complete;
 
-  public PlainSaslServer(CallbackHandler cbh) throws SaslException {
+  public PlainSaslServer(CallbackHandler cbh) {
     callbackHandler = cbh;
     complete = false;
   }

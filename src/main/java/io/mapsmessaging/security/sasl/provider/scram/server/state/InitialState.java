@@ -88,15 +88,10 @@ public class InitialState extends State {
     cbh.handle(callbacks);
     String username = ((NameCallback) callbacks[0]).getName();
     if (username == null) {
-      // Need to log an exception
+      throw new IOException("Require a username to be able to log in");
     }
 
     char[] password = ((PasswordCallback) callbacks[1]).getPassword();
-    //
-    // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based
-    // on the parsed info
-    //
-
     try {
       PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(new String(password));
       context.setPasswordHasher(handler);
@@ -112,8 +107,8 @@ public class InitialState extends State {
       }
       context.setIterations(iterations);
       context.setServerNonce(context.getClientNonce() + CryptoHelper.generateNonce(48));
-    } catch (IOException | GeneralSecurityException e) {
-      throw new RuntimeException(e);
+    } catch (GeneralSecurityException e) {
+      throw new IOException(e);
     }
   }
 }
