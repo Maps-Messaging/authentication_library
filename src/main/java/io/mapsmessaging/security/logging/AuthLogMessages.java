@@ -51,6 +51,8 @@ public enum AuthLogMessages implements LogMessage {
 
   // <editor-fold desc="Auth0 messages">
   AUTH0_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to get user list"),
+  AUTH0_REQUEST_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to retrieve data from Auth0"),
+  AUTH0_JWT_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Error detected in Auth0 JWT"),
   // </editor-fold>
 
   // <editor-fold desc="Password file messages">

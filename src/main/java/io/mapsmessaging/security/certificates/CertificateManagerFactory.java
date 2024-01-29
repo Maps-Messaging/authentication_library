@@ -24,7 +24,7 @@ import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.ServiceLoader;
 
-@SuppressWarnings(" java:S6548") // yes it is a singleton
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class CertificateManagerFactory {
 
   private static class Holder {

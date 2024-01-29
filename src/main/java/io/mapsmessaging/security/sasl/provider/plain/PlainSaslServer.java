@@ -57,22 +57,16 @@ public class PlainSaslServer implements SaslServer {
     }
     String username = ((NameCallback) callbacks[0]).getName();
     if (username == null) {
-      // Need to log an exception
+      throw new SaslException("Invalid username or password");
     }
 
     String passwordHash = new String(((PasswordCallback) callbacks[1]).getPassword());
-    //
-    // To Do: Parse the password by type defined ( BCRYPT, CRYPT,  etc. ) then set the below based
-    // on the parsed info
-    //
-
-    complete = true;
     String clientPassword = new String(password);
-    String localPassword = passwordHash;
-    if (!clientPassword.equals(localPassword)) {
+    if (!clientPassword.equals(passwordHash)) {
       throw new SaslException("Invalid username or password");
     }
-    return null;
+    complete = true;
+    return new byte[0];
   }
 
   private byte[] readTillNull(byte[] buffer, int offset) {

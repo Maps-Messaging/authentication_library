@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.identity.impl.auth0;
 
 import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_FAILURE;
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_REQUEST_FAILURE;
 
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
@@ -82,7 +83,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
       TokenHolder holder = tokenRequest.execute().getBody();
       token = holder.getAccessToken();
     } catch (Auth0Exception e) {
-      // ToDo add logging
+      logger.log(AUTH0_REQUEST_FAILURE, e);
     }
     apiToken = token;
     mgmt = ManagementAPI.newBuilder(auth0Domain, apiToken).build();

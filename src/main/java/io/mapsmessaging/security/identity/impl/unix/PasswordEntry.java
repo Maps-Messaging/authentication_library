@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,17 +18,13 @@ package io.mapsmessaging.security.identity.impl.unix;
 
 import lombok.Getter;
 
-public class PasswordEntry implements Comparable<PasswordEntry> {
+@Getter
+public class PasswordEntry {
 
-  @Getter
   private final String username;
-  @Getter
   private final String description;
-  @Getter
   private final String homeDirectory;
-  @Getter
   private final int id;
-  @Getter
   private final int groupId;
 
   public PasswordEntry(String line) {
@@ -39,10 +35,4 @@ public class PasswordEntry implements Comparable<PasswordEntry> {
     description = entries[4];
     homeDirectory = entries[5];
   }
-
-  @Override
-  public int compareTo(PasswordEntry o) {
-    return username.compareTo(o.username);
-  }
-
 }

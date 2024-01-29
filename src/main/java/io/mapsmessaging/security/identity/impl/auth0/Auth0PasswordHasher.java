@@ -16,6 +16,9 @@
 
 package io.mapsmessaging.security.identity.impl.auth0;
 
+import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_JWT_FAILURE;
+
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
 import com.auth0.jwk.JwkException;
@@ -23,16 +26,16 @@ import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.UrlJwkProvider;
 import com.auth0.net.Response;
 import com.auth0.net.TokenRequest;
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.impl.external.JwtPasswordHasher;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
-
 import java.util.Arrays;
-
-import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
 
 public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvider {
 
+  private final static Logger logger = LoggerFactory.getLogger(Auth0PasswordHasher.class);
   private final Auth0Auth auth;
   private final Auth0IdentityEntry identityEntry;
   private final String username;
@@ -70,7 +73,7 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
           return computedPassword;
         }
       } catch (JwkException e) {
-        // todo Log this
+        logger.log(AUTH0_JWT_FAILURE, e);
       }
       return new byte[0];
     }
@@ -94,7 +97,7 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
     } catch (Auth0Exception | JwkException e) {
       computedPassword = new byte[12];
       Arrays.fill(computedPassword, (byte) 0xff);
-      // ToDo log
+      logger.log(AUTH0_JWT_FAILURE, e);
     }
     return new byte[0];
   }

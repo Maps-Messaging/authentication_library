@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -125,7 +125,6 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     if (res && groupList != null) {
       // Add known groups here
       for (String group : groupList) {
-        // ToDo
         subject.getPrincipals().add(new GroupPrincipal(group));
       }
       subject.getPrincipals().add(new AuthHandlerPrincipal("Aws:Cognito"));
