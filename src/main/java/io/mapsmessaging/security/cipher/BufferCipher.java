@@ -24,9 +24,7 @@ import java.security.cert.Certificate;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * The {@code BufferCipher} class provides functionality for secure encryption and decryption of data,
@@ -154,9 +152,7 @@ public class BufferCipher {
     return new RsaPartition(aesKey, iv);
   }
 
-  @Data
   @AllArgsConstructor
-  @NoArgsConstructor
   private static class RsaPartition {
     private SecretKey aesKey;
     private byte[] iv;

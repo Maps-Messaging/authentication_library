@@ -31,9 +31,11 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.security.sasl.SaslException;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class SessionContext {
 
   private static final String[] HMAC_NAMES = {"sha3", "sha"};

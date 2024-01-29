@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ package io.mapsmessaging.security.identity.principals;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import java.security.Principal;
 import java.util.List;
-import lombok.Data;
 import lombok.Getter;
 
-@Data
 public class GroupIdPrincipal implements Principal {
 
-  @Getter private final List<GroupIdMap> groupIds;
+  @Getter
+  private final List<GroupIdMap> groupIds;
 
   public GroupIdPrincipal(List<GroupIdMap> groupIds) {
     this.groupIds = groupIds;

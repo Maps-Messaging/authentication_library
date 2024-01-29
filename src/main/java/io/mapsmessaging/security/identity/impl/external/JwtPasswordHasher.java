@@ -18,9 +18,11 @@ package io.mapsmessaging.security.identity.impl.external;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.mapsmessaging.security.passwords.PasswordHasher;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public abstract class JwtPasswordHasher implements PasswordHasher {
 
   protected DecodedJWT jwt;
