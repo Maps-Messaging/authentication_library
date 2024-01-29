@@ -27,18 +27,20 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings(" java:S6548") // yes it is a singleton
 public class IdentityLookupFactory {
 
-  private static final IdentityLookupFactory instance = new IdentityLookupFactory();
-
-  private final Map<String, IdentityLookup> identityLookupMap = new ConcurrentHashMap<>();
-
-  private final ServiceLoader<IdentityLookup> identityLookups;
-  private final Logger logger = LoggerFactory.getLogger(IdentityLookupFactory.class);
-
-  public static IdentityLookupFactory getInstance() {
-    return instance;
+  private static class Holder {
+    static final IdentityLookupFactory INSTANCE = new IdentityLookupFactory();
   }
 
+  public static IdentityLookupFactory getInstance() {
+    return IdentityLookupFactory.Holder.INSTANCE;
+  }
+
+
+  private final Map<String, IdentityLookup> identityLookupMap = new ConcurrentHashMap<>();
+  private final ServiceLoader<IdentityLookup> identityLookups;
+
   private IdentityLookupFactory() {
+    Logger logger = LoggerFactory.getLogger(IdentityLookupFactory.class);
     identityLookups = ServiceLoader.load(IdentityLookup.class);
     for (IdentityLookup identityLookup : identityLookups) {
       logger.log(IDENTITY_LOOKUP_LOADED, identityLookup.getName());

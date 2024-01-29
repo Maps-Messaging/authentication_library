@@ -23,17 +23,17 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Map;
 import java.util.ServiceLoader;
-import lombok.Getter;
 
 @SuppressWarnings(" java:S6548") // yes it is a singleton
 public class CertificateManagerFactory {
 
-  static {
-    instance = new CertificateManagerFactory();
+  private static class Holder {
+    static final CertificateManagerFactory INSTANCE = new CertificateManagerFactory();
   }
 
-  @Getter
-  private static final CertificateManagerFactory instance;
+  public static CertificateManagerFactory getInstance() {
+    return CertificateManagerFactory.Holder.INSTANCE;
+  }
 
   private final ServiceLoader<CertificateManager> certificateManagers;
 

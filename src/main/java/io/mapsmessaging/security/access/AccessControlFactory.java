@@ -18,13 +18,18 @@ package io.mapsmessaging.security.access;
 
 import java.util.List;
 import java.util.ServiceLoader;
-import lombok.Getter;
 
 @SuppressWarnings(" java:S6548") // yes it is a singleton
 public class AccessControlFactory {
 
-  @Getter
-  private static final AccessControlFactory instance = new AccessControlFactory();
+  private static class Holder {
+    static final AccessControlFactory INSTANCE = new AccessControlFactory();
+  }
+
+  public static AccessControlFactory getInstance() {
+    return Holder.INSTANCE;
+  }
+
   private final ServiceLoader<AccessControlList> accessControlLists;
 
   private AccessControlFactory() {

@@ -24,12 +24,18 @@ import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
-import lombok.Getter;
 
 @SuppressWarnings(" java:S6548") // yes it is a singleton
 public class PasswordHandlerFactory {
 
-  @Getter private static final PasswordHandlerFactory instance = new PasswordHandlerFactory();
+
+  private static class Holder {
+    static final PasswordHandlerFactory INSTANCE = new PasswordHandlerFactory();
+  }
+
+  public static PasswordHandlerFactory getInstance() {
+    return PasswordHandlerFactory.Holder.INSTANCE;
+  }
 
   private final List<PasswordHandler> passwordHandlers;
 
