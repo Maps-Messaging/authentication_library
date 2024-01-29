@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings(" java:S6548") // yes it is a singleton
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class IdentityLookupFactory {
 
   private static class Holder {
