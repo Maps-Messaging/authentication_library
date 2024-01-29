@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import lombok.Getter;
@@ -81,7 +82,23 @@ public class GroupEntry implements Comparable<GroupEntry> {
 
   @Override
   public int compareTo(GroupEntry o) {
-    return name.compareTo(o.name);
+    // Assuming name is a String. Use Objects.compare for null-safe comparison.
+    return Objects.compare(this.name, o.name, String::compareTo);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GroupEntry that = (GroupEntry) o;
+    // Use Objects.equals for null-safe comparison.
+    return Objects.equals(name, that.name);
+  }
+
+  @Override
+  public int hashCode() {
+    // Implement hashCode when you override equals
+    return Objects.hash(name);
   }
 
   public void removeUser(String username) {
