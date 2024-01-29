@@ -53,12 +53,13 @@ public class PermissionAccessControlList implements AccessControlList {
   }
 
   public long getSubjectAccess(Subject subject) {
+    long mask = 0;
     if (subject == null) {
-      return 0;
+      return mask;
     }
 
     long time = System.currentTimeMillis();
-    long mask = processAclEntriesForSubject(subject, time);
+    mask = processAclEntriesForSubject(subject, time);
 
     Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
     mask |= processGroups(groups, time);
@@ -92,7 +93,8 @@ public class PermissionAccessControlList implements AccessControlList {
     return !aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(authId);
   }
 
-
+  // We are exiting early here because we want to fast exit once we found access is allowed
+@SuppressWarnings("java:S3516")
   public boolean canAccess(Subject subject, long requestedAccess) {
     if (subject == null || requestedAccess == 0) {
       return false;
@@ -112,7 +114,6 @@ public class PermissionAccessControlList implements AccessControlList {
         }
       }
     }
-
     return false;
   }
 
