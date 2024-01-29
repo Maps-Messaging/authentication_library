@@ -111,6 +111,7 @@ public class IdentityEntry {
     groupList.remove(groupEntry.getName());
   }
 
+  @SuppressWarnings("java:S1130") // They are thrown by inherited classes
   public String getPassword() throws GeneralSecurityException, IOException {
     return password;
   }
