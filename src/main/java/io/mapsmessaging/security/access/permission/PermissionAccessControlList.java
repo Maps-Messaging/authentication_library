@@ -54,16 +54,13 @@ public class PermissionAccessControlList implements AccessControlList {
 
   public long getSubjectAccess(Subject subject) {
     long mask = 0;
-    if (subject == null) {
-      return mask;
+    if (subject != null) {
+      long time = System.currentTimeMillis();
+      mask = processAclEntriesForSubject(subject, time);
+
+      Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
+      mask |= processGroups(groups, time);
     }
-
-    long time = System.currentTimeMillis();
-    mask = processAclEntriesForSubject(subject, time);
-
-    Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
-    mask |= processGroups(groups, time);
-
     return mask;
   }
 
