@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class UuidGeneratorTest {
@@ -58,7 +58,9 @@ public class UuidGeneratorTest {
   @MethodSource("randomVersions")
   void testGenerateRandomWithAllVersion(RandomVersions version) {
     UUID uuid = UuidGenerator.getInstance().generate(version);
+    UUID uuid2 = UuidGenerator.getInstance().generate(version);
     assertNotNull(uuid, "Generated UUID should not be null for supported version");
+    assertNotEquals(uuid, uuid2);
   }
 
   @ParameterizedTest
@@ -66,7 +68,11 @@ public class UuidGeneratorTest {
   void testGenerateNamedithAllVersion(NamedVersions version) throws NoSuchAlgorithmException {
     UUID rootUuid = UuidGenerator.getInstance().generate(RandomVersions.TIME_EPOCH);
     UUID named = UuidGenerator.getInstance().generate(version, rootUuid, "/test/namespace");
+    UUID named2 = UuidGenerator.getInstance().generate(version, rootUuid, "/test/namespace");
     assertNotNull(named, "Generated UUID should not be null for supported named version");
+    assertEquals(named, named2);
+    UUID named3 = UuidGenerator.getInstance().generate(version, rootUuid, "/test/namespace1");
+    assertNotEquals(named, named3);
   }
 
 }
