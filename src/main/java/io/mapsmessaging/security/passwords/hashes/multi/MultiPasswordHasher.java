@@ -26,6 +26,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import lombok.Getter;
 
@@ -68,7 +69,7 @@ public class MultiPasswordHasher implements PasswordHasher {
   }
 
   public PasswordHasher create(String password) {
-    return new MultiPasswordHasher(parsers);
+    return new MultiPasswordHasher(password);
   }
 
   @Override
@@ -90,7 +91,11 @@ public class MultiPasswordHasher implements PasswordHasher {
       if (cost == 0) {
         localCost = handler.getCost();
       }
-      hashes.add(new String(handler.transformPassword(password, salt, localCost)));
+      byte[] tmpPassword = new byte[password.length];
+      System.arraycopy(password, 0, tmpPassword, 0, tmpPassword.length);
+      String hash = new String(handler.transformPassword(tmpPassword, salt, localCost));
+      Arrays.fill(tmpPassword, (byte)0);
+      hashes.add(hash);
     }
     this.password = new Gson().toJson(hashes);
     return (getName() + "$" + this.password).getBytes(StandardCharsets.UTF_8);

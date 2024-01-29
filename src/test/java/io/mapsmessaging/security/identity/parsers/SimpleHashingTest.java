@@ -77,8 +77,8 @@ public class SimpleHashingTest {
     byte[] computed =
         lookup.transformPassword(
             generatePassword(16).getBytes(StandardCharsets.UTF_8),
-            lookup.getSalt(),
-            lookup.getCost());
+            PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
+            0);
     String computedString = new String(computed);
     Assertions.assertNotEquals(storeHash, computedString);
   }
