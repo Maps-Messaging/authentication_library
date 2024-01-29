@@ -54,10 +54,11 @@ public class InitialState extends State {
     if (!context.isReceivedClientMessage()) {
       return null;
     }
+    String salt = new String(context.getPasswordSalt());
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.ITERATION_COUNT, String.valueOf(context.getIterations()));
-    response.put(ChallengeResponse.SALT, new String(context.getPasswordSalt()));
+    response.put(ChallengeResponse.SALT, salt);
     context.setState(new ValidationState(this));
     context.setInitialServerChallenge(response.toString());
     return response;
