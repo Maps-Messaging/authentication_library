@@ -91,7 +91,7 @@ public class PermissionAccessControlList implements AccessControlList {
   }
 
   // We are exiting early here because we want to fast exit once we found access is allowed
-@SuppressWarnings("java:S3516")
+  @SuppressWarnings("java:S3516")
   public boolean canAccess(Subject subject, long requestedAccess) {
     if (subject == null || requestedAccess == 0) {
       return false;
@@ -114,6 +114,9 @@ public class PermissionAccessControlList implements AccessControlList {
     return false;
   }
 
+
+  // We are exiting early here because we want to fast exit once we found access is allowed
+  @SuppressWarnings("java:S3516")
   private boolean checkAccessForId(UUID id, long requestedAccess) {
     for (AclEntry aclEntry : aclEntries) {
       if(isAccessGranted(aclEntry, requestedAccess, id)){
