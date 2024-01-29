@@ -52,9 +52,8 @@ public class LdapUser extends IdentityEntry {
         } else if (attribute.getID().equalsIgnoreCase("gecos")) {
           description = (String) attribute.get();
         }
-
       } catch (NamingException e) {
-        throw new RuntimeException(e);
+        // We ignore this since if the attribute exists, but we can not get it then we don't really care
       }
     }
   }

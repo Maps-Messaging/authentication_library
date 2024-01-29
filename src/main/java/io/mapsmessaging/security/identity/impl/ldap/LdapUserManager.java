@@ -16,9 +16,12 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.logging.AuthLogMessages;
 import java.util.*;
 import java.util.Map.Entry;
 import javax.naming.NamingEnumeration;
@@ -27,6 +30,7 @@ import javax.naming.directory.*;
 
 public class LdapUserManager {
 
+  private final Logger logger = LoggerFactory.getLogger(LdapUserManager.class);
   private final String passwordName;
 
   private final String searchBase;
@@ -36,7 +40,7 @@ public class LdapUserManager {
   private final Map<String, LdapGroup> groupMap;
   private final Map<String, String> map;
 
-  public LdapUserManager(Map<String, ?> config) throws NamingException {
+  public LdapUserManager(Map<String, ?> config) {
     map = new LinkedHashMap<>();
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
@@ -97,7 +101,7 @@ public class LdapUserManager {
         }
       }
     } catch (NamingException e) {
-      throw new RuntimeException(e);
+      logger.log(AuthLogMessages.LDAP_LOAD_FAILURE, e);
     } finally {
       if (directoryContext != null) {
         try {
