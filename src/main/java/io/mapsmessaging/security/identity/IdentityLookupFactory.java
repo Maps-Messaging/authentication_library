@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
+@SuppressWarnings(" java:S6548") // yes it is a singleton
 public class IdentityLookupFactory {
 
   private static final IdentityLookupFactory instance = new IdentityLookupFactory();

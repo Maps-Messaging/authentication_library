@@ -32,9 +32,6 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
-import io.mapsmessaging.security.passwords.PasswordHandler;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -131,32 +128,6 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   @Override
   public List<GroupEntry> getGroups() {
     return new ArrayList<>(groupEntryMap.values());
-  }
-
-  @Override
-  public boolean createGroup(String groupName) throws IOException {
-    return super.createGroup(groupName);
-  }
-
-  @Override
-  public boolean deleteGroup(String groupName) throws IOException {
-    return super.deleteGroup(groupName);
-  }
-
-  @Override
-  public boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher)
-      throws IOException, GeneralSecurityException {
-    return super.createUser(username, passwordHash, passwordHasher);
-  }
-
-  @Override
-  public boolean deleteUser(String username) throws IOException {
-    return super.deleteUser(username);
-  }
-
-  @Override
-  public void updateGroup(GroupEntry groupEntry) throws IOException {
-    super.updateGroup(groupEntry);
   }
 
   @Override

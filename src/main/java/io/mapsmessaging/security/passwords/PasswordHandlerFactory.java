@@ -26,14 +26,15 @@ import java.util.List;
 import java.util.ServiceLoader;
 import lombok.Getter;
 
+@SuppressWarnings(" java:S6548") // yes it is a singleton
 public class PasswordHandlerFactory {
 
   @Getter private static final PasswordHandlerFactory instance = new PasswordHandlerFactory();
 
   private final List<PasswordHandler> passwordHandlers;
-  private final Logger logger = LoggerFactory.getLogger(PasswordHandlerFactory.class);
 
   private PasswordHandlerFactory() {
+    Logger logger = LoggerFactory.getLogger(PasswordHandlerFactory.class);
     passwordHandlers = new ArrayList<>();
     ServiceLoader<PasswordHandler> list = ServiceLoader.load(PasswordHandler.class);
     for (PasswordHandler parser : list) {

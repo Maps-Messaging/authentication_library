@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 import lombok.Getter;
 
+@SuppressWarnings(" java:S6548") // yes it is a singleton
 public class AccessControlFactory {
-
 
   @Getter
   private static final AccessControlFactory instance = new AccessControlFactory();
