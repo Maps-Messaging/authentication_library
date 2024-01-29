@@ -80,6 +80,7 @@ public class KeyStoreManager implements CertificateManager {
     return new KeyStoreManager(config);
   }
 
+  @SuppressWarnings("java:S1172") // the config parameter is kept since it may or may not be used in extending classes
   protected KeyStore createKeyStore(String type, String path, char[] password, Map<String, ?> config)
       throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     KeyStore store = KeyStore.getInstance(type);

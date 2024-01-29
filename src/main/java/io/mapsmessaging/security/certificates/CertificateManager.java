@@ -29,8 +29,7 @@ public interface CertificateManager {
 
   boolean isValid(Map<String, ?> config);
 
-  CertificateManager create(Map<String, ?> config)
-      throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException;
+  CertificateManager create(Map<String, ?> config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException;
 
   Certificate getCertificate(String alias) throws CertificateException;
 
