@@ -20,6 +20,7 @@ package io.mapsmessaging.security.identity.impl.unix;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import lombok.Getter;
 
@@ -44,6 +45,15 @@ public class GroupFileEntry extends GroupEntry {
         Collections.addAll(userSet, groups.split(","));
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GroupFileEntry that = (GroupFileEntry) o;
+    // Use Objects.equals for null-safe comparison.
+    return Objects.equals(name, that.name) && groupId == that.groupId;
   }
 
 }
