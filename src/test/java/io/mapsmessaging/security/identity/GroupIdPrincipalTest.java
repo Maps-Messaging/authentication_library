@@ -16,14 +16,16 @@
 
 package io.mapsmessaging.security.identity;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.uuid.UuidGenerator;
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GroupIdPrincipalTest {
 
@@ -45,8 +47,8 @@ class GroupIdPrincipalTest {
 
   @Test
   void testToString() {
-    GroupIdMap groupId1 = new GroupIdMap(UuidGenerator.generate(), "group1", "myAuth");
-    GroupIdMap groupId2 = new GroupIdMap(UuidGenerator.generate(), "group2", "myAuth");
+    GroupIdMap groupId1 = new GroupIdMap(UuidGenerator.getInstance().generate(), "group1", "myAuth");
+    GroupIdMap groupId2 = new GroupIdMap(UuidGenerator.getInstance().generate(), "group2", "myAuth");
     List<GroupIdMap> testGroupIds = Arrays.asList(groupId1, groupId2);
     GroupIdPrincipal principal = new GroupIdPrincipal(testGroupIds);
 

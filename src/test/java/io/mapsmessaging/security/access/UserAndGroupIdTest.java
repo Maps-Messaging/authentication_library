@@ -21,15 +21,16 @@ import io.mapsmessaging.security.access.mapping.GroupMapParser;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapParser;
 import io.mapsmessaging.security.uuid.UuidGenerator;
-import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 public class UserAndGroupIdTest {
 
   @Test
   void testUserId(){
-    UUID uuid = UuidGenerator.generate();
+    UUID uuid = UuidGenerator.getInstance().generate();
     UserIdMap userIdMap = new UserIdMap(uuid, "aName", "anAuth");
 
     Assertions.assertEquals(uuid, userIdMap.getAuthId());
@@ -44,13 +45,13 @@ public class UserAndGroupIdTest {
 
     UserIdMap userIdMap3 = new UserIdMap(uuid, "aName1", "anAuth");
     Assertions.assertNotEquals(userIdMap, userIdMap3);
-    UserIdMap userIdMap4 = new UserIdMap(UuidGenerator.generate(), "aName", "anAuth");
+    UserIdMap userIdMap4 = new UserIdMap(UuidGenerator.getInstance().generate(), "aName", "anAuth");
     Assertions.assertNotEquals(userIdMap, userIdMap4);
   }
 
   @Test
   void testGroupId(){
-    UUID uuid = UuidGenerator.generate();
+    UUID uuid = UuidGenerator.getInstance().generate();
     GroupIdMap groupIdMap = new GroupIdMap(uuid, "aName", "anAuth");
 
     Assertions.assertEquals(uuid, groupIdMap.getAuthId());
@@ -65,14 +66,14 @@ public class UserAndGroupIdTest {
 
     GroupIdMap groupIdMap3 = new GroupIdMap(uuid, "aName1", "anAuth");
     Assertions.assertNotEquals(groupIdMap, groupIdMap3);
-    GroupIdMap groupIdMap4 = new GroupIdMap(UuidGenerator.generate(), "aName", "anAuth");
+    GroupIdMap groupIdMap4 = new GroupIdMap(UuidGenerator.getInstance().generate(), "aName", "anAuth");
     Assertions.assertNotEquals(groupIdMap, groupIdMap4);
   }
 
   @Test
   void testUserParsing(){
     UserMapParser parser = new UserMapParser();
-    UUID uuid = UuidGenerator.generate();
+    UUID uuid = UuidGenerator.getInstance().generate();
     UserIdMap userIdMap = parser.parse(uuid.toString()+" = authDomain:username");
     Assertions.assertEquals("authDomain", userIdMap.getAuthDomain());
     Assertions.assertEquals("username", userIdMap.getUsername());
@@ -82,7 +83,7 @@ public class UserAndGroupIdTest {
   @Test
   void testGroupParsing(){
     GroupMapParser parser = new GroupMapParser();
-    UUID uuid = UuidGenerator.generate();
+    UUID uuid = UuidGenerator.getInstance().generate();
     GroupIdMap groupIdMap = parser.parse(uuid.toString()+" = authDomain:groupname");
     Assertions.assertEquals("authDomain", groupIdMap.getAuthDomain());
     Assertions.assertEquals("groupname", groupIdMap.getGroupName());

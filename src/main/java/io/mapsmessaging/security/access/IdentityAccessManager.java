@@ -33,13 +33,17 @@ import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import io.mapsmessaging.security.uuid.UuidGenerator;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.security.auth.Subject;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
-import java.util.*;
-import javax.security.auth.Subject;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class IdentityAccessManager {
 
@@ -120,7 +124,7 @@ public class IdentityAccessManager {
       identityLookup.createGroup(groupName);
     }
     if (groupIdMap == null) {
-      groupIdMap = new GroupIdMap(UuidGenerator.generate(), groupName, identityLookup.getDomain());
+      groupIdMap = new GroupIdMap(UuidGenerator.getInstance().generate(), groupName, identityLookup.getDomain());
       groupMapManagement.add(groupIdMap);
       groupMapManagement.save();
     }
@@ -161,7 +165,7 @@ public class IdentityAccessManager {
       identityLookup.createUser(username, hash, passwordHandler);
     }
     if (idMap == null) {
-      idMap = new UserIdMap(UuidGenerator.generate(), username, identityLookup.getDomain());
+      idMap = new UserIdMap(UuidGenerator.getInstance().generate(), username, identityLookup.getDomain());
       userMapManagement.add(idMap);
       userMapManagement.save();
     }
@@ -248,12 +252,12 @@ public class IdentityAccessManager {
   private UserIdMap mapUser(IdentityEntry entry) {
     UserIdMap userIdMap = null;
     if (userMapManagement.get(entry.getUsername()) == null) {
-      userIdMap = new UserIdMap(UuidGenerator.generate(), entry.getUsername(), identityLookup.getDomain());
+      userIdMap = new UserIdMap(UuidGenerator.getInstance().generate(), entry.getUsername(), identityLookup.getDomain());
       userMapManagement.add(userIdMap);
     }
     for (GroupEntry group : entry.getGroups()) {
       if (groupMapManagement.get(group.getName()) == null) {
-        GroupIdMap groupIdMap = new GroupIdMap(UuidGenerator.generate(), group.getName(), identityLookup.getDomain());
+        GroupIdMap groupIdMap = new GroupIdMap(UuidGenerator.getInstance().generate(), group.getName(), identityLookup.getDomain());
         groupMapManagement.add(groupIdMap);
       }
     }

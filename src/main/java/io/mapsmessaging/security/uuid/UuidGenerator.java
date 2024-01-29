@@ -17,52 +17,44 @@
 package io.mapsmessaging.security.uuid;
 
 import com.fasterxml.uuid.Generators;
-import java.util.UUID;
-import lombok.Getter;
+import com.fasterxml.uuid.impl.NameBasedGenerator;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
+
+
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class UuidGenerator {
 
-  @Getter
-  public enum VERSIONS{
-    TIME(1),
-    RANDOM(4),
-    TIME_REORDERED(6),
-    TIME_EPOCH(7);
-
-    private final int version;
-
-    VERSIONS(int version){
-      this.version = version;
-    }
-
+  private static class Holder {
+    static final UuidGenerator INSTANCE = new UuidGenerator();
   }
 
-  static {
-    int val = 7;
-    String version = System.getProperty("UUID_VERSION");
-    if (version != null) {
-      try {
-        val = Integer.parseInt(version);
-      } catch (Throwable th) {
-        // ignore
-      }
-    }
-    VERSIONS defaultVersion = VERSIONS.TIME_EPOCH;
-    for(VERSIONS versions: VERSIONS.values()){
-      if(versions.getVersion() == val){
-        defaultVersion = versions;
-      }
-    }
-    UUID_VERSION = defaultVersion;
+  public static UuidGenerator getInstance() {
+    return UuidGenerator.Holder.INSTANCE;
   }
 
-  private static final VERSIONS UUID_VERSION;
+  private final RandomVersions UUID_VERSION;
+  private final Map<UUID, NameBasedGenerator> namedGeneratorMap;
 
-  public static UUID generate() {
+  public UUID generate(NamedVersions namedVersions, UUID namespaceUuid, String namespace) throws NoSuchAlgorithmException {
+    NameBasedGenerator namespaceGenerator = namedGeneratorMap.get(namespaceUuid);
+    if (namespaceGenerator == null) {
+      MessageDigest messageDigest = MessageDigest.getInstance(namedVersions.getDigestAlgorithm());
+      namespaceGenerator = Generators.nameBasedGenerator(namespaceUuid, messageDigest);
+      namedGeneratorMap.put(namespaceUuid, namespaceGenerator);
+    }
+    return namespaceGenerator.generate(namespace);
+  }
+
+  public UUID generate() {
     return generate(UUID_VERSION);
   }
 
-  public static UUID generate(VERSIONS version){
+  public UUID generate(RandomVersions version) {
     switch (version) {
       case TIME:
         return Generators.timeBasedGenerator().generate();
@@ -77,5 +69,22 @@ public class UuidGenerator {
   }
 
   private UuidGenerator() {
+    namedGeneratorMap = new LinkedHashMap<>();
+    int val = 7;
+    String version = System.getProperty("UUID_VERSION");
+    if (version != null) {
+      try {
+        val = Integer.parseInt(version);
+      } catch (Throwable th) {
+        // ignore
+      }
+    }
+    RandomVersions defaultVersion = RandomVersions.TIME_EPOCH;
+    for (RandomVersions versions : RandomVersions.values()) {
+      if (versions.getVersion() == val) {
+        defaultVersion = versions;
+      }
+    }
+    UUID_VERSION = defaultVersion;
   }
 }

@@ -16,28 +16,59 @@
 
 package io.mapsmessaging.security.uuid;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class UuidGeneratorTest {
 
+  private static List<Arguments> randomVersions() {
+    List<Arguments> arguments = new ArrayList<>();
+    for (RandomVersions version : RandomVersions.values()) {
+      arguments.add(arguments(version));
+    }
+    return arguments;
+  }
+
+  private static List<Arguments> namedVersions() {
+    List<Arguments> arguments = new ArrayList<>();
+    for (NamedVersions version : NamedVersions.values()) {
+      arguments.add(arguments(version));
+    }
+    return arguments;
+  }
+
   @Test
-  void testGenerateWithDefaultVersion() {
-    UUID uuid = UuidGenerator.generate();
+  void testGenerateRandomWithDefaultVersion() {
+    UUID uuid = UuidGenerator.getInstance().generate();
     assertNotNull(uuid, "Generated UUID should not be null for default version");
     // Additional checks can be added based on the expected behavior of the default version
   }
 
-  @Test
-  void testGenerateWithAllVersion() {
-    for(UuidGenerator.VERSIONS versions:UuidGenerator.VERSIONS.values()){
-      UUID uuid = UuidGenerator.generate(versions);
-      assertNotNull(uuid, "Generated UUID should not be null for supported version");
-
-    }
+  @ParameterizedTest
+  @MethodSource("randomVersions")
+  void testGenerateRandomWithAllVersion(RandomVersions version) {
+    UUID uuid = UuidGenerator.getInstance().generate(version);
+    assertNotNull(uuid, "Generated UUID should not be null for supported version");
   }
+
+  @ParameterizedTest
+  @MethodSource("namedVersions")
+  void testGenerateNamedithAllVersion(NamedVersions version) throws NoSuchAlgorithmException {
+    UUID rootUuid = UuidGenerator.getInstance().generate(RandomVersions.TIME_EPOCH);
+    UUID named = UuidGenerator.getInstance().generate(version, rootUuid, "/test/namespace");
+    assertNotNull(named, "Generated UUID should not be null for supported named version");
+  }
+
 }
 
 
