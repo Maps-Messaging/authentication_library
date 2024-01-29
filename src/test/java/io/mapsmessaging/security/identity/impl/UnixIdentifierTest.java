@@ -38,6 +38,7 @@ class UnixIdentifierTest {
     Map<String, String> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/nix");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
+    Assertions.assertEquals("unix", lookup.getDomain());
     Assertions.assertNotNull(lookup.findGroup("admin.dojo"));
     Assertions.assertNull(lookup.findGroup("admin"));
     Assertions.assertEquals(lookup.getDomain(), "unix");
