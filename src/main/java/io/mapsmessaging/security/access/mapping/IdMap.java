@@ -18,9 +18,11 @@ package io.mapsmessaging.security.access.mapping;
 
 import io.mapsmessaging.security.uuid.UuidGenerator;
 import java.util.UUID;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
+@EqualsAndHashCode
 public abstract class IdMap {
 
   protected final UUID authId;
