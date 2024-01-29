@@ -76,7 +76,7 @@ public class EncryptedAuth extends ApacheBasicAuth {
         throw new RuntimeException("Unable to find certificate manager ", e);
       }
     }
-    return null;
+    throw new RuntimeException("Invalid configuration, unable to create encrypted authentication authority");
   }
 
   private EncryptedAuth construct(String passwordPath, String groupPath, Map<String, ?> topConfig)

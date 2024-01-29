@@ -53,59 +53,80 @@ public class PermissionAccessControlList implements AccessControlList {
   }
 
   public long getSubjectAccess(Subject subject) {
-    long mask = 0;
-    if (subject != null) {
-      long time = System.currentTimeMillis();
-      UUID authId = SubjectHelper.getUniqueId(subject);
-      for (AclEntry aclEntry : aclEntries) {
-        if (!aclEntry.getExpiryPolicy().hasExpired(time) &&
-            aclEntry.matches(authId)) {
-          mask = mask | aclEntry.getPermissions();
-        }
-      }
-
-      // Scan the groups for access
-      Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
-      for (GroupIdPrincipal group : groups) {
-        for (GroupIdMap groupIdMap : group.getGroupIds()) {
-          for (AclEntry aclEntry : aclEntries) {
-            if (!aclEntry.getExpiryPolicy().hasExpired(time)
-                && aclEntry.matches(groupIdMap.getAuthId())) {
-              mask = mask | aclEntry.getPermissions();
-            }
-          }
-        }
-      }
+    if (subject == null) {
+      return 0;
     }
+
+    long time = System.currentTimeMillis();
+    long mask = processAclEntriesForSubject(subject, time);
+
+    Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
+    mask |= processGroups(groups, time);
+
     return mask;
   }
+
+  private long processAclEntriesForSubject(Subject subject, long time) {
+    UUID authId = SubjectHelper.getUniqueId(subject);
+    return aclEntries.stream()
+        .filter(aclEntry -> isValidAclEntry(aclEntry, time, authId))
+        .mapToLong(AclEntry::getPermissions)
+        .reduce(0, (a, b) -> a | b);
+  }
+
+  private long processGroups(Set<GroupIdPrincipal> groups, long time) {
+    return groups.stream()
+        .flatMap(group -> group.getGroupIds().stream())
+        .mapToLong(groupIdMap -> processAclEntriesForGroupId(groupIdMap, time))
+        .reduce(0, (a, b) -> a | b);
+  }
+
+  private long processAclEntriesForGroupId(GroupIdMap groupIdMap, long time) {
+    return aclEntries.stream()
+        .filter(aclEntry -> isValidAclEntry(aclEntry, time, groupIdMap.getAuthId()))
+        .mapToLong(AclEntry::getPermissions)
+        .reduce(0, (a, b) -> a | b);
+  }
+
+  private boolean isValidAclEntry(AclEntry aclEntry, long time, UUID authId) {
+    return !aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(authId);
+  }
+
 
   public boolean canAccess(Subject subject, long requestedAccess) {
     if (subject == null || requestedAccess == 0) {
       return false;
     }
-    UUID authId = SubjectHelper.getUniqueId(subject);
 
-    // Scan for authId for access
-    for (AclEntry aclEntry : aclEntries) {
-      if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess && aclEntry.matches(authId)) {
-        return true;
-      }
+    UUID authId = SubjectHelper.getUniqueId(subject);
+    if (checkAccessForId(authId, requestedAccess)) {
+      return true;
     }
 
-    // Scan the groups for access
-    Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
-    for (GroupIdPrincipal group : groups) {
-      for (GroupIdMap groupIdMap : group.getGroupIds()) {
-        for (AclEntry aclEntry : aclEntries) {
-          if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess
-              && aclEntry.matches(groupIdMap.getAuthId())) {
+    if (!subject.getPrincipals(GroupIdPrincipal.class).isEmpty()) {
+      for (GroupIdPrincipal group : subject.getPrincipals(GroupIdPrincipal.class)) {
+        for (GroupIdMap groupIdMap : group.getGroupIds()) {
+          if (checkAccessForId(groupIdMap.getAuthId(), requestedAccess)) {
             return true;
           }
         }
       }
     }
-    // This means neither user nor group has access
+
     return false;
   }
+
+  private boolean checkAccessForId(UUID id, long requestedAccess) {
+    for (AclEntry aclEntry : aclEntries) {
+      if(isAccessGranted(aclEntry, requestedAccess, id)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isAccessGranted(AclEntry aclEntry, long requestedAccess, UUID authId) {
+    return (aclEntry.getPermissions() & requestedAccess) == requestedAccess && aclEntry.matches(authId);
+  }
+
 }

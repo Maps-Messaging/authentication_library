@@ -111,5 +111,7 @@ public class PlainSaslServer implements SaslServer {
   }
 
   @Override
-  public void dispose() throws SaslException {}
+  public void dispose() throws SaslException {
+    // We have nothing to dispose of here
+  }
 }

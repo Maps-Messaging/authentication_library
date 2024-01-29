@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Auth0Api {
+  private static final String LIST_USER_REQUEST = "ListUsersRequest";
+  private static final String LIST_GROUP_REQUEST = "ListGroupRequest";
+  private static final String USER_IN_GROUP_REQUEST = "GetUserInGroup";
+
   private final WebRequestCaching caching;
   private final ManagementAPI mgmt;
 
@@ -40,15 +44,15 @@ public class Auth0Api {
   }
 
   public boolean isUserCacheValid() {
-    return caching.get("ListUsersRequest") != null;
+    return caching.get(LIST_USER_REQUEST) != null;
   }
 
   public boolean isGroupCacheValid() {
-    return caching.get("ListGroupsRequest") != null;
+    return caching.get(LIST_GROUP_REQUEST) != null;
   }
 
   public List<String> getUserInGroup(String groupname) throws Auth0Exception {
-    List<String> users = (List<String>) caching.get("GetUserInGroup(" + groupname + ")");
+    List<String> users = (List<String>) caching.get(USER_IN_GROUP_REQUEST+"(" + groupname + ")");
     if (users != null) {
       return users;
     }
@@ -59,12 +63,12 @@ public class Auth0Api {
         .getBody()
         .getItems()
         .forEach(user -> users1.add(user.getEmail()));
-    caching.put("GetUserInGroup(" + groupname + ")", users1);
+    caching.put(USER_IN_GROUP_REQUEST+"(" + groupname + ")", users1);
     return users1;
   }
 
   public List<Role> getGroupList() throws Auth0Exception {
-    List<Role> responseList = (List<Role>) caching.get("ListGroupRequest");
+    List<Role> responseList = (List<Role>) caching.get(LIST_GROUP_REQUEST);
     if (responseList != null) {
       return responseList;
     }
@@ -84,12 +88,12 @@ public class Auth0Api {
         responseList.addAll(roleList);
       }
     }
-    caching.put("ListGroupRequest", responseList);
+    caching.put(LIST_GROUP_REQUEST, responseList);
     return responseList;
   }
 
   public List<User> getUserList() throws Auth0Exception {
-    List<User> responseList = (List<User>) caching.get("ListUsersRequest");
+    List<User> responseList = (List<User>) caching.get(LIST_USER_REQUEST);
     if (responseList != null) {
       return responseList;
     }
@@ -113,7 +117,7 @@ public class Auth0Api {
         responseList.stream()
             .filter(user -> (user.isBlocked() == null || !user.isBlocked()))
             .collect(Collectors.toList());
-    caching.put("ListUsersRequest", responseList);
+    caching.put(LIST_USER_REQUEST, responseList);
     return responseList;
   }
 }
