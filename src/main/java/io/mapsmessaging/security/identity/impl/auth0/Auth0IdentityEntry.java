@@ -32,9 +32,7 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
   public String getPassword() {
     try {
       return new String(passwordHasher.getPassword());
-    } catch (GeneralSecurityException e) {
-      throw new RuntimeException(e);
-    } catch (IOException e) {
+    } catch (GeneralSecurityException | IOException e) {
       throw new RuntimeException(e);
     }
   }

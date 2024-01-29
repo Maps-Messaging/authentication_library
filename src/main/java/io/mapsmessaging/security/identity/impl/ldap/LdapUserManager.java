@@ -32,11 +32,10 @@ public class LdapUserManager {
   private final String groupSearchBase;
 
   private final Map<String, LdapUser> userMap;
-
-  private final Hashtable<String, String> map;
+  private final Map<String, String> map;
 
   public LdapUserManager(Map<String, ?> config) throws NamingException {
-    map = new Hashtable<>();
+    map = new LinkedHashMap<>();
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
     }
@@ -71,7 +70,7 @@ public class LdapUserManager {
     String searchFilter = "(uid=" + username + ")";
     DirContext directoryContext = null;
     try {
-      directoryContext = new InitialDirContext(map);
+      directoryContext = new InitialDirContext(new Hashtable<>(map));
       NamingEnumeration<SearchResult> results = directoryContext.search(searchBase, searchFilter, searchControls);
       while (results.hasMore()) {
         SearchResult result = results.next();

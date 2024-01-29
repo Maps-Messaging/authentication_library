@@ -22,6 +22,9 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public abstract class FileLoader {
 
@@ -85,9 +88,12 @@ public abstract class FileLoader {
       }
     }
 
-    if (!file.delete()) {
-      logger.log(FAILED_TO_DELETE_FILE, file.getAbsolutePath());
-      throw new IOException("Could not delete original file");
+    Path path = Paths.get(file.getAbsolutePath());
+    try {
+      Files.delete(path);
+    } catch (IOException e) {
+      logger.log(FAILED_TO_DELETE_FILE, path.toAbsolutePath().toString());
+      throw new IOException("Could not delete original file: " + e.getMessage(), e);
     }
 
     if (!tempFile.renameTo(file)) {

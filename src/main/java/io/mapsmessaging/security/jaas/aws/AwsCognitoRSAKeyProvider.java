@@ -27,17 +27,18 @@ import java.security.interfaces.RSAPublicKey;
 
 public class AwsCognitoRSAKeyProvider implements RSAKeyProvider {
 
-  private final URL aws_kid_store_url;
+
+  private final URL awsKidStoreUrl;
   private final JwkProvider provider;
 
   public AwsCognitoRSAKeyProvider(String awsCognitoRegion, String awsUserPoolsId) {
     String url = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", awsCognitoRegion, awsUserPoolsId);
     try {
-      aws_kid_store_url = new URL(url);
+      awsKidStoreUrl = new URL(url);
     } catch (MalformedURLException e) {
       throw new RuntimeException(String.format("Invalid URL provided, URL=%s", url));
     }
-    provider = new JwkProviderBuilder(aws_kid_store_url).build();
+    provider = new JwkProviderBuilder(awsKidStoreUrl).build();
   }
 
 
@@ -46,7 +47,7 @@ public class AwsCognitoRSAKeyProvider implements RSAKeyProvider {
     try {
       return (RSAPublicKey) provider.get(kid).getPublicKey();
     } catch (JwkException e) {
-      throw new RuntimeException(String.format("Failed to get JWT kid=%s from aws_kid_store_url=%s", kid, aws_kid_store_url));
+      throw new RuntimeException(String.format("Failed to get JWT kid=%s from aws_kid_store_url=%s", kid, awsKidStoreUrl));
     }
   }
 

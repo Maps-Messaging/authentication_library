@@ -54,7 +54,7 @@ public class InitialState extends State {
     if (!context.isReceivedClientMessage()) {
       return null;
     }
-    String salt = new String(context.getPasswordSalt());
+    String salt = new String(context.getPasswordSalt(), StandardCharsets.UTF_8);
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.ITERATION_COUNT, String.valueOf(context.getIterations()));
