@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.auth0.jwk.JwkException;
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.JwkProviderBuilder;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.interfaces.RSAPrivateKey;
@@ -31,8 +30,8 @@ public class AwsCognitoRSAKeyProvider implements RSAKeyProvider {
   private final URL aws_kid_store_url;
   private final JwkProvider provider;
 
-  public AwsCognitoRSAKeyProvider(String aws_cognito_region, String aws_user_pools_id) {
-    String url = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", aws_cognito_region, aws_user_pools_id);
+  public AwsCognitoRSAKeyProvider(String awsCognitoRegion, String awsUserPoolsId) {
+    String url = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", awsCognitoRegion, awsUserPoolsId);
     try {
       aws_kid_store_url = new URL(url);
     } catch (MalformedURLException e) {
