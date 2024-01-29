@@ -52,5 +52,7 @@ class GroupIdPrincipalTest {
 
     String expectedString = "Group Ids:\n\t" + groupId1 + "\n\t" + groupId2;
     assertEquals(expectedString, principal.toString(), "toString should format groupIds correctly");
+    List<GroupIdMap> testGroupIds2 = Arrays.asList(groupId1, groupId2);
+    assertArrayEquals(testGroupIds.toArray(new GroupIdMap[0]), testGroupIds2.toArray());
   }
 }
