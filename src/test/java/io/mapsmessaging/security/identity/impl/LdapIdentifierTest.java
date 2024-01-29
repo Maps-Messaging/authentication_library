@@ -16,22 +16,25 @@
 
 package io.mapsmessaging.security.identity.impl;
 
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.impl.ldap.LdapAuth;
+import io.mapsmessaging.security.identity.impl.ldap.LdapUser;
 import io.mapsmessaging.security.jaas.PropertiesLoader;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.md5.Md5UnixPasswordHasher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import javax.naming.Context;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
-import javax.naming.Context;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 public class LdapIdentifierTest {
 
@@ -72,6 +75,15 @@ public class LdapIdentifierTest {
     Assertions.assertEquals(properties.getProperty("hashedPassword"), pwd);
     PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
     Assertions.assertEquals(Md5UnixPasswordHasher.class, passwordHasher.getClass());
+    IdentityEntry identityEntry = lookup.findEntry(properties.getProperty("username"));
+    Assertions.assertNotNull(identityEntry);
+    Assertions.assertEquals(LdapUser.class, identityEntry.getClass());
+    LdapUser ldapUser = (LdapUser) identityEntry;
+    Assertions.assertEquals(ldapUser.getUsername(), properties.getProperty("username"));
+    Assertions.assertNotNull(ldapUser.getDescription());
+    Assertions.assertNotNull(ldapUser.getHomeDirectory());
+    Assertions.assertNotNull(ldapUser.getSubject());
+    Assertions.assertNotNull(ldapUser.getGroups());
   }
 
 }
