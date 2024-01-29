@@ -16,7 +16,6 @@
 
 package io.mapsmessaging.security.identity;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import lombok.Getter;
@@ -55,7 +54,7 @@ import lombok.Getter;
  *
  * @see Comparable
  */
-public class GroupEntry implements Comparable<GroupEntry> {
+public class GroupEntry {
 
   protected final Set<String> userSet;
 
@@ -78,27 +77,6 @@ public class GroupEntry implements Comparable<GroupEntry> {
 
   public boolean isInGroup(String check) {
     return userSet.contains(check);
-  }
-
-  @Override
-  public int compareTo(GroupEntry o) {
-    // Assuming name is a String. Use Objects.compare for null-safe comparison.
-    return Objects.compare(this.name, o.name, String::compareTo);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    GroupEntry that = (GroupEntry) o;
-    // Use Objects.equals for null-safe comparison.
-    return Objects.equals(name, that.name);
-  }
-
-  @Override
-  public int hashCode() {
-    // Implement hashCode when you override equals
-    return Objects.hash(name);
   }
 
   public void removeUser(String username) {
