@@ -80,8 +80,7 @@ public class KeyStoreManager implements CertificateManager {
     return new KeyStoreManager(config);
   }
 
-  protected KeyStore createKeyStore(
-      String type, String path, char[] password, Map<String, ?> config)
+  protected KeyStore createKeyStore(String type, String path, char[] password, Map<String, ?> config)
       throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     KeyStore store = KeyStore.getInstance(type);
     if (path != null && existed) {

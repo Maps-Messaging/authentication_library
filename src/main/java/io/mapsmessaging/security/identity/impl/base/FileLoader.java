@@ -40,7 +40,6 @@ public abstract class FileLoader {
 
   public void load() {
     logger.log(CHECKING_PASSWORD_STORE, filePath);
-    File file = new File(filePath);
     if (file.exists() && lastModified != file.lastModified()) {
       logger.log(PASSWORD_FILE_CHANGE_DETECTED, filePath);
       lastModified = file.lastModified();

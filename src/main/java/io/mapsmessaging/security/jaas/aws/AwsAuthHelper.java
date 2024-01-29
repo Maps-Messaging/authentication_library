@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AwsAuthHelper {
+
+  private AwsAuthHelper(){}
 
   public static List<String> getGroups(String token, String region, String userPoolId) {
     RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider(region, userPoolId);

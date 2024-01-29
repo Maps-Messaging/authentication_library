@@ -93,4 +93,6 @@ public class CertificateUtils {
     }
   }
 
+  private CertificateUtils(){}
+
 }

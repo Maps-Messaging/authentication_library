@@ -37,6 +37,7 @@ public class CognitoIdentityEntry extends JwtIdentityEntry {
     passwordHasher = new CognitoPasswordHasher(username, cognitoAuth, this);
   }
 
+  @Override
   public String getPassword() throws GeneralSecurityException, IOException {
     return new String(passwordHasher.getPassword());
   }

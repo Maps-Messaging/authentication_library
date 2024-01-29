@@ -16,8 +16,6 @@
 
 package io.mapsmessaging.security.access;
 
-import io.mapsmessaging.logging.Logger;
-import io.mapsmessaging.logging.LoggerFactory;
 import java.util.List;
 import java.util.ServiceLoader;
 import lombok.Getter;
@@ -28,8 +26,6 @@ public class AccessControlFactory {
   @Getter
   private static final AccessControlFactory instance = new AccessControlFactory();
   private final ServiceLoader<AccessControlList> accessControlLists;
-
-  private final Logger logger = LoggerFactory.getLogger(AccessControlFactory.class);
 
   private AccessControlFactory() {
     accessControlLists = ServiceLoader.load(AccessControlList.class);
