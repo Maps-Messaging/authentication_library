@@ -37,7 +37,7 @@ public class UuidGenerator {
     return UuidGenerator.Holder.INSTANCE;
   }
 
-  private final RandomVersions UUID_VERSION;
+  private final RandomVersions UuidDefaultVersion;
   private final Map<UUID, NameBasedGenerator> namedGeneratorMap;
 
   public UUID generate(NamedVersions namedVersions, UUID namespaceUuid, String namespace) throws NoSuchAlgorithmException {
@@ -51,7 +51,7 @@ public class UuidGenerator {
   }
 
   public UUID generate() {
-    return generate(UUID_VERSION);
+    return generate(UuidDefaultVersion);
   }
 
   public UUID generate(RandomVersions version) {
@@ -85,6 +85,6 @@ public class UuidGenerator {
         defaultVersion = versions;
       }
     }
-    UUID_VERSION = defaultVersion;
+    UuidDefaultVersion = defaultVersion;
   }
 }
