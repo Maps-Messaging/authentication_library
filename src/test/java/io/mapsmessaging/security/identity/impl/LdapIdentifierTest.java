@@ -86,6 +86,11 @@ public class LdapIdentifierTest {
     Assertions.assertNotNull(ldapUser.getSubject());
     Assertions.assertNotNull(ldapUser.getGroups());
     Assertions.assertFalse(ldapUser.getGroups().isEmpty());
+    String groupName = ldapUser.getGroups().get(0).getName();
+    Assertions.assertNotNull(lookup.findGroup(groupName).getName());
+    Assertions.assertEquals(groupName, lookup.findGroup(groupName).getName());
+    Assertions.assertNotNull(lookup.getEntries());
+    Assertions.assertFalse(lookup.getEntries().isEmpty());
   }
 
 }

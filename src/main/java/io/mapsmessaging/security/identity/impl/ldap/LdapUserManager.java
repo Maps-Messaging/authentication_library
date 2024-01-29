@@ -154,6 +154,10 @@ public class LdapUserManager {
     }
   }
 
+  public List<IdentityEntry> getUsers(){
+    return new ArrayList<>(userMap.values());
+  }
+
   public GroupEntry findGroup(String groupName) {
     return groupMap.get(groupName);
   }

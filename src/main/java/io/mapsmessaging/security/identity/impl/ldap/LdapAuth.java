@@ -20,7 +20,6 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.naming.Context;
@@ -63,7 +62,7 @@ public class LdapAuth implements IdentityLookup {
 
   @Override
   public List<IdentityEntry> getEntries() {
-    return new ArrayList<>();
+    return ldapUserManager.getUsers();
   }
 
   @Override
