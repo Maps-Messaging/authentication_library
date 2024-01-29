@@ -29,7 +29,8 @@ class WebResultTest {
     Object expectedResult = "Test Result";
     long expectedExpiryTime = Instant.now().toEpochMilli();
     WebResult webResult = new WebResult(expectedResult, expectedExpiryTime);
-
+    assertNotNull(webResult.getResult());
+    assertEquals(expectedExpiryTime, webResult.getExpiryTime());
     assertSame(expectedResult, webResult.getResult(), "The result should match what was set in the constructor");
     assertEquals(expectedExpiryTime, webResult.getExpiryTime(), "The expiry time should match what was set in the constructor");
   }
@@ -38,6 +39,7 @@ class WebResultTest {
   void testExpiryTimeBehavior() {
     long pastTime = Instant.now().minusSeconds(3600).toEpochMilli(); // 1 hour ago
     WebResult expiredWebResult = new WebResult(new Object(), pastTime);
+    assertNotNull(expiredWebResult.getResult());
 
     long currentTime = Instant.now().toEpochMilli();
     assertTrue(expiredWebResult.getExpiryTime() < currentTime, "The WebResult should be expired");

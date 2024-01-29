@@ -156,6 +156,12 @@ public class AccessControlListTest {
 
     // Verify that the subject can access with the requested access
     Assertions.assertTrue(acl.canAccess(subject, requestedAccess));
+
+    userMapManagement.clearAll();
+    Assertions.assertEquals(0, userMapManagement.size());
+
+    groupMapManagement.clearAll();
+    Assertions.assertEquals(0, groupMapManagement.size());
   }
 
   @Test

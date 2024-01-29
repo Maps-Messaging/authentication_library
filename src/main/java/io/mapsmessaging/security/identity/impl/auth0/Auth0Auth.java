@@ -37,22 +37,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
 public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
   private final Logger logger = LoggerFactory.getLogger(Auth0Auth.class);
-  private final String auth0Domain;
   private final String clientId;
   private final String clientSecret;
-  private final String authToken;
   private final String apiToken;
 
   private final Auth0Api auth0Api;
+  @Getter
   private final AuthAPI authAPI;
   private final ManagementAPI mgmt;
+  @Getter
+  private final String auth0Domain;
 
   private long cacheTime = 30000;
 
@@ -60,7 +58,6 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     auth0Domain = "";
     clientId = "";
     clientSecret = "";
-    authToken = "";
     apiToken = "";
     auth0Api = null;
     authAPI = null;
@@ -71,7 +68,6 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     auth0Domain = (String) config.get("domain");
     clientId = (String) config.get("clientId");
     clientSecret = (String) config.get("clientSecret");
-    authToken = (String) config.get("authToken");
     String cacheTimeString = (String) config.get("cacheTime");
     if (cacheTimeString != null && !cacheTimeString.trim().isEmpty()) {
       cacheTime = Long.parseLong(cacheTimeString.trim());
