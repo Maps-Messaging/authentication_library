@@ -22,7 +22,6 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -219,11 +218,6 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
       return true;
     }
     return false;
-  }
-
-  @Override
-  public void updateGroup(GroupEntry groupEntry) throws IOException {
-    super.updateGroup(groupEntry);
   }
 
   @Override
