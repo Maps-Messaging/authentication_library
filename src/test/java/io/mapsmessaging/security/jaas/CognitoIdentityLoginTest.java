@@ -16,13 +16,17 @@
 
 package io.mapsmessaging.security.jaas;
 
+import io.mapsmessaging.security.identity.principals.JwtPrincipal;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import javax.security.auth.Subject;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 public class CognitoIdentityLoginTest extends BaseIdentity {
   private static Properties properties;
@@ -42,6 +46,18 @@ public class CognitoIdentityLoginTest extends BaseIdentity {
     return map;
   }
 
+  protected void validateSubject(Subject subject) {
+    super.validateSubject(subject);
+    Set<JwtPrincipal> jwtPrincipals = subject.getPrincipals(JwtPrincipal.class);
+    for (JwtPrincipal jwtPrincipal : jwtPrincipals) {
+      Assertions.assertEquals(1, jwtPrincipal.getAudience().size());
+      Assertions.assertNotNull(jwtPrincipal.getExpires());
+      Assertions.assertNotNull(jwtPrincipal.getIssued());
+      Assertions.assertNotNull(jwtPrincipal.getIssuer());
+      Assertions.assertFalse(jwtPrincipal.getClaims().isEmpty());
+
+    }
+  }
 
   @Override
   @Test

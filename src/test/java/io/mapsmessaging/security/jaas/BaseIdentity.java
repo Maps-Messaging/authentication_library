@@ -17,14 +17,15 @@
 package io.mapsmessaging.security.jaas;
 
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class BaseIdentity {
 
@@ -72,6 +73,10 @@ public abstract class BaseIdentity {
     Assertions.assertTrue(module.login());
     Assertions.assertTrue(subject.getPrincipals().isEmpty());
     Assertions.assertTrue(module.commit());
+    validateSubject(subject);
+  }
+
+  protected void validateSubject(Subject subject) {
     Assertions.assertFalse(subject.getPrincipals().isEmpty());
   }
 
