@@ -126,24 +126,32 @@ public class LdapUserManager {
       SearchResult result = searchResults.nextElement();
       Attributes attrs = result.getAttributes();
       if (attrs.size() > 0) {
-        Attribute groupName = attrs.get("cn");
-        if (groupName != null) {
-          String name = groupName.get().toString();
-          LdapGroup groupEntry = groupMap.get(name);
-          if(groupEntry == null){
-            groupEntry = new LdapGroup(name);
-            groupMap.put(groupEntry.getName(), groupEntry);
-          }
-          if(!groupEntry.isInGroup(userId)){
-            groupEntry.addUser(userId);
-          }
-          if (!ldapUser.isInGroup(name)) {
-            ldapUser.addGroup(groupEntry);
-          }
-        }
+        processGroup(ldapUser, attrs.get("cn"));
       }
     }
+  }
 
+
+  private void processGroup(LdapUser ldapUser, Attribute groupName){
+    try{
+    if (groupName != null) {
+      String name = groupName.get().toString();
+      LdapGroup groupEntry = groupMap.get(name);
+      if(groupEntry == null){
+        groupEntry = new LdapGroup(name);
+        groupMap.put(groupEntry.getName(), groupEntry);
+      }
+        if (!groupEntry.isInGroup(ldapUser.getUsername())) {
+        groupEntry.addUser(ldapUser.getUsername());
+      }
+      if (!ldapUser.isInGroup(name)) {
+        ldapUser.addGroup(groupEntry);
+      }
+    }
+    }
+    catch(NamingException namingException){
+      logger.log(AuthLogMessages.LDAP_LOAD_FAILURE, namingException);
+    }
   }
 
   public GroupEntry findGroup(String groupName) {
