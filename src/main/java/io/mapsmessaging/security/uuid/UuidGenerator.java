@@ -37,7 +37,11 @@ public class UuidGenerator {
   private static final int UUID_VERSION;
 
   public static UUID generate() {
-    switch (UUID_VERSION) {
+    return generate(UUID_VERSION);
+  }
+
+  public static UUID generate(int version){
+    switch (version) {
       case 1:
         return Generators.timeBasedGenerator().generate();
       case 4:

@@ -18,6 +18,7 @@ package io.mapsmessaging.security.access;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.mapsmessaging.security.access.expiry.AccessEntryExpiryPolicy;
 import io.mapsmessaging.security.access.expiry.FixedExpiryPolicy;
 import io.mapsmessaging.security.access.expiry.IdleAccessExpiryPolicy;
 import io.mapsmessaging.security.access.expiry.NoExpiryPolicy;
@@ -49,6 +50,41 @@ class AclEntryTest {
 
     assertFalse(entry.getExpiryPolicy().hasExpired(System.currentTimeMillis()));
     assertTrue(entry.getExpiryPolicy().hasExpired(System.currentTimeMillis() + idleTime+1));
+  }
+
+
+  @Test
+  void testAllArgsConstructor() {
+    UUID authId = UUID.randomUUID();
+    long permissions = 12345L;
+    AccessEntryExpiryPolicy expiryPolicy = new NoExpiryPolicy(); // Replace with actual policy implementation
+
+    AclEntry entry = new AclEntry(authId, permissions, expiryPolicy);
+
+    assertEquals(authId, entry.getAuthId(), "Auth ID should match the one set in constructor");
+    assertEquals(permissions, entry.getPermissions(), "Permissions should match the ones set in constructor");
+    assertSame(expiryPolicy, entry.getExpiryPolicy(), "Expiry policy should match the one set in constructor");
+  }
+
+  @Test
+  void testConstructorWithDefaultExpiryPolicy() {
+    UUID authId = UUID.randomUUID();
+    long permissions = 12345L;
+
+    AclEntry entry = new AclEntry(authId, permissions);
+
+    assertEquals(authId, entry.getAuthId(), "Auth ID should match the one set in constructor");
+    assertEquals(permissions, entry.getPermissions(), "Permissions should match the ones set in constructor");
+    assertTrue(entry.getExpiryPolicy() instanceof NoExpiryPolicy, "Default expiry policy should be NoExpiryPolicy");
+  }
+
+  @Test
+  void testMatchesMethod() {
+    UUID authId = UUID.randomUUID();
+    AclEntry entry = new AclEntry(authId, 12345L);
+
+    assertTrue(entry.matches(authId), "Matches should return true for the same authId");
+    assertFalse(entry.matches(UUID.randomUUID()), "Matches should return false for a different authId");
   }
 }
 

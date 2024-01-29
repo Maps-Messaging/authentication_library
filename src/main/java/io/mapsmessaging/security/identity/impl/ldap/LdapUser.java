@@ -18,7 +18,7 @@ package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
-import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
+import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.security.Principal;
 import java.util.Enumeration;
@@ -64,7 +64,7 @@ public class LdapUser extends IdentityEntry {
   protected Set<Principal> getPrincipals() {
     Set<Principal> principals = super.getPrincipals();
     if (homeDirectory != null) {
-      principals.add(new HomeDirectoryPrinicipal(homeDirectory));
+      principals.add(new HomeDirectoryPrincipal(homeDirectory));
     }
     if (description != null) {
       principals.add(new FullNamePrincipal(description));

@@ -18,7 +18,7 @@ package io.mapsmessaging.security.identity.impl.unix;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
-import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
+import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.security.Principal;
 import java.util.Set;
@@ -45,7 +45,7 @@ public class ShadowEntry extends IdentityEntry {
     Set<Principal> principals = super.getPrincipals();
     if (passwordEntry != null) {
       principals.add(new FullNamePrincipal(passwordEntry.getDescription()));
-      principals.add(new HomeDirectoryPrinicipal(passwordEntry.getHomeDirectory()));
+      principals.add(new HomeDirectoryPrincipal(passwordEntry.getHomeDirectory()));
     }
     return principals;
   }
