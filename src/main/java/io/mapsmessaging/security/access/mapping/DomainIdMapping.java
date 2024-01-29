@@ -16,11 +16,13 @@
 
 package io.mapsmessaging.security.access.mapping;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.util.UUID;
 
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class DomainIdMapping extends IdMap {
 
   private final String authDomain;
