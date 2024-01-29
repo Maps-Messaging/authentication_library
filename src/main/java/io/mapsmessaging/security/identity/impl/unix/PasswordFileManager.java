@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
-import io.mapsmessaging.security.identity.IllegalFormatException;
 import io.mapsmessaging.security.identity.impl.base.FileLoader;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,11 +30,11 @@ public class PasswordFileManager extends FileLoader {
     load();
   }
 
-  protected PasswordEntry load(String line) throws IllegalFormatException {
+  protected PasswordEntry load(String line)  {
     return new PasswordEntry(line);
   }
 
-  public void parse(String line) throws IllegalFormatException {
+  public void parse(String line)  {
     PasswordEntry user = load(line);
     users.put(user.getUsername(), user);
   }
