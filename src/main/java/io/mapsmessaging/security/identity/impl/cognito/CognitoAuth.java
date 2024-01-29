@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,16 +22,15 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @Getter
 public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
@@ -114,7 +113,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
     ListUsersResponse response = cognitoApi.getUserList();
     List<UserType> userList = response.users();
     for (UserType user : userList) {
-      if (user.enabled()) {
+      if (Boolean.TRUE.equals(user.enabled())) {
         List<AttributeType> list = user.attributes();
         AttributeType email = list.stream().filter(attributeType -> attributeType.name().equals("email")).findFirst().orElse(null);
         AttributeType uuid = list.stream().filter(attributeType -> attributeType.name().equals("sub")).findFirst().orElse(null);
