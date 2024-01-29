@@ -67,8 +67,8 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
     try {
       PBEKeySpec spec = new PBEKeySpec(new String(password).toCharArray(), salt, cost, getHashByteSize());
       SecretKeyFactory skf = SecretKeyFactory.getInstance(getAlgorithm());
-      byte[] hash = skf.generateSecret(spec).getEncoded();
-      return (getKey() + "$" + cost + "$" + Base64.getEncoder().encodeToString(salt) + "$" + Base64.getEncoder().encodeToString(hash)).getBytes(StandardCharsets.UTF_8);
+      byte[] hash1 = skf.generateSecret(spec).getEncoded();
+      return (getKey() + "$" + cost + "$" + Base64.getEncoder().encodeToString(salt) + "$" + Base64.getEncoder().encodeToString(hash1)).getBytes(StandardCharsets.UTF_8);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new RuntimeException("Error while hashing password", e);
     }
