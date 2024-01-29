@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,20 +16,15 @@
 
 package io.mapsmessaging.security.passwords.hashes.pbkdf2;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import org.bouncycastle.crypto.digests.SHA3Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 public abstract class Pbkdf2Sha3PasswordHasher extends Pbkdf2PasswordHasher {
 
-  public Pbkdf2Sha3PasswordHasher() {
-    super("");
-  }
-
-  public Pbkdf2Sha3PasswordHasher(String password) {
+  protected Pbkdf2Sha3PasswordHasher(String password) {
     super(password);
   }
 

@@ -32,7 +32,7 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
 
   private final int cost;
 
-  public Pbkdf2PasswordHasher(String password) {
+  protected Pbkdf2PasswordHasher(String password) {
     String[] split = password.split("\\$");
     if (split.length == 4) {
       // split[0] can be ignored since it was used to construc this class

@@ -42,6 +42,7 @@ public class Pkcs11Manager extends KeyStoreManager {
     return new Pkcs11Manager(config);
   }
 
+  @Override
   public boolean isValid(Map<String, ?> config) {
     return config.containsKey(PKCS11_CONFIG)
         && config.containsKey(PROVIDER_NAME)

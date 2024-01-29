@@ -42,4 +42,6 @@ public class PasswordGenerator {
     random.nextBytes(buf);
     return buf;
   }
+
+  private PasswordGenerator(){}
 }
