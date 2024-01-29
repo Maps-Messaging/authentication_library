@@ -68,6 +68,8 @@ public class LdapIdentifierTest {
 
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("ldap", map);
     Assertions.assertEquals(lookup.getClass(), LdapAuth.class);
+    Assertions.assertEquals("ldap", lookup.getDomain());
+
     char[] hash = lookup.getPasswordHash(properties.getProperty("username"));
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
