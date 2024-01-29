@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.naming.Context;
-import javax.naming.NamingException;
 
 public class LdapAuth implements IdentityLookup {
 
@@ -33,7 +32,7 @@ public class LdapAuth implements IdentityLookup {
   public LdapAuth() {
   }
 
-  public LdapAuth(Map<String, ?> config) throws NamingException {
+  public LdapAuth(Map<String, ?> config) {
     ldapUserManager = new LdapUserManager(config);
   }
 
@@ -70,11 +69,7 @@ public class LdapAuth implements IdentityLookup {
   @Override
   public IdentityLookup create(Map<String, ?> config) {
     if (config.containsKey(Context.PROVIDER_URL)) {
-      try {
-        return new LdapAuth(config);
-      } catch (NamingException e) {
-        return null;
-      }
+      return new LdapAuth(config);
     }
     return null;
   }
