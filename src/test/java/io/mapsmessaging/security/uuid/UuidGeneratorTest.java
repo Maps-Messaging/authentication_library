@@ -31,9 +31,12 @@ public class UuidGeneratorTest {
   }
 
   @Test
-  void testGenerateWithUnsupportedVersion() {
-    UUID uuid = UuidGenerator.generate(999); // An unsupported version
-    assertNotNull(uuid, "Generated UUID should not be null for unsupported version");
+  void testGenerateWithAllVersion() {
+    for(UuidGenerator.VERSIONS versions:UuidGenerator.VERSIONS.values()){
+      UUID uuid = UuidGenerator.generate(versions);
+      assertNotNull(uuid, "Generated UUID should not be null for supported version");
+
+    }
   }
 }
 

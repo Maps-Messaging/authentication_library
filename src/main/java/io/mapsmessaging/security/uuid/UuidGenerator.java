@@ -18,8 +18,24 @@ package io.mapsmessaging.security.uuid;
 
 import com.fasterxml.uuid.Generators;
 import java.util.UUID;
+import lombok.Getter;
 
 public class UuidGenerator {
+
+  @Getter
+  public enum VERSIONS{
+    TIME(1),
+    RANDOM(4),
+    TIME_REORDERED(6),
+    TIME_EPOCH(7);
+
+    private final int version;
+
+    VERSIONS(int version){
+      this.version = version;
+    }
+
+  }
 
   static {
     int val = 7;
@@ -31,24 +47,30 @@ public class UuidGenerator {
         // ignore
       }
     }
-    UUID_VERSION = val;
+    VERSIONS defaultVersion = VERSIONS.TIME_EPOCH;
+    for(VERSIONS versions: VERSIONS.values()){
+      if(versions.getVersion() == val){
+        defaultVersion = versions;
+      }
+    }
+    UUID_VERSION = defaultVersion;
   }
 
-  private static final int UUID_VERSION;
+  private static final VERSIONS UUID_VERSION;
 
   public static UUID generate() {
     return generate(UUID_VERSION);
   }
 
-  public static UUID generate(int version){
+  public static UUID generate(VERSIONS version){
     switch (version) {
-      case 1:
+      case TIME:
         return Generators.timeBasedGenerator().generate();
-      case 4:
+      case RANDOM:
         return UUID.randomUUID();
-      case 6:
+      case TIME_REORDERED:
         return Generators.timeBasedReorderedGenerator().generate();
-      case 7:
+      case TIME_EPOCH:
       default:
         return Generators.timeBasedEpochGenerator().generate();
     }
