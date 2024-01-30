@@ -78,7 +78,7 @@ public abstract class BaseIdentity {
 
 
   @Test
-  void simpleLoginValidationTest() throws LoginException {
+  void simpleLoginValidationTest() {
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertNotNull(module);

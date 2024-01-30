@@ -21,7 +21,6 @@ import java.security.Principal;
 import java.util.LinkedHashMap;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +30,10 @@ public class AnonymousLoginTest {
   void simpleLoginTest() throws LoginException {
     Subject subject = new Subject();
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("", "", "");
-    LoginModule module = new AnonymousLoginModule();
+    AnonymousLoginModule module = new AnonymousLoginModule();
     module.initialize(subject, clientCallbackHandler, new LinkedHashMap<>(), new LinkedHashMap<>());
 
+    Assertions.assertNotNull( module.getDomain());
     // Test login
     Assertions.assertTrue(module.login());
 
