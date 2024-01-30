@@ -24,9 +24,15 @@ import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
 import java.util.UUID;
 import javax.security.auth.Subject;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class SubjectHelperTest {
+
+  @BeforeAll
+  static void register(){
+    MapsSecurityProvider.register();
+  }
 
   @Test
   void testGetUsername() {
