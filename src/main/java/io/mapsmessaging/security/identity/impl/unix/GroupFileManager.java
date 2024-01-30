@@ -33,11 +33,6 @@ public class GroupFileManager extends FileBaseGroups {
   }
 
   @Override
-  protected String getDomain() {
-    return "unix";
-  }
-
-  @Override
   protected GroupEntry load(String line) throws IllegalFormatException {
     GroupFileEntry entry = new GroupFileEntry(line);
     byId.put(entry.getGroupId(), entry);

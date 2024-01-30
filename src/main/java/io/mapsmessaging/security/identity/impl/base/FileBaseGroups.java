@@ -34,8 +34,6 @@ public abstract class FileBaseGroups extends FileLoader {
     groups = new LinkedHashMap<>();
   }
 
-  protected abstract String getDomain();
-
   protected abstract GroupEntry load(String line) throws IllegalFormatException;
 
   public void parse(String line) throws IllegalFormatException {
