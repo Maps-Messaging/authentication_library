@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-class UserMapParserTest {
+class UserMapParsingTest {
 
   @Test
   void testCreateMappingValidFormat() {
