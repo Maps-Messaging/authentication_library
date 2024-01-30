@@ -58,6 +58,5 @@ class UserMapParserTest {
     assertTrue(serializedList.containsAll(identifiers), "Serialized list should contain all original identifiers");
   }
 
-  // Additional tests can include more edge cases and parsing/writing scenarios
 }
 
