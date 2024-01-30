@@ -53,6 +53,10 @@ public enum AuthLogMessages implements LogMessage {
   LDAP_LOAD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to get user list"),
   // </editor-fold>
 
+  // <editor-fold desc="Encrypted Auth messages">
+  ENCRYPTED_LOAD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Invalid configuration, unable to construct the requested auth"),
+  // </editor-fold>
+
 
   // <editor-fold desc="Auth0 messages">
   AUTH0_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to get user list"),

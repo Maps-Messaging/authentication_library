@@ -17,7 +17,10 @@
 package io.mapsmessaging.security.identity.impl.encrypted;
 
 import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+import static io.mapsmessaging.security.logging.AuthLogMessages.ENCRYPTED_LOAD_FAILURE;
 
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.CertificateManagerFactory;
 import io.mapsmessaging.security.certificates.CertificateWithPrivateKey;
@@ -31,6 +34,7 @@ import java.util.Map;
 
 public class EncryptedAuth extends ApacheBasicAuth {
 
+  private final Logger logger = LoggerFactory.getLogger(EncryptedAuth.class);
   public EncryptedAuth() {
     super();
   }
@@ -53,6 +57,7 @@ public class EncryptedAuth extends ApacheBasicAuth {
 
   @Override
   public IdentityLookup create(Map<String, ?> config) {
+    IdentityLookup identityLookup = null;
     String filePath = null;
     String groupFile = null;
     if (config.containsKey("passwordFile")) {
@@ -71,12 +76,15 @@ public class EncryptedAuth extends ApacheBasicAuth {
     }
     if (filePath != null) {
       try {
-        return construct(filePath, groupFile, config);
+        identityLookup = construct(filePath, groupFile, config);
       } catch (Exception e) {
-        throw new RuntimeException("Unable to find certificate manager ", e);
+        logger.log(ENCRYPTED_LOAD_FAILURE, e);
       }
     }
-    throw new RuntimeException("Invalid configuration, unable to create encrypted authentication authority");
+    else{
+      logger.log(ENCRYPTED_LOAD_FAILURE);
+    }
+    return identityLookup;
   }
 
   private EncryptedAuth construct(String passwordPath, String groupPath, Map<String, ?> topConfig)

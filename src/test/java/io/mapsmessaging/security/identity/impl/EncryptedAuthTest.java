@@ -17,34 +17,52 @@
 package io.mapsmessaging.security.identity.impl;
 
 import com.github.javafaker.Faker;
-import io.mapsmessaging.security.certificates.BaseCertificateTest;
 import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
-import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
+import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class EncryptedAuthTest extends BaseCertificateTest {
+public class EncryptedAuthTest  {
+
+  private void deleteFiles(String[] files){
+    for(String filename:files){
+      File file = new File(filename);
+      file.delete();
+    }
+  }
 
   @Test
   void testBasicFunctions() throws Exception {
-    setUp("jks");
-    addCert(certificateManager);
+    deleteFiles(new String[]{"./encKeyStore.jks","./.htpassword-enc", "./.htgroups" });
+    String storePassword = PasswordGenerator.generateSalt(20);
+    Map<String, Object> baseMap = new LinkedHashMap<>();
+    Map<String, String> certificateMap = new LinkedHashMap<>();
+    certificateMap.put("alias", "test");
+    certificateMap.put("privateKey.passphrase", storePassword);
+    certificateMap.put("privateKey.name", "test");
+    certificateMap.put("type", "jks");
+    certificateMap.put("path", "./encKeyStore.jks");
+    certificateMap.put("passphrase", storePassword);
 
-    PasswordHandler hasher =
-        new EncryptedPasswordCipher(certificateManager, TEST_ALIAS, new String(KEY_PASSWORD));
-    EncryptedAuth auth = new EncryptedAuth("encryptedPasswords", "groups", TEST_ALIAS, certificateManager, new String(KEY_PASSWORD));
+
+    baseMap.put("certificateStore", certificateMap);
+    baseMap.put("passwordFile", "./.htpassword-enc" );
+    baseMap.put("groupFile", "./.htgroups" );
+
+    EncryptedAuth auth = (EncryptedAuth) IdentityLookupFactory.getInstance().get("Encrypted-Auth", baseMap);
+
     Faker faker = new Faker();
     Map<String, String> users = new LinkedHashMap<>();
     for (int x = 0; x < 100; x++) {
       String username = faker.name().username();
       String password = PasswordGenerator.generateSalt(20);
       users.put(username, password);
-      auth.createUser(username, password, hasher);
+      auth.createUser(username, password, auth.getPasswordHandler());
     }
 
     for (String user : users.keySet()) {
@@ -52,6 +70,40 @@ public class EncryptedAuthTest extends BaseCertificateTest {
       String pass = entry.getPassword();
       Assertions.assertEquals(pass, users.get(user));
     }
+  }
 
+  @Test
+  void testBasicDirectoryLoadFunctions() throws Exception {
+    deleteFiles(new String[]{"./encKeyStore.jks","./.htpassword-enc", "./.htgroups" });
+    String storePassword = PasswordGenerator.generateSalt(20);
+    Map<String, Object> baseMap = new LinkedHashMap<>();
+    Map<String, String> certificateMap = new LinkedHashMap<>();
+    certificateMap.put("alias", "test");
+    certificateMap.put("privateKey.passphrase", storePassword);
+    certificateMap.put("privateKey.name", "test");
+    certificateMap.put("type", "jks");
+    certificateMap.put("path", "./encKeyStore.jks");
+    certificateMap.put("passphrase", storePassword);
+
+
+    baseMap.put("certificateStore", certificateMap);
+    baseMap.put("configDirectory", "." );
+
+    EncryptedAuth auth = (EncryptedAuth) IdentityLookupFactory.getInstance().get("Encrypted-Auth", baseMap);
+
+    Faker faker = new Faker();
+    Map<String, String> users = new LinkedHashMap<>();
+    for (int x = 0; x < 100; x++) {
+      String username = faker.name().username();
+      String password = PasswordGenerator.generateSalt(20);
+      users.put(username, password);
+      auth.createUser(username, password, auth.getPasswordHandler());
+    }
+
+    for (String user : users.keySet()) {
+      IdentityEntry entry = auth.findEntry(user);
+      String pass = entry.getPassword();
+      Assertions.assertEquals(pass, users.get(user));
+    }
   }
 }
