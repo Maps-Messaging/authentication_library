@@ -36,6 +36,7 @@ class SubjectHelperTest {
 
     String username = SubjectHelper.getUsername(subject);
     assertEquals("testUser", username, "Username should match the name in UserPrincipal");
+    assertNotNull(userPrincipal.toString());
   }
 
   @Test
@@ -45,8 +46,8 @@ class SubjectHelperTest {
     subject.getPrincipals().add(remoteHostPrincipal);
 
     String remoteHost = SubjectHelper.getRemoteHost(subject);
-    assertEquals(
-        "127.0.0.1", remoteHost, "Remote host should match the name in RemoteHostPrincipal");
+    assertEquals("127.0.0.1", remoteHost, "Remote host should match the name in RemoteHostPrincipal");
+    assertNotNull(remoteHostPrincipal.toString());
   }
 
   @Test
@@ -58,6 +59,7 @@ class SubjectHelperTest {
     String authDomain = SubjectHelper.getAuthDomain(subject);
     assertEquals(
         "testDomain", authDomain, "Auth domain should match the name in AuthHandlerPrincipal");
+    assertNotNull(authHandlerPrincipal.toString());
   }
 
   @Test
@@ -68,8 +70,9 @@ class SubjectHelperTest {
     subject.getPrincipals().add(uniqueIdentifierPrincipal);
 
     UUID uniqueId = SubjectHelper.getUniqueId(subject);
-    assertEquals(
-        testUUID, uniqueId, "Unique ID should match the UUID in UniqueIdentifierPrincipal");
+    assertEquals(testUUID, uniqueId, "Unique ID should match the UUID in UniqueIdentifierPrincipal");
+    assertNotNull(uniqueIdentifierPrincipal.toString());
+
   }
 }
 
