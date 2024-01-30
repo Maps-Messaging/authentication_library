@@ -105,5 +105,12 @@ public class EncryptedAuthTest  {
       String pass = entry.getPassword();
       Assertions.assertEquals(pass, users.get(user));
     }
+
+    EncryptedAuth auth2 = (EncryptedAuth) IdentityLookupFactory.getInstance().get("Encrypted-Auth", baseMap);
+    Assertions.assertEquals(auth.getEntries().size(), auth2.getEntries().size());
+    for(IdentityEntry entry: auth.getEntries()){
+      Assertions.assertEquals(entry.getUsername(), auth2.findEntry(entry.getUsername()).getUsername());
+    }
+
   }
 }
