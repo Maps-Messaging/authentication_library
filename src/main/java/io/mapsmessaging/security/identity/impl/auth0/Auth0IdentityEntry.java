@@ -16,11 +16,17 @@
 
 package io.mapsmessaging.security.identity.impl.auth0;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_PASSWORD_FAILURE;
+
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 public class Auth0IdentityEntry extends JwtIdentityEntry {
+
+  private static final Logger logger = LoggerFactory.getLogger(Auth0IdentityEntry.class);
 
   public Auth0IdentityEntry(Auth0Auth auth0Auth, String username) {
     super();
@@ -33,7 +39,8 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
     try {
       return new String(passwordHasher.getPassword());
     } catch (GeneralSecurityException | IOException e) {
-      throw new RuntimeException(e);
+      logger.log(AUTH0_PASSWORD_FAILURE, username, e);
+      return null;
     }
   }
 

@@ -22,6 +22,7 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -34,7 +35,7 @@ public class AwsAuthHelper {
 
   private AwsAuthHelper(){}
 
-  public static List<String> getGroups(String token, String region, String userPoolId) {
+  public static List<String> getGroups(String token, String region, String userPoolId) throws IOException {
     RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider(region, userPoolId);
     Algorithm algorithm = Algorithm.RSA256(keyProvider);
     JWTVerifier jwtVerifier = JWT.require(algorithm).build();

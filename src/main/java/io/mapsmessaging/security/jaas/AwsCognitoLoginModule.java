@@ -21,6 +21,7 @@ import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.*;
 
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -105,8 +106,14 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
       AdminInitiateAuthResponse authResponse = cognitoClient.adminInitiateAuth(authRequest);
       AuthenticationResultType authResult = authResponse.authenticationResult();
       if (authResult != null) {
-        groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
-        return true;
+        try{
+          groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
+          return true;
+        }
+        catch(IOException ioException){
+          LoginException loginException = new LoginException();
+          loginException.initCause(ioException);
+        }
       }
       // If the above code executes without throwing an exception,
       // the JWT token is valid for the given user

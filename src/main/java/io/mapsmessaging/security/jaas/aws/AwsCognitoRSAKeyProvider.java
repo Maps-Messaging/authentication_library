@@ -16,10 +16,16 @@
 
 package io.mapsmessaging.security.jaas.aws;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.AWS_INVALID_URL;
+import static io.mapsmessaging.security.logging.AuthLogMessages.AWS_KEY_LOAD_FAILURE;
+
 import com.auth0.jwk.JwkException;
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.JwkProviderBuilder;
 import com.auth0.jwt.interfaces.RSAKeyProvider;
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.interfaces.RSAPrivateKey;
@@ -27,18 +33,19 @@ import java.security.interfaces.RSAPublicKey;
 
 public class AwsCognitoRSAKeyProvider implements RSAKeyProvider {
 
-
+  private final Logger logger = LoggerFactory.getLogger(AwsCognitoRSAKeyProvider.class);
   private final URL awsKidStoreUrl;
   private final JwkProvider provider;
 
-  public AwsCognitoRSAKeyProvider(String awsCognitoRegion, String awsUserPoolsId) {
+  public AwsCognitoRSAKeyProvider(String awsCognitoRegion, String awsUserPoolsId) throws IOException {
     String url = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", awsCognitoRegion, awsUserPoolsId);
     try {
       awsKidStoreUrl = new URL(url);
+      provider = new JwkProviderBuilder(awsKidStoreUrl).build();
     } catch (MalformedURLException e) {
-      throw new RuntimeException(String.format("Invalid URL provided, URL=%s", url));
+      logger.log(AWS_INVALID_URL, url);
+      throw new IOException(e);
     }
-    provider = new JwkProviderBuilder(awsKidStoreUrl).build();
   }
 
 
@@ -47,8 +54,9 @@ public class AwsCognitoRSAKeyProvider implements RSAKeyProvider {
     try {
       return (RSAPublicKey) provider.get(kid).getPublicKey();
     } catch (JwkException e) {
-      throw new RuntimeException(String.format("Failed to get JWT kid=%s from aws_kid_store_url=%s", kid, awsKidStoreUrl));
+      logger.log(AWS_KEY_LOAD_FAILURE, kid, awsKidStoreUrl);
     }
+    return null;
   }
 
   @Override

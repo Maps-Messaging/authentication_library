@@ -62,7 +62,16 @@ public enum AuthLogMessages implements LogMessage {
   AUTH0_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to get user list"),
   AUTH0_REQUEST_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to retrieve data from Auth0"),
   AUTH0_JWT_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Error detected in Auth0 JWT"),
+  AUTH0_PASSWORD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Error detected while retrieving JWT for user {}"),
+
   // </editor-fold>
+
+  // <editor-fold desc="AWS messages">
+  AWS_KEY_LOAD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION,  "Unable to load public key by Id: {} from {}"),
+  AWS_INVALID_URL(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Invalid URL provided, URL={}"),
+  // </editor-fold>
+
+
 
   // <editor-fold desc="Password file messages">
   PASSWORD_FILE_LOADED(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Successfully loaded {} entries for {}"),
