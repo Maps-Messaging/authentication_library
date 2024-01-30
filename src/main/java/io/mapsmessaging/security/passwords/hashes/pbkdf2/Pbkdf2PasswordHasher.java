@@ -62,6 +62,7 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
     return true;
   }
 
+  @SuppressWarnings("java:S112") // Yes we know, if the JVM is not one we support then this will happen
   @Override
   public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
     try {
