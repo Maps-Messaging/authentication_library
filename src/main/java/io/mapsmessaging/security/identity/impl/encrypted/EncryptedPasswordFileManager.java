@@ -42,11 +42,6 @@ public class EncryptedPasswordFileManager extends FileBaseIdentities {
   }
 
   @Override
-  public String getDomain() {
-    return "Encrypted";
-  }
-
-  @Override
   protected IdentityEntry load(String line) {
     return new EncryptedPasswordEntry(line, cipher);
   }

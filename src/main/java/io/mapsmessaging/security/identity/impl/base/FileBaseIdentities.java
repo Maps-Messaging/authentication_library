@@ -39,8 +39,6 @@ public abstract class FileBaseIdentities extends FileLoader {
     usernamePasswordMap = new LinkedHashMap<>();
   }
 
-  public abstract String getDomain();
-
   public IdentityEntry findEntry(String username) {
     return usernamePasswordMap.get(username);
   }
