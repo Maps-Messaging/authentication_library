@@ -105,19 +105,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
 
       AdminInitiateAuthResponse authResponse = cognitoClient.adminInitiateAuth(authRequest);
       AuthenticationResultType authResult = authResponse.authenticationResult();
-      if (authResult != null) {
-        try{
-          groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
-          return true;
-        }
-        catch(IOException ioException){
-          LoginException loginException = new LoginException();
-          loginException.initCause(ioException);
-        }
-      }
-      // If the above code executes without throwing an exception,
-      // the JWT token is valid for the given user
-      return false;
+      return (authResult != null && loadGroups(authResult));
     } catch (NotAuthorizedException | NoSuchAlgorithmException | InvalidKeyException e) {
       // If the token is not valid or the user is not authorized, the above code will throw a NotAuthorizedException
       LoginException exception = new LoginException("Not authorised exception raised");
@@ -126,6 +114,17 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     }
   }
 
+  private boolean loadGroups(AuthenticationResultType authResult) throws LoginException {
+    try{
+      groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
+      return true;
+    }
+    catch(IOException ioException){
+      LoginException loginException = new LoginException();
+      loginException.initCause(ioException);
+      throw loginException;
+    }
+  }
   @Override
   public boolean commit() {
     boolean res = super.commit();
