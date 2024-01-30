@@ -40,10 +40,13 @@ class SSLCertificateLoginModuleTest {
     loginModule.initialize(subject, callbackHandler, null, new LinkedHashMap<>());
     assertTrue(loginModule.login(), "Login should succeed");
 
+    assertEquals("cert", loginModule.getDomain());
+
     assertTrue(loginModule.commit(), "Commit should succeed");
     assertTrue(subject.getPrincipals().contains(new UserPrincipal("testUser")), "Subject should contain UserPrincipal with 'testUser'");
     List<AuthHandlerPrincipal> authHandlerPrincipals = new ArrayList<>(subject.getPrincipals(AuthHandlerPrincipal.class));
     assertNotNull(authHandlerPrincipals);
+    assertTrue(loginModule.validate("", new char[0]));
     assertEquals(1, authHandlerPrincipals.size());
     assertEquals("SSLCertificate", authHandlerPrincipals.get(0).getName());
   }
