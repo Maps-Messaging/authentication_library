@@ -56,6 +56,7 @@ public class Pkcs11Manager extends KeyStoreManager {
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
     String pkcs11ConfigPath = config.get(PKCS11_CONFIG).toString();
     String providerName = config.get(PROVIDER_NAME).toString();
+    String pin = (String) config.get(KEYSTORE_PASSWORD);
 
     Provider provider = Security.getProvider(providerName);
     if (provider == null) {
@@ -64,7 +65,7 @@ public class Pkcs11Manager extends KeyStoreManager {
     provider = provider.configure(pkcs11ConfigPath);
     Security.addProvider(provider);
     KeyStore store = KeyStore.getInstance(type, provider);
-    store.load(null, null); // typically, no IO stream or password is used for PKCS#11 keystores
+    store.load(null, "12345".toCharArray()); // typically, no IO stream or password is used for PKCS#11 keystores
     return store;
   }
 

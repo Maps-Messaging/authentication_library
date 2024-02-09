@@ -68,14 +68,11 @@ public class BaseCertificateTest {
     }
   }
 
-  protected static CertificateWithPrivateKey addCert(
-      CertificateManager certificateManager, String alias, char[] password)
+  protected static CertificateWithPrivateKey addCert(CertificateManager certificateManager, String alias, char[] password)
       throws CertificateException, IOException, OperatorCreationException {
-    CertificateWithPrivateKey testCert =
-        CertificateUtils.generateSelfSignedCertificateSecret("Testing.fred.org");
+    CertificateWithPrivateKey testCert = CertificateUtils.generateSelfSignedCertificateSecret("Testing.fred.org");
     certificateManager.addCertificate(alias, testCert.getCertificate());
-    certificateManager.addPrivateKey(
-        alias, password, testCert.getPrivateKey(), new Certificate[] {testCert.getCertificate()});
+    certificateManager.addPrivateKey(alias, password, testCert.getPrivateKey(), new Certificate[] {testCert.getCertificate()});
     return testCert;
   }
 }

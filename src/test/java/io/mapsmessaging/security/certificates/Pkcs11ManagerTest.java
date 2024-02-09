@@ -16,25 +16,36 @@
 
 package io.mapsmessaging.security.certificates;
 
-import io.mapsmessaging.security.certificates.pkcs11.Pkcs11Manager;
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class Pkcs11ManagerTest {
-
-  private Pkcs11Manager pkcs11Manager;
+class Pkcs11ManagerTest extends BaseCertificateTest {
 
   @BeforeEach
-  void setUp() {
-    // Initialize pkcs11Manager with appropriate parameters
-    // pkcs11Manager = new Pkcs11Manager(...);
+  void setUp() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+    File file = new File(".");
+    System.err.println(file.getAbsolutePath());
+    Map<String, String> config = new LinkedHashMap<>();
+    config.put("configPath", "./softhsm.cfg");
+    config.put("type", "pkcs11");
+    config.put("passphrase", "123456");
+    config.put("providerName", "SunPKCS11");
+    certificateManager = CertificateManagerFactory.getInstance().getManager(config);
   }
 
   @Test
-  void getCertificateTest() {
-    // Test retrieving a certificate
-    // assert relevant conditions
+  void testAddAndGetCertificate() throws Exception {
+    File file = new File("./softhsm.cfg");
+    Assertions.assertTrue(file.exists(), "Should be able to locate softhsm to test");
+    setUp();
   }
 
-  // Add more tests for other methods...
 }
