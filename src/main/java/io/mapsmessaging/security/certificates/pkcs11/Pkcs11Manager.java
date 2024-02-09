@@ -65,7 +65,7 @@ public class Pkcs11Manager extends KeyStoreManager {
     provider = provider.configure(pkcs11ConfigPath);
     Security.addProvider(provider);
     KeyStore store = KeyStore.getInstance(type, provider);
-    store.load(null, "12345".toCharArray()); // typically, no IO stream or password is used for PKCS#11 keystores
+    store.load(null, pin.toCharArray()); // typically, no IO stream or password is used for PKCS#11 keystores
     return store;
   }
 
