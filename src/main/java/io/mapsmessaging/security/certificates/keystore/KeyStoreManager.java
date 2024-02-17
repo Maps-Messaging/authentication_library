@@ -17,10 +17,9 @@
 package io.mapsmessaging.security.certificates.keystore;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import io.mapsmessaging.security.storage.FileStore;
+import io.mapsmessaging.security.storage.Store;
+import java.io.*;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -40,12 +39,14 @@ public class KeyStoreManager implements CertificateManager {
   private final String keyStorePath;
   private final char[] keyStorePassword;
   private final boolean existed;
+  private final Store storage;
 
   public KeyStoreManager() {
     keyStore = null;
     keyStorePath = "";
     keyStorePassword = new char[0];
     existed = true;
+    storage = null;
   }
 
   public boolean isValid(Map<String, ?> config) {
@@ -59,6 +60,7 @@ public class KeyStoreManager implements CertificateManager {
     if (providerName != null && !providerName.isEmpty() && "BC".equals(providerName)) {
       Security.addProvider(new BouncyCastleProvider());
     }
+    storage = new FileStore();
 
     keyStorePath = (String) config.get(KEYSTORE_PATH);
     String t = (String) config.get(KEYSTORE_PASSWORD);
@@ -66,9 +68,9 @@ public class KeyStoreManager implements CertificateManager {
       t = "";
     }
     this.keyStorePassword = t.toCharArray();
+
     if (keyStorePath != null) {
-      File file = new File(keyStorePath);
-      existed = file.exists();
+      existed = storage.exists(keyStorePath);
     } else {
       existed = true;
     }
@@ -85,7 +87,8 @@ public class KeyStoreManager implements CertificateManager {
       throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     KeyStore store = KeyStore.getInstance(type);
     if (path != null && existed) {
-      try (FileInputStream fis = new FileInputStream(path)) {
+      byte[] data = storage.load(path);
+      try (InputStream fis = new ByteArrayInputStream(data)) {
         store.load(fis, password);
         return store;
       }
@@ -162,8 +165,10 @@ public class KeyStoreManager implements CertificateManager {
   }
 
   private void saveKeyStore() throws CertificateException {
-    try (FileOutputStream fos = new FileOutputStream(keyStorePath)) {
-      keyStore.store(fos, keyStorePassword);
+    try{
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
+      keyStore.store(byteArrayOutputStream, keyStorePassword);
+      storage.save(byteArrayOutputStream.toByteArray(), keyStorePath);
     } catch (IOException | KeyStoreException | NoSuchAlgorithmException e) {
       throw new CertificateException("Error saving keystore", e);
     }
