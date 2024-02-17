@@ -21,6 +21,10 @@ import java.util.Map;
 
 public class FileStore implements Store {
 
+  public FileStore(){
+    // NoOp
+  }
+
   @Override
   public String getName() {
     return "File";

@@ -45,6 +45,7 @@ public class BaseCertificateTest {
     file.delete();
     Map<String, String> config = new LinkedHashMap<>();
     config.put("path", file.getName());
+    config.put("store", "file");
     config.put("passphrase", KEYSTORE_PASSWORD);
     if (type.equals("BKS") || type.equals("UBER")) {
       config.put("providerName", "BC");

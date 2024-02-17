@@ -17,7 +17,7 @@
 package io.mapsmessaging.security.certificates.keystore;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
-import io.mapsmessaging.security.storage.FileStore;
+import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
 import java.io.*;
 import java.security.*;
@@ -60,7 +60,7 @@ public class KeyStoreManager implements CertificateManager {
     if (providerName != null && !providerName.isEmpty() && "BC".equals(providerName)) {
       Security.addProvider(new BouncyCastleProvider());
     }
-    storage = new FileStore();
+    storage = StorageFactory.getInstance().getStore((Map<String, Object>)config);
 
     keyStorePath = (String) config.get(KEYSTORE_PATH);
     String t = (String) config.get(KEYSTORE_PASSWORD);

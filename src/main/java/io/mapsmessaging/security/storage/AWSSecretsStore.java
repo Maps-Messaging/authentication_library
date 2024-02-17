@@ -33,9 +33,15 @@ public class AWSSecretsStore implements Store {
 
   private final SecretsManagerClient secretsManagerClient;
 
+  public AWSSecretsStore(){
+    secretsManagerClient = null;
+  }
+
   public AWSSecretsStore(SecretsManagerClient secretsManagerClient) {
     this.secretsManagerClient = secretsManagerClient;
   }
+
+
 
   @Override
   public String getName() {

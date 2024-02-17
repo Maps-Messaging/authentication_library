@@ -28,6 +28,11 @@ public class VaultStore implements Store {
   private final Vault vault;
   private final String keyName;
 
+  public VaultStore(){
+    vault = null;
+    keyName = null;
+  }
+
   public VaultStore(Vault vault, String keyName) {
     this.vault = vault;
     this.keyName = keyName;
