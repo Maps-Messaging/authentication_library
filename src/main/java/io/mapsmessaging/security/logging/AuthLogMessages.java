@@ -26,58 +26,66 @@ public enum AuthLogMessages implements LogMessage {
   //-------------------------------------------------------------------------------------------------------------
 
   // <editor-fold desc="SCRAM messages">
-  SCRAM_SERVER_INITIAL_PHASE(LEVEL.INFO, Auth_Category.AUTHENTICATION, "SCRAM server initialising using algorithm {}"),
-  SCRAM_SERVER_STATE_CHANGE(LEVEL.INFO, Auth_Category.AUTHENTICATION, "SCRAM server state changed to {}"),
+  SCRAM_SERVER_INITIAL_PHASE(LEVEL.INFO, AuthCategory.AUTHENTICATION, "SCRAM server initialising using algorithm {}"),
+  SCRAM_SERVER_STATE_CHANGE(LEVEL.INFO, AuthCategory.AUTHENTICATION, "SCRAM server state changed to {}"),
   // </editor-fold>
 
   // <editor-fold desc="Password parser messages">
-  PASSWORD_PARSER_LOADED(LEVEL.WARN, Auth_Category.AUTHENTICATION, "Loaded parser for {} with hash key {}"),
-  IDENTITY_LOOKUP_LOADED(LEVEL.WARN, Auth_Category.AUTHENTICATION, "Loaded identity lookup supporting {}"),
+  PASSWORD_PARSER_LOADED(LEVEL.WARN, AuthCategory.AUTHENTICATION, "Loaded parser for {} with hash key {}"),
+  IDENTITY_LOOKUP_LOADED(LEVEL.WARN, AuthCategory.AUTHENTICATION, "Loaded identity lookup supporting {}"),
   // </editor-fold>
 
 
   // <editor-fold desc="Generic messages">
-  DO_NOT_USE_IN_PRODUCTION(LEVEL.AUTH, Auth_Category.AUTHENTICATION, "Warning !!!, Not to be used in a production environment"),
-  USER_LOGGED_IN(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged in"),
-  NO_SUCH_USER_FOUND(LEVEL.INFO, Auth_Category.AUTHENTICATION, "User {} not found"),
-  USER_LOGGED_OUT(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "User {} logged out"),
+  DO_NOT_USE_IN_PRODUCTION(LEVEL.AUTH, AuthCategory.AUTHENTICATION, "Warning !!!, Not to be used in a production environment"),
+  USER_LOGGED_IN(LEVEL.DEBUG, AuthCategory.AUTHENTICATION, "User {} logged in"),
+  NO_SUCH_USER_FOUND(LEVEL.INFO, AuthCategory.AUTHENTICATION, "User {} not found"),
+  USER_LOGGED_OUT(LEVEL.DEBUG, AuthCategory.AUTHENTICATION, "User {} logged out"),
   // </editor-fold>
 
   // <editor-fold desc="File management log entries">
-  FAILED_TO_CREATE_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to create new file {}"),
-  FAILED_TO_DELETE_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to delete existing file {}"),
-  FAILED_TO_RENAME_FILE(LEVEL.FATAL, Auth_Category.SUPPORT, "Failed to rename file {} to {}"),
+  FAILED_TO_CREATE_FILE(LEVEL.FATAL, AuthCategory.SUPPORT, "Failed to create new file {}"),
+  FAILED_TO_DELETE_FILE(LEVEL.FATAL, AuthCategory.SUPPORT, "Failed to delete existing file {}"),
+  FAILED_TO_RENAME_FILE(LEVEL.FATAL, AuthCategory.SUPPORT, "Failed to rename file {} to {}"),
   // </editor-fold>
 
   // <editor-fold desc="Ldap messages">
-  LDAP_LOAD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to get user list"),
+  LDAP_LOAD_FAILURE(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Failed to get user list"),
   // </editor-fold>
 
   // <editor-fold desc="Encrypted Auth messages">
-  ENCRYPTED_LOAD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Invalid configuration, unable to construct the requested auth"),
+  ENCRYPTED_LOAD_FAILURE(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Invalid configuration, unable to construct the requested auth"),
   // </editor-fold>
 
 
   // <editor-fold desc="Auth0 messages">
-  AUTH0_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to get user list"),
-  AUTH0_REQUEST_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Failed to retrieve data from Auth0"),
-  AUTH0_JWT_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Error detected in Auth0 JWT"),
-  AUTH0_PASSWORD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Error detected while retrieving JWT for user {}"),
+  AUTH0_FAILURE(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Failed to get user list"),
+  AUTH0_REQUEST_FAILURE(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Failed to retrieve data from Auth0"),
+  AUTH0_JWT_FAILURE(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Error detected in Auth0 JWT"),
+  AUTH0_PASSWORD_FAILURE(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Error detected while retrieving JWT for user {}"),
 
   // </editor-fold>
 
   // <editor-fold desc="AWS messages">
-  AWS_KEY_LOAD_FAILURE(LEVEL.FATAL, Auth_Category.AUTHENTICATION,  "Unable to load public key by Id: {} from {}"),
-  AWS_INVALID_URL(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Invalid URL provided, URL={}"),
+  AWS_KEY_LOAD_FAILURE(LEVEL.FATAL, AuthCategory.AUTHENTICATION,  "Unable to load public key by Id: {} from {}"),
+  AWS_INVALID_URL(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Invalid URL provided, URL={}"),
+  // </editor-fold>
+
+  // <editor-fold desc="SSL config  log messages">
+  SSL_SERVER_INITIALISE(LEVEL.DEBUG, AuthCategory.SSL, "InitialedKey Manager Factory of type {}"),
+  SSL_SERVER_TRUST_MANAGER(LEVEL.DEBUG, AuthCategory.SSL, "Initialised Trust Manager Factory of type {}"),
+  SSL_SERVER_CONTEXT_CONSTRUCT(LEVEL.DEBUG, AuthCategory.SSL, "Constructing SSL Context with the created key and trust stores"),
+  SSL_SERVER_SSL_CONTEXT_COMPLETE(LEVEL.DEBUG, AuthCategory.SSL, "Completed construction of the SSL Context with the created key and trust stores"),
+  SSL_SERVER_LOAD_KEY_STORE(LEVEL.DEBUG, AuthCategory.SSL, "Loading Key Store {} of type {}"),
+  SSL_SERVER_LOADED_KEY_STORE(LEVEL.DEBUG, AuthCategory.SSL, "Loaded Key Store {} of type {}"),
   // </editor-fold>
 
 
-
   // <editor-fold desc="Password file messages">
-  PASSWORD_FILE_LOADED(LEVEL.INFO, Auth_Category.AUTHENTICATION, "Successfully loaded {} entries for {}"),
-  PASSWORD_FILE_LOAD_EXCEPTION(LEVEL.FATAL, Auth_Category.AUTHENTICATION, "Password load failed for {} at line number {} "),
-  PASSWORD_FILE_CHANGE_DETECTED(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Password file change detected on {}"),
-  CHECKING_PASSWORD_STORE(LEVEL.DEBUG, Auth_Category.AUTHENTICATION, "Scanning for password file changes on file {}");
+  PASSWORD_FILE_LOADED(LEVEL.INFO, AuthCategory.AUTHENTICATION, "Successfully loaded {} entries for {}"),
+  PASSWORD_FILE_LOAD_EXCEPTION(LEVEL.FATAL, AuthCategory.AUTHENTICATION, "Password load failed for {} at line number {} "),
+  PASSWORD_FILE_CHANGE_DETECTED(LEVEL.DEBUG, AuthCategory.AUTHENTICATION, "Password file change detected on {}"),
+  CHECKING_PASSWORD_STORE(LEVEL.DEBUG, AuthCategory.AUTHENTICATION, "Scanning for password file changes on file {}");
   // </editor-fold>
 
   @Getter
@@ -89,7 +97,7 @@ public enum AuthLogMessages implements LogMessage {
   @Getter
   private final int parameterCount;
 
-  AuthLogMessages(LEVEL level, Auth_Category category, String message) {
+  AuthLogMessages(LEVEL level, AuthCategory category, String message) {
     this.message = message;
     this.level = level;
     this.category = category;
@@ -102,8 +110,9 @@ public enum AuthLogMessages implements LogMessage {
     this.parameterCount = count;
   }
 
-  public enum Auth_Category implements Category {
+  public enum AuthCategory implements Category {
     SUPPORT("Support"),
+    SSL("SSL"),
     AUTHORISATION("Authorisation"),
     AUTHENTICATION("Authentication"),
     SASL("Sasl"),
@@ -113,7 +122,7 @@ public enum AuthLogMessages implements LogMessage {
     @Getter
     private final String description;
 
-    Auth_Category(String description) {
+    AuthCategory(String description) {
       this.description = description;
     }
 
