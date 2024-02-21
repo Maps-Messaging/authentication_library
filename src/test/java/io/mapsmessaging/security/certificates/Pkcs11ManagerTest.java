@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.certificates;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyStoreException;
@@ -33,12 +34,12 @@ class Pkcs11ManagerTest extends BaseCertificateTest {
   void setUp() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     File file = new File(".");
     System.err.println(file.getAbsolutePath());
-    Map<String, String> config = new LinkedHashMap<>();
+    Map<String, Object> config = new LinkedHashMap<>();
     config.put("configPath", "./softhsm.cfg");
     config.put("type", "pkcs11");
     config.put("passphrase", "123456");
     config.put("providerName", "SunPKCS11");
-    certificateManager = CertificateManagerFactory.getInstance().getManager(config);
+    certificateManager = CertificateManagerFactory.getInstance().getManager(new ConfigurationProperties(config));
   }
 
   @Test

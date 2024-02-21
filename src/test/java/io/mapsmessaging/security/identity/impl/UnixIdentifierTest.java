@@ -35,7 +35,7 @@ class UnixIdentifierTest {
 
   @Test
   void simpleLoad() throws IOException, GeneralSecurityException {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/nix");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
     Assertions.assertEquals("unix", lookup.getDomain());
@@ -54,7 +54,7 @@ class UnixIdentifierTest {
 
   @Test
   void simpleLoad2() throws IOException, GeneralSecurityException {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("passwd", "./src/test/resources/nix/passwd");
     map.put("passwordFile", "./src/test/resources/nix/shadow");
     map.put("groupFile", "./src/test/resources/nix/group");
@@ -74,7 +74,7 @@ class UnixIdentifierTest {
 
   @Test
   void simpleEntryTest() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/nix");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
     IdentityEntry entry = lookup.findEntry("test");
@@ -86,7 +86,7 @@ class UnixIdentifierTest {
 
   @Test
   void noUser() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/nix");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("unix", map);
     Assertions.assertEquals(lookup.getClass(), UnixAuth.class);

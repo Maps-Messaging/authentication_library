@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.certificates;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -23,13 +24,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.Map;
 
 public interface CertificateManager {
 
-  boolean isValid(Map<String, ?> config);
+  boolean isValid(ConfigurationProperties config);
 
-  CertificateManager create(Map<String, ?> config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException;
+  CertificateManager create(ConfigurationProperties config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException;
 
   Certificate getCertificate(String alias) throws CertificateException;
 

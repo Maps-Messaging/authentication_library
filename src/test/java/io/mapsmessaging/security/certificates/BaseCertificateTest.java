@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.certificates;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.Certificate;
@@ -43,7 +44,7 @@ public class BaseCertificateTest {
   protected void setUp(String type) throws Exception {
     File file = new File(KEYSTORE_PATH + "_" + (counter++) + "." + type);
     file.delete();
-    Map<String, String> config = new LinkedHashMap<>();
+    Map<String, Object> config = new LinkedHashMap<>();
     config.put("path", file.getName());
     config.put("store", "file");
     config.put("passphrase", KEYSTORE_PASSWORD);
@@ -51,7 +52,7 @@ public class BaseCertificateTest {
       config.put("providerName", "BC");
     }
     config.put("type", type);
-    certificateManager = CertificateManagerFactory.getInstance().getManager(config);
+    certificateManager = CertificateManagerFactory.getInstance().getManager(new ConfigurationProperties(config));
   }
 
   protected static CertificateWithPrivateKey addCert(CertificateManager certificateManager)

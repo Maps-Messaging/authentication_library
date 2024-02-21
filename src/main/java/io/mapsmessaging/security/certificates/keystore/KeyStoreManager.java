@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.certificates.keystore;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
@@ -23,7 +24,6 @@ import java.io.*;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.Map;
 import lombok.Getter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -49,18 +49,18 @@ public class KeyStoreManager implements CertificateManager {
     storage = null;
   }
 
-  public boolean isValid(Map<String, ?> config) {
+  public boolean isValid(ConfigurationProperties config) {
     return config.containsKey(KEYSTORE_TYPE) &&
         config.containsKey(KEYSTORE_PASSWORD) &&
         config.containsKey(KEYSTORE_PATH);
   }
 
-  protected KeyStoreManager(Map<String, ?> config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+  protected KeyStoreManager(ConfigurationProperties config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     String providerName = (String) config.get(PROVIDER_NAME);
     if (providerName != null && !providerName.isEmpty() && "BC".equals(providerName)) {
       Security.addProvider(new BouncyCastleProvider());
     }
-    storage = StorageFactory.getInstance().getStore((Map<String, Object>)config);
+    storage = StorageFactory.getInstance().getStore(config.getMap());
 
     keyStorePath = (String) config.get(KEYSTORE_PATH);
     String t = (String) config.get(KEYSTORE_PASSWORD);
@@ -78,12 +78,12 @@ public class KeyStoreManager implements CertificateManager {
     keyStore = createKeyStore(type, keyStorePath, keyStorePassword, config);
   }
 
-  public CertificateManager create(Map<String, ?> config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+  public CertificateManager create(ConfigurationProperties config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     return new KeyStoreManager(config);
   }
 
   @SuppressWarnings("java:S1172") // the config parameter is kept since it may or may not be used in extending classes
-  protected KeyStore createKeyStore(String type, String path, char[] password, Map<String, ?> config)
+  protected KeyStore createKeyStore(String type, String path, char[] password, ConfigurationProperties config)
       throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     KeyStore store = KeyStore.getInstance(type);
     if (path != null && existed) {

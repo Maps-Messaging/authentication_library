@@ -18,6 +18,7 @@ package io.mapsmessaging.security.identity;
 
 import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_LOADED;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import java.util.Map;
@@ -55,10 +56,10 @@ public class IdentityLookupFactory {
     return identityLookupMap.get(name);
   }
 
-  public IdentityLookup get(String name, Map<String, ?> config) {
+  public IdentityLookup get(String name, Map<String, Object> config) {
     for (IdentityLookup identityLookup : identityLookups) {
       if (identityLookup.getName().equalsIgnoreCase(name)) {
-        return identityLookup.create(config);
+        return identityLookup.create(new ConfigurationProperties(config));
       }
     }
     return null;

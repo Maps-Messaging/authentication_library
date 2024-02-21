@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.cognito;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -24,7 +25,6 @@ import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.regions.Region;
@@ -52,7 +52,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
     appClientSecret = "";
   }
 
-  public CognitoAuth(Map<String, ?> config) {
+  public CognitoAuth(ConfigurationProperties config) {
     userPoolId = (String) config.get("userPoolId");
     appClientId = (String) config.get("appClientId");
     appClientSecret = (String) config.get("appClientSecret");
@@ -78,7 +78,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   @Override
-  public IdentityLookup create(Map<String, ?> config) {
+  public IdentityLookup create(ConfigurationProperties config) {
     return new CognitoAuth(config);
   }
 

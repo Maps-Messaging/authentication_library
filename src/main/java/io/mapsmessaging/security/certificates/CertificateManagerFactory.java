@@ -17,11 +17,11 @@
 package io.mapsmessaging.security.certificates;
 
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.Map;
 import java.util.ServiceLoader;
 
 @SuppressWarnings("java:S6548") // yes it is a singleton
@@ -41,7 +41,7 @@ public class CertificateManagerFactory {
     certificateManagers = ServiceLoader.load(CertificateManager.class);
   }
 
-  public CertificateManager getManager(Map<String, ?> config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+  public CertificateManager getManager(ConfigurationProperties config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     for (CertificateManager certificateManager : certificateManagers) {
       if (certificateManager.isValid(config)) {
         return certificateManager.create(config);

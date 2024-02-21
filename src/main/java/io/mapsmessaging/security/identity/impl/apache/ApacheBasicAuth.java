@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.apache;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Map;
 
 public class ApacheBasicAuth implements IdentityLookup {
 
@@ -99,7 +99,7 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public IdentityLookup create(Map<String, ?> config) {
+  public IdentityLookup create(ConfigurationProperties config) {
     if (config.containsKey("passwordFile")) {
       String filePath = config.get("passwordFile").toString();
       String groupFile = "";

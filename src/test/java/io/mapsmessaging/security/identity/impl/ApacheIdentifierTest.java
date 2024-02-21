@@ -35,7 +35,7 @@ class ApacheIdentifierTest {
 
   @Test
   void simpleLoad() throws IOException, GeneralSecurityException {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     Assertions.assertEquals(lookup.getClass(), ApacheBasicAuth.class);
@@ -56,7 +56,7 @@ class ApacheIdentifierTest {
 
   @Test
   void simpleEntryTest() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     IdentityEntry entry = lookup.findEntry("test");
@@ -67,7 +67,7 @@ class ApacheIdentifierTest {
 
   @Test
   void simpleGroupTest() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     IdentityEntry entry = lookup.findEntry("test");
@@ -80,7 +80,7 @@ class ApacheIdentifierTest {
 
   @Test
   void noUser() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     Assertions.assertEquals(lookup.getClass(), ApacheBasicAuth.class);

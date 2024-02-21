@@ -123,7 +123,7 @@ public class SslHelper {
 
   private static KeyStore loadKeyStore(ConfigurationProperties properties)
       throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
-    CertificateManager mananger = CertificateManagerFactory.getInstance().getManager(properties.getMap());
+    CertificateManager mananger = CertificateManagerFactory.getInstance().getManager(properties);
     return mananger.getKeyStore();
   }
 

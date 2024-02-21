@@ -19,6 +19,7 @@ package io.mapsmessaging.security.identity.impl.encrypted;
 import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
 import static io.mapsmessaging.security.logging.AuthLogMessages.ENCRYPTED_LOAD_FAILURE;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.certificates.CertificateManager;
@@ -30,7 +31,6 @@ import io.mapsmessaging.security.identity.impl.apache.HtGroupFileManager;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.File;
 import java.security.cert.Certificate;
-import java.util.Map;
 
 public class EncryptedAuth extends ApacheBasicAuth {
 
@@ -56,7 +56,7 @@ public class EncryptedAuth extends ApacheBasicAuth {
   }
 
   @Override
-  public IdentityLookup create(Map<String, ?> config) {
+  public IdentityLookup create(ConfigurationProperties config) {
     IdentityLookup identityLookup = null;
     String filePath = null;
     String groupFile = null;
@@ -87,9 +87,9 @@ public class EncryptedAuth extends ApacheBasicAuth {
     return identityLookup;
   }
 
-  private EncryptedAuth construct(String passwordPath, String groupPath, Map<String, ?> topConfig)
+  private EncryptedAuth construct(String passwordPath, String groupPath, ConfigurationProperties topConfig)
       throws Exception {
-    Map<String, ?> config = (Map) topConfig.get("certificateStore");
+    ConfigurationProperties config = (ConfigurationProperties) topConfig.get("certificateStore");
     String alias = "";
     if (config.containsKey("alias")) {
       alias = config.get("alias").toString();

@@ -79,7 +79,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
 
   @ParameterizedTest
   @MethodSource("configurations")
-  void testUserManagement(String auth, Map<String, ?> config, String mechanism)
+  void testUserManagement(String auth, Map<String, Object> config, String mechanism)
       throws IOException, GeneralSecurityException {
     File userFile = new File("userMap");
     userFile.delete();

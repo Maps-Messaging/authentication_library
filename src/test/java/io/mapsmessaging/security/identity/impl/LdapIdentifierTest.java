@@ -49,7 +49,7 @@ public class LdapIdentifierTest {
     if (properties == null || properties.isEmpty()) {
       return;
     }
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     map.put(Context.SECURITY_AUTHENTICATION, "simple");
 

@@ -26,6 +26,7 @@ import com.auth0.json.auth.TokenHolder;
 import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.net.TokenRequest;
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.GroupEntry;
@@ -35,7 +36,6 @@ import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import lombok.Getter;
 
 public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
@@ -64,7 +64,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     mgmt = null;
   }
 
-  public Auth0Auth(Map<String, ?> config) {
+  public Auth0Auth(ConfigurationProperties config) {
     auth0Domain = (String) config.get("domain");
     clientId = (String) config.get("clientId");
     clientSecret = (String) config.get("clientSecret");
@@ -87,7 +87,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   }
 
   @Override
-  public IdentityLookup create(Map<String, ?> config) {
+  public IdentityLookup create(ConfigurationProperties config) {
     return new Auth0Auth(config);
   }
 

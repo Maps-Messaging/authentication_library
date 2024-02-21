@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.ldap;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.GroupEntry;
@@ -40,7 +41,7 @@ public class LdapUserManager {
   private final Map<String, LdapGroup> groupMap;
   private final Map<String, String> map;
 
-  public LdapUserManager(Map<String, ?> config) {
+  public LdapUserManager(ConfigurationProperties config) {
     map = new LinkedHashMap<>();
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());

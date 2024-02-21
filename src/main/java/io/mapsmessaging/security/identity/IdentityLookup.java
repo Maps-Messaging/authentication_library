@@ -16,12 +16,12 @@
 
 package io.mapsmessaging.security.identity;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 
 public interface IdentityLookup {
@@ -42,7 +42,7 @@ public interface IdentityLookup {
     return new ArrayList<>();
   }
 
-  IdentityLookup create(Map<String, ?> config);
+  IdentityLookup create(ConfigurationProperties config);
 
   default boolean createGroup(String groupName) throws IOException {
     throw new NotImplementedException("Unable to add groups");

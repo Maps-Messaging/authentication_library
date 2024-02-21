@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -24,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Map;
 
 public class UnixAuth implements IdentityLookup {
 
@@ -92,7 +92,7 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
-  public IdentityLookup create(Map<String, ?> config) {
+  public IdentityLookup create(ConfigurationProperties config) {
     if (config.containsKey("passwordFile")) {
       String filePath = (String) config.get("passwordFile");
       String groupFile = (String) config.get("groupFile");

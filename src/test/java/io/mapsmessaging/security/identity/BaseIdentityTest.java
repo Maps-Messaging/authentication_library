@@ -16,10 +16,10 @@
 
 package io.mapsmessaging.security.identity;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -71,7 +71,7 @@ public class BaseIdentityTest {
     }
 
     @Override
-    public IdentityLookup create(Map<String, ?> config) {
+    public IdentityLookup create(ConfigurationProperties config) {
       return null;
     }
   }

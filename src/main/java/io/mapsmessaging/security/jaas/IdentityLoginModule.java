@@ -53,7 +53,7 @@ public class IdentityLoginModule extends BaseLoginModule {
       identityLookup = IdentityLookupFactory.getInstance().getSiteWide(siteWide);
     } else if (options.containsKey("identityName")) {
       String identityLookupName = options.get("identityName").toString();
-      identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, options);
+      identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, (Map<String, Object>) options);
     }
   }
 
