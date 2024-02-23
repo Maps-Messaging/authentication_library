@@ -23,11 +23,12 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.logging.AuthLogMessages;
-import java.util.*;
-import java.util.Map.Entry;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class LdapUserManager {
 
@@ -46,12 +47,12 @@ public class LdapUserManager {
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
     }
-    passwordName = config.get("passwordKeyName").toString();
+    passwordName = config.getProperty("passwordKeyName");
 
     userMap = new LinkedHashMap<>();
     groupMap = new LinkedHashMap<>();
-    searchBase = config.get("searchBase").toString();
-    groupSearchBase = config.get("groupSearchBase").toString();
+    searchBase = config.getProperty("searchBase");
+    groupSearchBase = config.getProperty("groupSearchBase");
   }
 
   public IdentityEntry findEntry(String username) {

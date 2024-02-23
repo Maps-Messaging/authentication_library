@@ -19,6 +19,7 @@ package io.mapsmessaging.security.certificates.pkcs11;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.keystore.KeyStoreManager;
+
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -47,16 +48,16 @@ public class Pkcs11Manager extends KeyStoreManager {
     return config.containsKey(PKCS11_CONFIG)
         && config.containsKey(PROVIDER_NAME)
         && config.containsKey(KEYSTORE_TYPE)
-        && config.get(KEYSTORE_TYPE).toString().equalsIgnoreCase("PKCS11");
+        && config.getProperty(KEYSTORE_TYPE).equalsIgnoreCase("PKCS11");
   }
 
   @Override
   protected KeyStore createKeyStore(
       String type, String path, char[] password, ConfigurationProperties config)
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
-    String pkcs11ConfigPath = config.get(PKCS11_CONFIG).toString();
-    String providerName = config.get(PROVIDER_NAME).toString();
-    String pin = (String) config.get(KEYSTORE_PASSWORD);
+    String pkcs11ConfigPath = config.getProperty(PKCS11_CONFIG);
+    String providerName = config.getProperty(PROVIDER_NAME);
+    String pin = config.getProperty(KEYSTORE_PASSWORD);
 
     Provider provider = Security.getProvider(providerName);
     if (provider == null) {
