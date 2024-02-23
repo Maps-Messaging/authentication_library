@@ -80,6 +80,8 @@ public enum AuthLogMessages implements LogMessage {
   SSL_SERVER_LOADED_KEY_STORE(LEVEL.DEBUG, AuthCategory.SSL, "Loaded Key Store {} of type {}"),
   // </editor-fold>
 
+  CRL_SUCCESS(LEVEL.INFO, AuthCategory.SSL, "Successfully reloaded the CRL from {}"),
+  CRL_FAILURE(LEVEL.FATAL, AuthCategory.SSL, "Failed to reloaded the CRL from {}"),
 
   // <editor-fold desc="Password file messages">
   PASSWORD_FILE_LOADED(LEVEL.INFO, AuthCategory.AUTHENTICATION, "Successfully loaded {} entries for {}"),

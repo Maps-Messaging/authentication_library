@@ -16,6 +16,11 @@
 
 package io.mapsmessaging.security.ssl;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.CRL_FAILURE;
+import static io.mapsmessaging.security.logging.AuthLogMessages.CRL_SUCCESS;
+
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.cert.CRL;
@@ -25,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class CertificateRevocationManager {
 
+  private final Logger logger = LoggerFactory.getLogger(CertificateRevocationManager.class);
   private final URL crlUrl;
   private final long timeInterval;
   private long lastLoad;
@@ -46,8 +52,9 @@ public class CertificateRevocationManager {
         crl.compareAndExchange(crl.get(), crlLoad);
       }
       lastLoad = System.currentTimeMillis()+timeInterval;
+      logger.log(CRL_SUCCESS, crlUrl.toString());
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.log(CRL_FAILURE, e, crlUrl.toString());
     }
   }
 
