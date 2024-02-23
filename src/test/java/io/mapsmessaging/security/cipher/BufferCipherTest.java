@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class BufferCipherTest extends BaseCertificateTest {
 
   void setupStore(String type) throws Exception {
-    super.setUp(type);
+    super.setUp(type, "file");
     addMultiCertificates(certificateManager);
   }
 

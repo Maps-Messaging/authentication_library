@@ -15,6 +15,7 @@
  */
 
 package io.mapsmessaging.security.storage;
+import com.bettercloud.vault.SslConfig;
 import com.bettercloud.vault.Vault;
 import com.bettercloud.vault.VaultConfig;
 import com.bettercloud.vault.VaultException;
@@ -45,17 +46,25 @@ public class VaultStore implements Store {
 
   @Override
   public boolean exists(String name) {
-    return false;
+    try {
+      LogicalResponse response = vault.logical().read(keyName+"/"+name);
+      if (response == null || response.getData() == null) {
+        return false;
+      }
+      return response.getData() != null && !response.getData().isEmpty();
+    } catch (VaultException e) {
+      return false;
+    }
   }
 
   @Override
   public byte[] load(String name) throws IOException {
     try {
-      LogicalResponse response = vault.logical().read(name);
+      LogicalResponse response = vault.logical().read(keyName+"/"+name);
       if (response == null || response.getData() == null) {
         throw new IOException("Secret not found");
       }
-      String base64Data = response.getData().get(keyName);
+      String base64Data = response.getData().get("keystore");
       return Base64.getDecoder().decode(base64Data);
     } catch (VaultException e) {
       throw new IOException("Error reading from Vault", e);
@@ -65,9 +74,10 @@ public class VaultStore implements Store {
   @Override
   public void save(byte[] data, String name) throws IOException {
     try {
+      if(vault == null)return;
       String base64Data = Base64.getEncoder().encodeToString(data);
-      Map<String, Object> secretData = Map.of(keyName, base64Data);
-      vault.logical().write(name, secretData);
+      Map<String, Object> secretData = Map.of("keystore", base64Data);
+      vault.logical().write(keyName+"/"+name, secretData);
     } catch (VaultException e) {
       throw new IOException("Error writing to Vault", e);
     }
@@ -77,17 +87,26 @@ public class VaultStore implements Store {
   public Store create(Map<String, Object> config) throws IOException {
     String vaultAddress = (String) config.get("vaultAddress");
     String vaultToken = (String) config.get("vaultToken");
-
-    String keyName = "data";
-    if(config.containsKey("keyName")){
-      keyName = (String) config.get("keyName");
+    boolean sslverify = true;
+    if(config.containsKey("sslVerify")){
+      sslverify = Boolean.parseBoolean(config.get("sslVerify").toString());
     }
+    String keyName = "data";
+    if(config.containsKey("secretEngine")){
+      keyName = (String) config.get("secretEngine");
+    }
+
 
     VaultConfig vaultConfig;
     try {
+      SslConfig sslConfig= new SslConfig()
+          .verify(sslverify)
+          .build();
       vaultConfig = new VaultConfig()
           .address(vaultAddress)
           .token(vaultToken)
+          .sslConfig(sslConfig)
+          .engineVersion(2)
           .build();
     } catch (VaultException e) {
       throw new IOException(e);

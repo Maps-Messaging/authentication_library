@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -28,8 +29,8 @@ class KeyStoreManagerTest extends BaseCertificateTest {
 
   @ParameterizedTest
   @MethodSource("knownTypes")
-  void testAddAndGetCertificate(String type) throws Exception {
-    setUp(type);
+  void testAddAndGetCertificate(String type, String store) throws Exception {
+    setUp(type, store);
     CertificateWithPrivateKey testCert = addCert(certificateManager);
     Certificate retrievedCert = certificateManager.getCertificate(TEST_ALIAS);
     assertNotNull(retrievedCert, "Certificate should not be null");
@@ -37,13 +38,14 @@ class KeyStoreManagerTest extends BaseCertificateTest {
         testCert.getCertificate(),
         retrievedCert,
         "Retrieved certificate should match the original");
+    certificateManager.deleteCertificate(TEST_ALIAS);
+
   }
 
   @ParameterizedTest
   @MethodSource("knownTypes")
-  void testInvalidAliasCertificate(String type) throws Exception {
-    setUp(type);
-
+  void testInvalidAliasCertificate(String type, String store) throws Exception {
+    setUp(type, store);
     assertThrows(
         CertificateException.class,
         () -> certificateManager.getCertificate(TEST_ALIAS),
@@ -52,13 +54,33 @@ class KeyStoreManagerTest extends BaseCertificateTest {
 
   @ParameterizedTest
   @MethodSource("knownTypes")
-  void testGetKey(String type) throws Exception {
-    setUp(type);
-
+  void testGetKey(String type, String store) throws Exception {
+    setUp(type, store);
     CertificateWithPrivateKey testCert = addCert(certificateManager);
     PrivateKey retrievedKey = certificateManager.getKey(TEST_ALIAS, KEY_PASSWORD);
     assertNotNull(retrievedKey, "Private key should not be null");
-    assertEquals(
-        testCert.getPrivateKey(), retrievedKey, "Retrieved private keys should match the original");
+    assertEquals(testCert.getPrivateKey(), retrievedKey, "Retrieved private keys should match the original");
+    certificateManager.deleteCertificate(TEST_ALIAS);
+  }
+
+  @ParameterizedTest
+  @MethodSource("knownTypes")
+  void testCreateAndLoad(String type, String store) throws Exception {
+    setUp(type, store);
+    CertificateWithPrivateKey testCert = addCert(certificateManager);
+    CertificateManager testManager = createManager(type, store);
+    Assertions.assertNotNull(testManager);
+
+    PrivateKey retrievedKey = certificateManager.getKey(TEST_ALIAS, KEY_PASSWORD);
+    PrivateKey testKey = testManager.getKey(TEST_ALIAS, KEY_PASSWORD);
+
+    assertNotNull(retrievedKey, "Private key should not be null");
+    assertEquals(testCert.getPrivateKey(), retrievedKey, "Retrieved private keys should match the original");
+
+    assertNotNull(testKey, "Private key should not be null");
+    assertEquals(testCert.getPrivateKey(), testKey, "Retrieved private keys should match the original");
+
+    assertEquals(testKey, retrievedKey, "These should be the same");
+    testManager.deleteCertificate(TEST_ALIAS);
   }
 }
