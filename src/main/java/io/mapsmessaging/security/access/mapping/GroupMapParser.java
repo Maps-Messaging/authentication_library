@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,13 +17,8 @@
 package io.mapsmessaging.security.access.mapping;
 
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GroupMapParser extends MapParser<GroupIdMap> {
-
-  private final Pattern IDENTIFIER_PATTERN =
-      Pattern.compile("^([a-fA-F0-9-]+)\\s*=\\s*([^:]+):([^\\[\\]]+)(?:\\[([^\\[\\]]+)\\])?$");
 
   public GroupMapParser() {
     super();
@@ -31,13 +26,11 @@ public class GroupMapParser extends MapParser<GroupIdMap> {
 
   @Override
   protected GroupIdMap createMapping(String identifier) {
-    Matcher matcher = IDENTIFIER_PATTERN.matcher(identifier);
-    if (matcher.matches()) {
-      UUID uuid = UUID.fromString(matcher.group(1));
-      String authDomain = matcher.group(2);
-      String groupName = matcher.group(3);
-      return new GroupIdMap(uuid, groupName, authDomain);
-    }
-    throw new IllegalArgumentException("Invalid identifier format: " + identifier);
+    String[] keyValue = identifier.split("=");
+    UUID uuid = UUID.fromString(keyValue[0].trim());
+    String[] groups = keyValue[1].split(":");
+    String authDomain = groups[0].trim();
+    String groupName = groups[1].trim();
+    return new GroupIdMap(uuid, groupName, authDomain);
   }
 }

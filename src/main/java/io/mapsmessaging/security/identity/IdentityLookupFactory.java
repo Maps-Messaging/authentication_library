@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,35 +16,50 @@
 
 package io.mapsmessaging.security.identity;
 
-import io.mapsmessaging.logging.Logger;
-import io.mapsmessaging.logging.LoggerFactory;
-
-import java.util.Map;
-import java.util.ServiceLoader;
-
 import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_LOADED;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.ConcurrentHashMap;
+
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class IdentityLookupFactory {
 
-  private static final IdentityLookupFactory instance = new IdentityLookupFactory();
+  private static class Holder {
+    static final IdentityLookupFactory INSTANCE = new IdentityLookupFactory();
+  }
+
+  public static IdentityLookupFactory getInstance() {
+    return IdentityLookupFactory.Holder.INSTANCE;
+  }
+
+
+  private final Map<String, IdentityLookup> identityLookupMap = new ConcurrentHashMap<>();
   private final ServiceLoader<IdentityLookup> identityLookups;
-  private final Logger logger = LoggerFactory.getLogger(IdentityLookupFactory.class);
 
   private IdentityLookupFactory() {
+    Logger logger = LoggerFactory.getLogger(IdentityLookupFactory.class);
     identityLookups = ServiceLoader.load(IdentityLookup.class);
     for (IdentityLookup identityLookup : identityLookups) {
       logger.log(IDENTITY_LOOKUP_LOADED, identityLookup.getName());
     }
   }
 
-  public static IdentityLookupFactory getInstance() {
-    return instance;
+  public void registerSiteIdentityLookup(String name, IdentityLookup identityLookup) {
+    identityLookupMap.put(name, identityLookup);
   }
 
-  public IdentityLookup get(String name, Map<String, ?> config) {
+  public IdentityLookup getSiteWide(String name) {
+    return identityLookupMap.get(name);
+  }
+
+  public IdentityLookup get(String name, Map<String, Object> config) {
     for (IdentityLookup identityLookup : identityLookups) {
       if (identityLookup.getName().equalsIgnoreCase(name)) {
-        return identityLookup.create(config);
+        return identityLookup.create(new ConfigurationProperties(config));
       }
     }
     return null;

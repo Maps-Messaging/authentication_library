@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.*;
+
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IllegalFormatException;
-
 import java.io.*;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public abstract class FileLoader {
 
@@ -41,26 +43,29 @@ public abstract class FileLoader {
 
   public void load() {
     logger.log(CHECKING_PASSWORD_STORE, filePath);
-    File file = new File(filePath);
     if (file.exists() && lastModified != file.lastModified()) {
       logger.log(PASSWORD_FILE_CHANGE_DETECTED, filePath);
       lastModified = file.lastModified();
+      int lineNo = 0;
       try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
         String line = reader.readLine();
+        lineNo++;
         while (line != null) {
           parse(line);
           line = reader.readLine();
         }
       } catch (IOException e) {
-        logger.log(PASSWORD_FILE_LOAD_EXCEPTION, filePath, e);
+        logger.log(PASSWORD_FILE_LOAD_EXCEPTION, filePath, lineNo, e);
       }
     }
   }
 
   protected void add(String line) throws IOException {
-    if (!file.exists()) {
-      file.createNewFile();
+    if (!file.exists() && !file.createNewFile()) {
+      logger.log(FAILED_TO_CREATE_FILE, file.getAbsolutePath());
+      throw new IOException("Unable to create new file " + file.getAbsolutePath());
     }
+
     try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, true))) {
       bw.write(line);
       bw.newLine(); // Add a newline character after each line
@@ -83,11 +88,16 @@ public abstract class FileLoader {
       }
     }
 
-    if (!file.delete()) {
-      throw new IOException("Could not delete original file");
+    Path path = Paths.get(file.getAbsolutePath());
+    try {
+      Files.delete(path);
+    } catch (IOException e) {
+      logger.log(FAILED_TO_DELETE_FILE, path.toAbsolutePath().toString());
+      throw new IOException("Could not delete original file: " + e.getMessage(), e);
     }
 
     if (!tempFile.renameTo(file)) {
+      logger.log(FAILED_TO_RENAME_FILE, tempFile.getAbsolutePath(), file.getAbsolutePath());
       throw new IOException("Could not rename temporary file");
     }
   }

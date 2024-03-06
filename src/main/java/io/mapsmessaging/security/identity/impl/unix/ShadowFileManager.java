@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ public class ShadowFileManager extends FileBaseIdentities {
   }
 
   @Override
-  public String getDomain() {
-    return "unix";
+  protected IdentityEntry load(String line) {
+    return new ShadowEntry(line);
   }
 
   @Override
-  protected IdentityEntry load(String line) {
-    return new ShadowEntry(line);
+  protected IdentityEntry create(String username, String hash) {
+    return new ShadowEntry(hash);
   }
 
 }

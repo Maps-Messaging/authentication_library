@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@ package io.mapsmessaging.security.sasl.provider.scram.client.state;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
 
 public class FinalValidationState extends State {
 
@@ -51,8 +51,9 @@ public class FinalValidationState extends State {
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
-    byte[] verifier = Base64.getDecoder().decode(response.get(ChallengeResponse.VERIFIER).getBytes());
+  public void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException {
+    byte[] verifier = Base64.getDecoder().decode(response.get(ChallengeResponse.VERIFIER).getBytes(StandardCharsets.UTF_8));
     if (!Arrays.equals(verifier, context.getServerSignature())) {
       throw new SaslException("Invalid server signature received");
     }

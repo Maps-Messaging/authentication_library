@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,26 +16,19 @@
 
 package io.mapsmessaging.security.sasl;
 
-import io.mapsmessaging.security.MapsSecurityProvider;
+import io.mapsmessaging.security.access.IdentityAccessManager;
 import io.mapsmessaging.security.identity.IdentityLookup;
-import java.security.Security;
 import java.util.Map;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 
 @SuppressWarnings("java:S2187") // Ignore the no test rule
 
 public class BaseSasl {
-
-  @BeforeAll
-  static void register() {
-    System.setProperty("sasl.test", "true");
-    Security.insertProviderAt(new MapsSecurityProvider(), 1);
-  }
+  protected static IdentityAccessManager identityAccessManager;
 
   protected SaslServer saslServer;
   protected SaslClient saslClient;
@@ -52,7 +45,13 @@ public class BaseSasl {
   }
 
   protected void createServer(IdentityLookup identityLookup, String mechanism, String protocol, String serverName, Map<String, String> props) throws SaslException {
-    saslServer =  Sasl.createSaslServer(mechanism, protocol, serverName, props, new ServerCallbackHandler(serverName, identityLookup));
+    saslServer =
+        Sasl.createSaslServer(
+            mechanism,
+            protocol,
+            serverName,
+            props,
+            new ServerCallbackHandler(serverName, identityLookup));
   }
 
   protected void runAuth() throws SaslException {

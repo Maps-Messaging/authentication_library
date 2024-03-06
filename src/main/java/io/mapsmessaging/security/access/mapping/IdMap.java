@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,14 +16,11 @@
 
 package io.mapsmessaging.security.access.mapping;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
 import java.util.UUID;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-@Data
-@ToString
+@Getter
 @EqualsAndHashCode
 public abstract class IdMap {
 
@@ -31,10 +28,6 @@ public abstract class IdMap {
 
   protected IdMap(UUID authId) {
     this.authId = authId;
-  }
-
-  protected IdMap() {
-    authId = UUID.randomUUID();
   }
 
   protected abstract String getKey();

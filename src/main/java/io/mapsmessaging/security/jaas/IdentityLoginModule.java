@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,20 +16,26 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
+
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-
+import io.mapsmessaging.security.passwords.PasswordCipher;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
-import java.util.Arrays;
-import java.util.Map;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -42,9 +48,12 @@ public class IdentityLoginModule extends BaseLoginModule {
       Map<String, ?> sharedState,
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
-    if (options.containsKey("identityName")) {
+    if (options.containsKey("siteWide")) {
+      String siteWide = options.get("siteWide").toString();
+      identityLookup = IdentityLookupFactory.getInstance().getSiteWide(siteWide);
+    } else if (options.containsKey("identityName")) {
       String identityLookupName = options.get("identityName").toString();
-      identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, options);
+      identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, (Map<String, Object>) options);
     }
   }
 
@@ -59,12 +68,36 @@ public class IdentityLoginModule extends BaseLoginModule {
     if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(identityEntry.getPassword());
-    String rawPassword = new String(password);
-    byte[] hash = passwordParser.computeHash(rawPassword.getBytes(), passwordParser.getSalt(), passwordParser.getCost());
-    if (!Arrays.equals(hash, identityEntry.getPassword().getBytes())) {
-      throw new LoginException("Invalid password");
+    byte[] actualPassword;
+    byte[] remotePassword = new String(password).getBytes(StandardCharsets.UTF_8);
+
+    try {
+      PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
+      if (passwordHasher == null) {
+        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
+      }
+
+      if (passwordHasher instanceof PasswordCipher
+          || passwordHasher instanceof PlainPasswordHasher) {
+        actualPassword = passwordHasher.getPassword();
+      } else {
+        remotePassword =
+            passwordHasher.transformPassword(
+                remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
+        actualPassword = new String(passwordHasher.getFullPasswordHash()).getBytes();
+      }
+      boolean result = Arrays.equals(actualPassword, remotePassword);
+      Arrays.fill(actualPassword, (byte) 0x0);
+      Arrays.fill(remotePassword, (byte) 0x0);
+      if (!result) {
+        throw new LoginException("Invalid password");
+      }
+    } catch (IOException | GeneralSecurityException error) {
+      LoginException lg = new LoginException("Error raised while processing");
+      lg.initCause(error);
+      throw lg;
     }
+
     succeeded = true;
     if (debug) {
       logger.log(USER_LOGGED_IN, username);
@@ -82,15 +115,10 @@ public class IdentityLoginModule extends BaseLoginModule {
       Set<Principal> principalSet = subject.getPrincipals();
       principalSet.addAll(subject1.getPrincipals());
       principalSet.add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
-      UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get(getDomain() + ":" + username);
-      if (userIdMap == null) {
-        userIdMap = new UserIdMap(UUID.randomUUID(), username, getDomain(), "");
-      }
-      principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
+      principalSet.add(userPrincipal);
 
       subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
       subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
-      subject.getPrincipals().add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
       commitSucceeded = true;
       return true;
     }

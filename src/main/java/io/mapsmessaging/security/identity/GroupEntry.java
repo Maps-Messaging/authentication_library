@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 package io.mapsmessaging.security.identity;
 
-import lombok.Getter;
-
 import java.util.Set;
 import java.util.TreeSet;
+import lombok.Getter;
 
 /**
  * Represents a group in the context of authentication.
@@ -55,7 +54,7 @@ import java.util.TreeSet;
  *
  * @see Comparable
  */
-public class GroupEntry implements Comparable<GroupEntry> {
+public class GroupEntry {
 
   protected final Set<String> userSet;
 
@@ -80,16 +79,27 @@ public class GroupEntry implements Comparable<GroupEntry> {
     return userSet.contains(check);
   }
 
-  @Override
-  public int compareTo(GroupEntry o) {
-    return name.compareTo(o.name);
-  }
-
   public void removeUser(String username) {
     userSet.remove(username);
   }
 
+  public Set<String> getUsers() {
+    return Set.copyOf(userSet);
+  }
+
   public int getUserCount() {
     return userSet.size();
+  }
+
+  public String toString() {
+    StringBuilder sb = new StringBuilder(name).append(":");
+    boolean isFirst = true;
+    for (String user : userSet) {
+      if (!isFirst) sb.append(" ");
+      isFirst = false;
+      sb.append(user);
+    }
+
+    return sb.toString();
   }
 }

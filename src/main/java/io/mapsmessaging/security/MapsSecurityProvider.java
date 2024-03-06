@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,8 +18,13 @@ package io.mapsmessaging.security;
 
 import java.security.Provider;
 import java.security.Security;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class MapsSecurityProvider extends Provider {
+
+  static {
+    Security.addProvider(new BouncyCastleProvider());
+  }
 
   private static final String CLIENT_FACTORY = "io.mapsmessaging.security.sasl.provider.MapsSaslClientFactory";
   private static final String SERVER_FACTORY = "io.mapsmessaging.security.sasl.provider.MapsSaslServerFactory";
@@ -38,6 +43,8 @@ public class MapsSecurityProvider extends Provider {
       put("SaslClientFactory.MAPS-TEST-10", CLIENT_FACTORY);
       put("SaslServerFactory.MAPS-TEST-10", SERVER_FACTORY);
     }
+    put("SaslClientFactory.PLAIN", CLIENT_FACTORY);
+    put("SaslServerFactory.PLAIN", SERVER_FACTORY);
   }
 
   public static void register() {

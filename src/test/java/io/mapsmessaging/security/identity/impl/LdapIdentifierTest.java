@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,15 +16,17 @@
 
 package io.mapsmessaging.security.identity.impl;
 
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
-import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.ldap.LdapAuth;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import io.mapsmessaging.security.identity.parsers.md5.Md5UnixPasswordParser;
+import io.mapsmessaging.security.identity.impl.ldap.LdapUser;
 import io.mapsmessaging.security.jaas.PropertiesLoader;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import io.mapsmessaging.security.passwords.hashes.md5.Md5UnixPasswordHasher;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -43,11 +45,11 @@ public class LdapIdentifierTest {
   }
 
   @Test
-  void simpleLoad() throws NoSuchUserFoundException {
+  void simpleLoad() throws IOException, GeneralSecurityException {
     if (properties == null || properties.isEmpty()) {
       return;
     }
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     map.put(Context.SECURITY_AUTHENTICATION, "simple");
 
@@ -65,13 +67,30 @@ public class LdapIdentifierTest {
 
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("ldap", map);
     Assertions.assertEquals(lookup.getClass(), LdapAuth.class);
+    Assertions.assertEquals("ldap", lookup.getDomain());
+
     char[] hash = lookup.getPasswordHash(properties.getProperty("username"));
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals(properties.getProperty("hashedPassword"), pwd);
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
-    Assertions.assertEquals(Md5UnixPasswordParser.class, passwordParser.getClass());
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    Assertions.assertEquals(Md5UnixPasswordHasher.class, passwordHasher.getClass());
+    IdentityEntry identityEntry = lookup.findEntry(properties.getProperty("username"));
+    Assertions.assertNotNull(identityEntry);
+    Assertions.assertEquals(LdapUser.class, identityEntry.getClass());
+    LdapUser ldapUser = (LdapUser) identityEntry;
+    Assertions.assertEquals(ldapUser.getUsername(), properties.getProperty("username"));
+    Assertions.assertNotNull(ldapUser.getDescription());
+    Assertions.assertNotNull(ldapUser.getHomeDirectory());
+    Assertions.assertNotNull(ldapUser.getSubject());
+    Assertions.assertNotNull(ldapUser.getGroups());
+    Assertions.assertFalse(ldapUser.getGroups().isEmpty());
+    String groupName = ldapUser.getGroups().get(0).getName();
+    Assertions.assertNotNull(lookup.findGroup(groupName).getName());
+    Assertions.assertEquals(groupName, lookup.findGroup(groupName).getName());
+    Assertions.assertNotNull(lookup.getEntries());
+    Assertions.assertFalse(lookup.getEntries().isEmpty());
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,17 +16,19 @@
 
 package io.mapsmessaging.security.identity.parsers;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import org.junit.jupiter.api.Test;
 
-class BCryptTest extends BashHashFunctions {
+class BCryptTest extends BaseHashFunctions {
 
   @Test
-  void checkBcryptHash() {
+  void checkBcryptHash() throws GeneralSecurityException, IOException {
     testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password");
   }
 
   @Test
-  void checkBcryptHashWrongPassword() {
+  void checkBcryptHashWrongPassword() throws GeneralSecurityException, IOException {
     testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is a wrong password", false);
   }
 

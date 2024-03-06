@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import io.mapsmessaging.security.access.AccessControlList;
 import io.mapsmessaging.security.access.AccessControlListParser;
 import io.mapsmessaging.security.access.AccessControlMapping;
 import io.mapsmessaging.security.access.AclEntry;
-import io.mapsmessaging.security.identity.principals.GroupPrincipal;
-
-import javax.security.auth.Subject;
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
+import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import javax.security.auth.Subject;
 
 public class PermissionAccessControlList implements AccessControlList {
 
@@ -56,52 +56,78 @@ public class PermissionAccessControlList implements AccessControlList {
     long mask = 0;
     if (subject != null) {
       long time = System.currentTimeMillis();
-      UUID authId = SubjectHelper.getUniqueId(subject);
-      for (AclEntry aclEntry : aclEntries) {
-        if (!aclEntry.getExpiryPolicy().hasExpired(time) &&
-            aclEntry.matches(authId)) {
-          mask = mask | aclEntry.getPermissions();
-        }
-      }
+      mask = processAclEntriesForSubject(subject, time);
 
-      // Scan the groups for access
-      Set<GroupPrincipal> groups = subject.getPrincipals(GroupPrincipal.class);
-      for (GroupPrincipal group : groups) {
-        for (AclEntry aclEntry : aclEntries) {
-          //ToDo check that the group is in the aclEntry
-          if (!aclEntry.getExpiryPolicy().hasExpired(time)) {//&& aclEntry.matches(group.getUuid())) {
-            mask = mask | aclEntry.getPermissions();
-          }
-        }
-      }
+      Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
+      mask |= processGroups(groups, time);
     }
     return mask;
   }
 
+  private long processAclEntriesForSubject(Subject subject, long time) {
+    UUID authId = SubjectHelper.getUniqueId(subject);
+    return aclEntries.stream()
+        .filter(aclEntry -> isValidAclEntry(aclEntry, time, authId))
+        .mapToLong(AclEntry::getPermissions)
+        .reduce(0, (a, b) -> a | b);
+  }
+
+  private long processGroups(Set<GroupIdPrincipal> groups, long time) {
+    return groups.stream()
+        .flatMap(group -> group.getGroupIds().stream())
+        .mapToLong(groupIdMap -> processAclEntriesForGroupId(groupIdMap, time))
+        .reduce(0, (a, b) -> a | b);
+  }
+
+  private long processAclEntriesForGroupId(GroupIdMap groupIdMap, long time) {
+    return aclEntries.stream()
+        .filter(aclEntry -> isValidAclEntry(aclEntry, time, groupIdMap.getAuthId()))
+        .mapToLong(AclEntry::getPermissions)
+        .reduce(0, (a, b) -> a | b);
+  }
+
+  private boolean isValidAclEntry(AclEntry aclEntry, long time, UUID authId) {
+    return !aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(authId);
+  }
+
+  // We are exiting early here because we want to fast exit once we found access is allowed
+  @SuppressWarnings("java:S3516")
   public boolean canAccess(Subject subject, long requestedAccess) {
     if (subject == null || requestedAccess == 0) {
       return false;
     }
-    UUID authId = SubjectHelper.getUniqueId(subject);
 
-    // Scan for authId for access
-    for (AclEntry aclEntry : aclEntries) {
-      if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess
-          && aclEntry.matches(authId)) {
-        return true;
-      }
+    UUID authId = SubjectHelper.getUniqueId(subject);
+    if (checkAccessForId(authId, requestedAccess)) {
+      return true;
     }
 
-    // Scan the groups for access
-    Set<GroupPrincipal> groups = subject.getPrincipals(GroupPrincipal.class);
-    for (GroupPrincipal group : groups) {
-      for (AclEntry aclEntry : aclEntries) {
-        if ((aclEntry.getPermissions() & requestedAccess) == requestedAccess) {//&& aclEntry.matches(group.getUuid())) {
-          return true;
+    if (!subject.getPrincipals(GroupIdPrincipal.class).isEmpty()) {
+      for (GroupIdPrincipal group : subject.getPrincipals(GroupIdPrincipal.class)) {
+        for (GroupIdMap groupIdMap : group.getGroupIds()) {
+          if (checkAccessForId(groupIdMap.getAuthId(), requestedAccess)) {
+            return true;
+          }
         }
       }
     }
-    // This means neither user nor group has access
     return false;
   }
+
+
+  // We are exiting early here because we want to fast exit once we found access is allowed
+  @SuppressWarnings("java:S3516")
+  private boolean checkAccessForId(UUID id, long requestedAccess) {
+    for (AclEntry aclEntry : aclEntries) {
+      if(isAccessGranted(aclEntry, requestedAccess, id)){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isAccessGranted(AclEntry aclEntry, long requestedAccess, UUID authId) {
+    return (aclEntry.getPermissions() & requestedAccess) == requestedAccess && aclEntry.matches(authId);
+  }
+
 }

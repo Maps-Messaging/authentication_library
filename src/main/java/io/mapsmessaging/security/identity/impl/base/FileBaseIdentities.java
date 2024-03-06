@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
+
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
-import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
-
 import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
 
 public abstract class FileBaseIdentities extends FileLoader {
 
@@ -39,13 +39,11 @@ public abstract class FileBaseIdentities extends FileLoader {
     usernamePasswordMap = new LinkedHashMap<>();
   }
 
-  public abstract String getDomain();
-
   public IdentityEntry findEntry(String username) {
     return usernamePasswordMap.get(username);
   }
 
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
     IdentityEntry identityEntry = usernamePasswordMap.get(username);
     if (identityEntry == null) {
       logger.log(NO_SUCH_USER_FOUND, username);
@@ -55,18 +53,19 @@ public abstract class FileBaseIdentities extends FileLoader {
   }
 
   public List<IdentityEntry> getEntries() {
-    return (List<IdentityEntry>) usernamePasswordMap.values();
+    return new ArrayList<>(usernamePasswordMap.values());
   }
 
   protected abstract IdentityEntry load(String line);
 
+  protected abstract IdentityEntry create(String username, String hash);
   public void parse(String line) {
     IdentityEntry identityEntry = load(line);
     usernamePasswordMap.put(identityEntry.getUsername(), identityEntry);
   }
 
   public void addEntry(String username, String passwordHash) throws IOException {
-    IdentityEntry identityEntry = new HtPasswdEntry(username, passwordHash);
+    IdentityEntry identityEntry = create(username, passwordHash);
     usernamePasswordMap.put(username, identityEntry);
     add(identityEntry.toString());
   }

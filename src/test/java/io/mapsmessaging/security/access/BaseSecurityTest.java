@@ -1,11 +1,11 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,10 +24,9 @@ import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
-
-import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.*;
+import javax.security.auth.Subject;
 
 public class BaseSecurityTest {
 
@@ -35,8 +34,7 @@ public class BaseSecurityTest {
     List<String> aclEntries = new ArrayList<>();
     Faker faker = new Faker();
     for (int i = 0; i < numEntries; i++) {
-      String userName = "group" + i;
-      UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), faker.name().username(), "test", "");
+      UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), faker.name().username(), "test");
       userMapManagement.add(userIdMap);
       String entry = userIdMap.getAuthId() + " = Read|Write|Delete";
       aclEntries.add(entry);

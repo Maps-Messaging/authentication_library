@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ public class HtPasswdFileManager extends FileBaseIdentities {
   }
 
   @Override
-  public String getDomain() {
-    return "apache";
+  protected IdentityEntry load(String line) {
+    return new HtPasswdEntry(line);
   }
 
   @Override
-  protected IdentityEntry load(String line) {
-    return new HtPasswdEntry(line);
+  protected IdentityEntry create(String username, String hash) {
+    return new HtPasswdEntry(username, hash);
   }
 
 }

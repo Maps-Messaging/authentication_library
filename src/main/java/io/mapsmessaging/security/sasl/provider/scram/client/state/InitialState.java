@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.*;
 import java.io.IOException;
 import java.util.Map;
+import javax.security.auth.callback.*;
 
 public class InitialState extends State {
 
@@ -69,13 +68,17 @@ public class InitialState extends State {
     firstClientChallenge.put(ChallengeResponse.USERNAME, context.getUsername());
     firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
     context.setState(new ChallengeState(this));
-    context.setInitialClientChallenge(firstClientChallenge.toString());
+    String first = firstClientChallenge.toString();
+    if (first.startsWith("n,,")) first = first.substring(3);
+
+    context.setInitialClientChallenge(first);
     firstClientChallenge.setGs2Header(GS2_HEADER);
     return firstClientChallenge;
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+  public void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException {
     // This is the first state, there is no challenge or response
   }
 }

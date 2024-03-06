@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,23 +16,24 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
+import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.*;
+
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-
-import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.*;
 
 public class AwsCognitoLoginModule extends BaseLoginModule {
 
@@ -104,13 +105,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
 
       AdminInitiateAuthResponse authResponse = cognitoClient.adminInitiateAuth(authRequest);
       AuthenticationResultType authResult = authResponse.authenticationResult();
-      if (authResult != null) {
-        groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
-        return true;
-      }
-      // If the above code executes without throwing an exception,
-      // the JWT token is valid for the given user
-      return false;
+      return (authResult != null && loadGroups(authResult));
     } catch (NotAuthorizedException | NoSuchAlgorithmException | InvalidKeyException e) {
       // If the token is not valid or the user is not authorized, the above code will throw a NotAuthorizedException
       LoginException exception = new LoginException("Not authorised exception raised");
@@ -119,13 +114,23 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     }
   }
 
+  private boolean loadGroups(AuthenticationResultType authResult) throws LoginException {
+    try{
+      groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
+      return true;
+    }
+    catch(IOException ioException){
+      LoginException loginException = new LoginException();
+      loginException.initCause(ioException);
+      throw loginException;
+    }
+  }
   @Override
   public boolean commit() {
     boolean res = super.commit();
     if (res && groupList != null) {
       // Add known groups here
       for (String group : groupList) {
-        // ToDo
         subject.getPrincipals().add(new GroupPrincipal(group));
       }
       subject.getPrincipals().add(new AuthHandlerPrincipal("Aws:Cognito"));

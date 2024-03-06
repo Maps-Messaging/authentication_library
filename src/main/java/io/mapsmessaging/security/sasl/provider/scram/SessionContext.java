@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,82 +16,48 @@
 
 package io.mapsmessaging.security.sasl.provider.scram;
 
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.security.sasl.SaslException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.Base64;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.security.sasl.SaslException;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class SessionContext {
 
-  @Getter
-  @Setter
+  private static final String[] HMAC_NAMES = {"sha3", "sha"};
+
   private boolean receivedClientMessage = false;
-
-  @Getter
-  @Setter
   private String clientNonce;
-
-  @Getter
   private String serverNonce;
-
-  @Getter
-  @Setter
-  private String passwordSalt;
-
-  @Getter
-  @Setter
+  private byte[] passwordSalt;
   private String username;
-
-  @Getter
-  @Setter
   private State state;
-
-  @Getter
-  @Setter
-  private int interations;
-
-  @Getter
-  @Setter
+  private int iterations;
   private String prepPassword;
-
-  @Getter
   private Mac mac;
-
   private String algorithm;
-
-  @Getter
-  @Setter
-  private PasswordParser passwordParser;
-
-  @Getter
-  @Setter
+  private int keySize;
+  private PasswordHandler passwordHasher;
   private String initialClientChallenge;
-
-  @Getter
-  @Setter
   private String initialServerChallenge;
-
-  @Getter
   private byte[] clientKey;
-
-  @Getter
   private byte[] storedKey;
-
-  @Getter
   private byte[] clientSignature;
-
-  @Getter
   private byte[] clientProof;
-
-  @Getter
   private byte[] serverSignature;
 
   public void reset() {
@@ -99,14 +65,15 @@ public class SessionContext {
 
     state = null;
     mac = null;
-    passwordParser = null;
+    passwordHasher = null;
 
     username = "";
-    passwordSalt = "";
+    passwordSalt = new byte[0];
     clientNonce = "";
     serverNonce = "";
     initialServerChallenge = "";
     algorithm = "";
+    keySize = 0;
     prepPassword = "";
 
     Arrays.fill(clientKey, (byte) 0);
@@ -125,28 +92,49 @@ public class SessionContext {
   public void setMac(Mac mac) {
     this.mac = mac;
     algorithm = mac.getAlgorithm().substring("hmac".length());
-    if (algorithm.toLowerCase().startsWith("sha") && !algorithm.toLowerCase().startsWith("sha-")) {
-      algorithm = algorithm.substring(0, "sha".length()) + "-" + algorithm.substring("sha".length());
+    String name = algorithm.toLowerCase();
+    name = name.replace("-", "");
+    String keyLen = "";
+    for (String test : HMAC_NAMES) {
+      if (name.startsWith(test)) {
+        keyLen = name.substring(test.length());
+        break;
+      }
     }
+    keySize = Integer.parseInt(keyLen);
+  }
+
+  public byte[] generateSaltedPassword(byte[] password, byte[] salt, int iterations)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
+    SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA" + keySize);
+    PBEKeySpec spec = new PBEKeySpec(new String(password).toCharArray(), salt, iterations, keySize);
+    SecretKey key = factory.generateSecret(spec);
+    return key.getEncoded();
   }
 
   public byte[] computeHmac(byte[] key, String string) throws InvalidKeyException {
     mac.reset();
     SecretKeySpec secretKey = new SecretKeySpec(key, mac.getAlgorithm());
     mac.init(secretKey);
-    mac.update(string.getBytes());
+    mac.update(string.getBytes(StandardCharsets.UTF_8));
     return mac.doFinal();
   }
 
-  public void computeServerSignature(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
-    byte[] serverKey = computeHmac(password, "Server Key");
+  public void computeServerSignature(byte[] password, String authString)
+      throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
+    byte[] saltedPassword =
+        generateSaltedPassword(password, Base64.getDecoder().decode(passwordSalt), iterations);
+    byte[] serverKey = computeHmac(saltedPassword, "Server Key");
     MessageDigest messageDigest = CryptoHelper.findDigest(algorithm);
     byte[] tmp = messageDigest.digest(serverKey);
     serverSignature = computeHmac(tmp, authString);
   }
 
-  public void computeClientKey(byte[] password) throws InvalidKeyException {
-    clientKey = computeHmac(password, "Client Key");
+  public void computeClientKey(byte[] password)
+      throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
+    byte[] saltedPassword =
+        generateSaltedPassword(password, Base64.getDecoder().decode(passwordSalt), iterations);
+    clientKey = computeHmac(saltedPassword, "Client Key");
   }
 
   public void computeStoredKeyAndSignature(String authString) throws NoSuchAlgorithmException, InvalidKeyException {
@@ -155,8 +143,9 @@ public class SessionContext {
     clientSignature = computeHmac(storedKey, authString);
   }
 
-  public void computeClientHashes(byte[] password, String authString) throws InvalidKeyException, NoSuchAlgorithmException {
-    computeClientKey(password);
+  public void computeClientHashes(String password, String authString)
+      throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
+    computeClientKey(password.getBytes(StandardCharsets.UTF_8));
     computeStoredKeyAndSignature(authString);
     clientProof = clientKey.clone();
     for (int i = 0; i < clientProof.length; i++) {

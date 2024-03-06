@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,46 +21,53 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
-import io.mapsmessaging.security.identity.parsers.md5.Md5PasswordParser;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import io.mapsmessaging.security.passwords.hashes.md5.Md5PasswordHasher;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class ApacheIdentifierTest {
 
   @Test
-  void simpleLoad() throws NoSuchUserFoundException {
-    Map<String, String> map = new LinkedHashMap<>();
+  void simpleLoad() throws IOException, GeneralSecurityException {
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     Assertions.assertEquals(lookup.getClass(), ApacheBasicAuth.class);
+    Assertions.assertEquals("apache", lookup.getDomain());
+    Assertions.assertEquals("Apache-Basic-Auth", lookup.getName());
+
     char[] hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
+    Assertions.assertNotNull(lookup.findGroup("user"));
+    Assertions.assertNull(lookup.findGroup("user1"));
+
     String pwd = new String(hash);
     Assertions.assertEquals("$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", pwd);
-    PasswordParser passwordParser = PasswordParserFactory.getInstance().parse(pwd);
-    Assertions.assertEquals(Md5PasswordParser.class, passwordParser.getClass());
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    Assertions.assertEquals(Md5PasswordHasher.class, passwordHasher.getClass());
   }
 
   @Test
   void simpleEntryTest() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     IdentityEntry entry = lookup.findEntry("test");
     Assertions.assertNotNull(entry);
     Assertions.assertEquals("test:$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", entry.toString());
-    Assertions.assertEquals(Md5PasswordParser.class, entry.getPasswordParser().getClass());
+    Assertions.assertEquals(Md5PasswordHasher.class, entry.getPasswordHasher().getClass());
   }
 
   @Test
   void simpleGroupTest() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     IdentityEntry entry = lookup.findEntry("test");
@@ -73,7 +80,7 @@ class ApacheIdentifierTest {
 
   @Test
   void noUser() {
-    Map<String, String> map = new LinkedHashMap<>();
+    Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/apache");
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("Apache-Basic-Auth", map);
     Assertions.assertEquals(lookup.getClass(), ApacheBasicAuth.class);

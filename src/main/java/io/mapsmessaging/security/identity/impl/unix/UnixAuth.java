@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
-import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Map;
 
 public class UnixAuth implements IdentityLookup {
 
@@ -43,6 +44,9 @@ public class UnixAuth implements IdentityLookup {
     if (passwordPath != null) {
       userDetailsManager = new PasswordFileManager(passwordPath);
     }
+    for(IdentityEntry identityEntry:passwordFileIdentities.getEntries()){
+      groupFileManager.loadGroups(identityEntry);
+    }
   }
 
   @Override
@@ -56,7 +60,7 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
     return passwordFileIdentities.getPasswordHash(username);
   }
 
@@ -89,16 +93,16 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
-  public IdentityLookup create(Map<String, ?> config) {
+  public IdentityLookup create(ConfigurationProperties config) {
     if (config.containsKey("passwordFile")) {
-      String filePath = (String) config.get("passwordFile");
-      String groupFile = (String) config.get("groupFile");
-      String passwordFile = (String) config.get("passwd");
+      String filePath = config.getProperty("passwordFile");
+      String groupFile = config.getProperty("groupFile");
+      String passwordFile = config.getProperty("passwd");
 
       return new UnixAuth(filePath, passwordFile, groupFile);
     }
     if (config.containsKey("configDirectory")) {
-      String directory = config.get("configDirectory").toString();
+      String directory = config.getProperty("configDirectory");
       File file = new File(directory);
       if (file.isDirectory()) {
         return new UnixAuth(file.getAbsolutePath() + File.separator + "shadow", file.getAbsolutePath() + File.separator + "passwd", file.getAbsolutePath() + File.separator + "group");

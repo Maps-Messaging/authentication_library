@@ -1,11 +1,11 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,26 +16,24 @@
 
 package io.mapsmessaging.security.access;
 
-import io.mapsmessaging.logging.Logger;
-import io.mapsmessaging.logging.LoggerFactory;
-
 import java.util.List;
 import java.util.ServiceLoader;
 
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class AccessControlFactory {
 
-
-  private static final AccessControlFactory instance = new AccessControlFactory();
-  private final ServiceLoader<AccessControlList> accessControlLists;
-
-  private final Logger logger = LoggerFactory.getLogger(AccessControlFactory.class);
-
-  private AccessControlFactory() {
-    accessControlLists = ServiceLoader.load(AccessControlList.class);
+  private static class Holder {
+    static final AccessControlFactory INSTANCE = new AccessControlFactory();
   }
 
   public static AccessControlFactory getInstance() {
-    return instance;
+    return Holder.INSTANCE;
+  }
+
+  private final ServiceLoader<AccessControlList> accessControlLists;
+
+  private AccessControlFactory() {
+    accessControlLists = ServiceLoader.load(AccessControlList.class);
   }
 
   public AccessControlList get(String name, AccessControlMapping accessControlMapping, List<String> config) {

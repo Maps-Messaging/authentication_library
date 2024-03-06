@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,14 +20,15 @@ import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.sasl.SaslException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Base64;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
 
 public class ValidationState extends State {
 
@@ -59,28 +60,34 @@ public class ValidationState extends State {
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+  public void handleResponse(ChallengeResponse response, SessionContext context) throws IOException {
     String proofString = response.remove(ChallengeResponse.PROOF);
     byte[] proof = Base64.getDecoder().decode(proofString);
-    //
-    // Compute Proof
-    //
-    String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
+    String client = context.getInitialClientChallenge();
+    if (client.startsWith("n,,")) client = client.substring(3);
+    String authString = client + "," + context.getInitialServerChallenge() + "," + response;
+
     try {
-      context.computeClientKey(context.getPrepPassword().getBytes());
+      context.computeClientKey(context.getPrepPassword().getBytes(StandardCharsets.UTF_8));
       context.computeStoredKeyAndSignature(authString);
-      context.computeServerSignature(context.getPrepPassword().getBytes(), authString);
-      byte[] signature = context.getClientSignature().clone();
-      for (int i = 0; i < signature.length; i++) {
-        signature[i] ^= proof[i];
+
+      byte[] clientKey = context.getClientKey();
+      byte[] clientSignature = context.getClientSignature();
+      byte[] expectedClientProof = new byte[clientSignature.length];
+      for (int i = 0; i < clientSignature.length; i++) {
+        expectedClientProof[i] = (byte) (clientKey[i] ^ clientSignature[i]);
       }
-      if (!Arrays.equals(signature, context.getClientKey())) {
+      if (!Arrays.equals(expectedClientProof, proof)) {
         throw new SaslException("Invalid password");
       }
+      context.computeServerSignature(context.getPrepPassword().getBytes(StandardCharsets.UTF_8), authString);
+      context.setServerSignature(context.getServerSignature());
     } catch (InvalidKeyException | NoSuchAlgorithmException e) {
       SaslException saslException = new SaslException(e.getMessage());
       saslException.initCause(e);
       throw saslException;
+    } catch (InvalidKeySpecException e) {
+      throw new IOException(e);
     }
   }
 }

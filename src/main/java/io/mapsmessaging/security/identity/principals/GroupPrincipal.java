@@ -16,9 +16,8 @@
 
 package io.mapsmessaging.security.identity.principals;
 
-import lombok.Getter;
-
 import java.security.Principal;
+import lombok.Getter;
 
 @Getter
 public class GroupPrincipal implements Principal {
@@ -27,5 +26,10 @@ public class GroupPrincipal implements Principal {
 
   public GroupPrincipal(String name) {
     this.name = name;
+  }
+
+  @Override
+  public String toString() {
+    return "Group: " + name;
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,21 +20,19 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import io.mapsmessaging.security.identity.impl.apache.HtGroupEntry;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class FileBaseGroups extends FileLoader {
 
   private final Map<String, GroupEntry> groups;
 
-  public FileBaseGroups(String filename) {
+  protected FileBaseGroups(String filename) {
     super(filename);
     groups = new LinkedHashMap<>();
   }
-
-  protected abstract String getDomain();
 
   protected abstract GroupEntry load(String line) throws IllegalFormatException;
 
@@ -56,9 +54,13 @@ public abstract class FileBaseGroups extends FileLoader {
     }
   }
 
-  public void addEntry(String groupName) throws IOException {
-    GroupEntry groupEntry = new HtGroupEntry(groupName);
-    groups.put(groupName, groupEntry);
+  public List<GroupEntry> getGroups() {
+    return List.copyOf(groups.values());
+  }
+
+  public void addEntry(String groupConfig) throws IOException {
+    GroupEntry groupEntry = new HtGroupEntry(groupConfig);
+    groups.put(groupEntry.getName(), groupEntry);
     add(groupEntry.toString());
   }
 

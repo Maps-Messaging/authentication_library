@@ -16,19 +16,19 @@
 
 package io.mapsmessaging.security.jaas;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
+
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
-
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Map;
+import java.util.Set;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.*;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.Map;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 
 public abstract class BaseLoginModule implements LoginModule {
 
@@ -143,11 +143,6 @@ public abstract class BaseLoginModule implements LoginModule {
     } else {
       Set<Principal> principalSet = subject.getPrincipals();
       principalSet.add(userPrincipal);
-      UserIdMap userIdMap = UserMapManagement.getGlobalInstance().get(getDomain() + ":" + username);
-      if (userIdMap == null) {
-        userIdMap = new UserIdMap(UUID.randomUUID(), username, getDomain(), "");
-      }
-      principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
       commitSucceeded = true;
       return true;
     }

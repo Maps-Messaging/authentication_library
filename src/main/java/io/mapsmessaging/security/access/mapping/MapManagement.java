@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.access.mapping;
 
+import io.mapsmessaging.security.access.mapping.store.MapStore;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +25,16 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MapManagement<T extends IdMap> {
-  private final String fileName;
   private final MapParser<T> parser;
+  private final MapStore<T> store;
   private final Map<UUID, T> userIdMapByUuid;
   private final Map<String, T> userIdMapByUser;
   private boolean hasChanged;
 
-  public MapManagement(String filename, MapParser<T> parser) {
+  public MapManagement(MapStore<T> store, MapParser<T> parser) {
     userIdMapByUuid = new ConcurrentHashMap<>();
     userIdMapByUser = new ConcurrentHashMap<>();
-    this.fileName = filename;
+    this.store = store;
     this.parser = parser;
     load();
     hasChanged = false;
@@ -42,6 +43,7 @@ public class MapManagement<T extends IdMap> {
   public void clearAll() {
     userIdMapByUuid.clear();
     userIdMapByUser.clear();
+    hasChanged = true;
   }
 
   public List<T> getAll() {
@@ -53,20 +55,14 @@ public class MapManagement<T extends IdMap> {
   }
 
   public T get(String username) {
-    if (!username.endsWith(": []")) {
-      username = username + ": []";
-    }
     return userIdMapByUser.get(username);
   }
 
   public boolean delete(String name) {
-    if (!name.endsWith(": []")) {
-      name = name + ": []";
-    }
     T entry = userIdMapByUser.remove(name);
     if (entry != null) {
       userIdMapByUuid.remove(entry.getAuthId());
-      save();
+      hasChanged = true;
       return true;
     }
     return false;
@@ -83,45 +79,18 @@ public class MapManagement<T extends IdMap> {
   }
 
   public void load() {
-    try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        T entry = parser.parse(line);
-        if (entry != null) {
-          userIdMapByUuid.put(entry.getAuthId(), entry);
-          userIdMapByUser.put(entry.getKey(), entry);
-        }
-      }
-    } catch (IOException e) {
-      // e.printStackTrace();
+    List<T> loaded = store.load(parser);
+    for (T entry : loaded) {
+      userIdMapByUuid.put(entry.getAuthId(), entry);
+      userIdMapByUser.put(entry.getKey(), entry);
     }
   }
 
   public void save() {
     if (hasChanged) {
-      try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
-        List<T> values = new ArrayList<>(userIdMapByUuid.values());
-        List<String> linesToWrite = parser.writeToList(values);
-        for (String line : linesToWrite) {
-          bw.write(line);
-          bw.newLine(); // Add a newline character after each line
-        }
-        hasChanged = false;
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      store.save(new ArrayList<>(userIdMapByUuid.values()), parser);
+      hasChanged = false;
     }
-  }
-
-  public boolean remove(String username) {
-    T entry = userIdMapByUser.remove(username);
-    if (!userIdMapByUser.containsKey(username)) {
-      userIdMapByUser.put(entry.getKey(), entry);
-      userIdMapByUuid.put(entry.getAuthId(), entry);
-      hasChanged = true;
-      return true;
-    }
-    return false;
   }
 
   public int size() {

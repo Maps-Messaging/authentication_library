@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,18 +17,17 @@
 package io.mapsmessaging.security.identity.impl.ldap;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
-import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
-import lombok.Getter;
-
+import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import java.security.Principal;
+import java.util.Enumeration;
+import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Set;
+import lombok.Getter;
 
 public class LdapUser extends IdentityEntry {
 
@@ -42,7 +41,7 @@ public class LdapUser extends IdentityEntry {
   public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
     super.password = new String(password);
-    super.passwordParser = PasswordParserFactory.getInstance().parse(new String(password));
+    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(new String(password));
     this.attrs = attrs;
     NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();
     while (namingEnum.hasMoreElements()) {
@@ -53,9 +52,8 @@ public class LdapUser extends IdentityEntry {
         } else if (attribute.getID().equalsIgnoreCase("gecos")) {
           description = (String) attribute.get();
         }
-
       } catch (NamingException e) {
-        throw new RuntimeException(e);
+        // We ignore this since if the attribute exists, but we can not get it then we don't really care
       }
     }
   }
@@ -65,7 +63,7 @@ public class LdapUser extends IdentityEntry {
   protected Set<Principal> getPrincipals() {
     Set<Principal> principals = super.getPrincipals();
     if (homeDirectory != null) {
-      principals.add(new HomeDirectoryPrinicipal(homeDirectory));
+      principals.add(new HomeDirectoryPrincipal(homeDirectory));
     }
     if (description != null) {
       principals.add(new FullNamePrincipal(description));

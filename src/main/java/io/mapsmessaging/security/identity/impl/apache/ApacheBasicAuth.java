@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,20 +16,22 @@
 
 package io.mapsmessaging.security.identity.impl.apache;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
-import io.mapsmessaging.security.identity.parsers.PasswordParser;
+import io.mapsmessaging.security.passwords.PasswordHandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.List;
-import java.util.Map;
 
 public class ApacheBasicAuth implements IdentityLookup {
 
-  private final FileBaseIdentities passwdFileManager;
-  private final FileBaseGroups groupFileManager;
+  protected final FileBaseIdentities passwdFileManager;
+  protected final FileBaseGroups groupFileManager;
 
   public ApacheBasicAuth() {
     passwdFileManager = null;
@@ -39,6 +41,11 @@ public class ApacheBasicAuth implements IdentityLookup {
   public ApacheBasicAuth(String passwordFile, String groupFile) {
     passwdFileManager = new HtPasswdFileManager(passwordFile);
     groupFileManager = new HtGroupFileManager(groupFile);
+  }
+
+  protected ApacheBasicAuth(FileBaseIdentities passwordFile, HtGroupFileManager groupFile) {
+    passwdFileManager = passwordFile;
+    groupFileManager = groupFile;
   }
 
   @Override
@@ -52,7 +59,7 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
     if (passwdFileManager == null) {
       throw new NoSuchUserFoundException(username);
     }
@@ -77,6 +84,11 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
+  public List<GroupEntry> getGroups() {
+    return groupFileManager.getGroups();
+  }
+
+  @Override
   public void updateGroup(GroupEntry groupEntry) throws IOException {
     groupFileManager.deleteEntry(groupEntry.getName());
     groupFileManager.addEntry(groupEntry.toString());
@@ -88,17 +100,17 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public IdentityLookup create(Map<String, ?> config) {
+  public IdentityLookup create(ConfigurationProperties config) {
     if (config.containsKey("passwordFile")) {
-      String filePath = config.get("passwordFile").toString();
+      String filePath = config.getProperty("passwordFile");
       String groupFile = "";
       if (config.containsKey("groupFile")) {
-        groupFile = config.get("groupFile").toString();
+        groupFile = config.getProperty("groupFile");
       }
       return new ApacheBasicAuth(filePath, groupFile);
     }
     if (config.containsKey("configDirectory")) {
-      String directory = config.get("configDirectory").toString();
+      String directory = config.getProperty("configDirectory");
       File file = new File(directory);
       if (file.isDirectory()) {
         return new ApacheBasicAuth(file.getAbsolutePath() + File.separator + ".htpassword", file.getAbsolutePath() + File.separator + ".htgroups");
@@ -108,9 +120,12 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean createUser(String username, String password, PasswordParser passwordParser) throws IOException {
+  public boolean createUser(String username, String password, PasswordHandler handler)
+      throws IOException, GeneralSecurityException {
     String salt = PasswordGenerator.generateSalt(16);
-    byte[] hash = passwordParser.computeHash(password.getBytes(), salt.getBytes(), 12);
+    byte[] hash =
+        handler.transformPassword(
+            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 12);
     if (passwdFileManager != null) {
       passwdFileManager.addEntry(username, new String(hash));
     }

@@ -30,4 +30,9 @@ public class AuthHandlerPrincipal implements Principal {
   public String getName() {
     return authenticationHandler;
   }
+
+  @Override
+  public String toString() {
+    return "Auth Handler: " + getName();
+  }
 }

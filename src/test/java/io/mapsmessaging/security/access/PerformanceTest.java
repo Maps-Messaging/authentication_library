@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 
 package io.mapsmessaging.security.access;
 
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
-import org.junit.jupiter.api.Test;
-
-import javax.security.auth.Subject;
+import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.access.mapping.store.MapStore;
 import java.util.List;
+import javax.security.auth.Subject;
+import org.junit.jupiter.api.Test;
 
 public class PerformanceTest extends BaseSecurityTest {
 
@@ -28,15 +30,12 @@ public class PerformanceTest extends BaseSecurityTest {
   public void testAccessControlListPerformance() {
     // Define the number of iterations and ACL entries
     int iterations = 1000000;
-    GroupMapManagement groupMapManagement = new GroupMapManagement("./src/test/resources/groups.txt");
+    MapStore<GroupIdMap> groupStore = new MapFileStore<>("./src/test/resources/groups.txt");
+    GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
     List<String> aclEntries = generateGroupEntries(1000, groupMapManagement);
 
     // Create an instance of AccessControlListManager
-    AccessControlList acl =
-        AccessControlFactory.getInstance().get(
-            "Permission",
-            new CustomAccessControlMapping(),
-            aclEntries);
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
 
     // Perform the performance test
     long startTime = System.currentTimeMillis();

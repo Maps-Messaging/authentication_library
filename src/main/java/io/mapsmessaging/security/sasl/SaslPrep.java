@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,23 +24,27 @@ import com.ongres.stringprep.Stringprep;
  * <a href="https://www.rfc-editor.org/rfc/rfc4013">rfc4013</a>
  */
 
+@SuppressWarnings("java:S6548") // yes it is a singleton
 public class SaslPrep {
 
-  private static final SaslPrep instance = new SaslPrep();
-
-  private final Profile profile;
-
-  private SaslPrep() {
-    profile = Stringprep.getProvider("SASLprep");
+  private static class Holder {
+    static final SaslPrep INSTANCE = new SaslPrep();
   }
 
   public static SaslPrep getInstance() {
-    return instance;
+    return SaslPrep.Holder.INSTANCE;
   }
+
+
+  private final Profile profile;
+
 
   // Implements RFC rfc4013
   public String stringPrep(String string) {
     return profile.prepareStored(string);
   }
 
+  private SaslPrep() {
+    profile = Stringprep.getProvider("SASLprep");
+  }
 }

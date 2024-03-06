@@ -1,5 +1,5 @@
 #
-# Copyright [ 2020 - 2023 ] [Matthew Buckton]
+# Copyright [ 2020 - 2024 ] [Matthew Buckton]
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,3 +17,6 @@
 io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth
 io.mapsmessaging.security.identity.impl.ldap.LdapAuth
 io.mapsmessaging.security.identity.impl.unix.UnixAuth
+io.mapsmessaging.security.identity.impl.cognito.CognitoAuth
+io.mapsmessaging.security.identity.impl.auth0.Auth0Auth
+io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth

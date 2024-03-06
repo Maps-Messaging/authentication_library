@@ -30,4 +30,9 @@ public class FullNamePrincipal implements Principal {
   public String getName() {
     return fullName;
   }
+
+  @Override
+  public String toString() {
+    return "Full Name: " + getName();
+  }
 }

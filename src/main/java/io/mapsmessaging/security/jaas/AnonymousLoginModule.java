@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 
 package io.mapsmessaging.security.jaas;
 
-import com.sun.security.auth.UserPrincipal;
-
-import javax.security.auth.login.LoginException;
 
 import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+
+import javax.security.auth.login.LoginException;
 
 public class AnonymousLoginModule extends BaseLoginModule {
 
@@ -32,7 +31,7 @@ public class AnonymousLoginModule extends BaseLoginModule {
 
   @Override
   public boolean login() {
-    userPrincipal = new UserPrincipal(username);
+    userPrincipal = new AnonymousPrincipal(username);
     succeeded = true;
     return true;
   }
@@ -46,4 +45,5 @@ public class AnonymousLoginModule extends BaseLoginModule {
   protected boolean validate(String username, char[] password) throws LoginException {
     return true;
   }
+
 }

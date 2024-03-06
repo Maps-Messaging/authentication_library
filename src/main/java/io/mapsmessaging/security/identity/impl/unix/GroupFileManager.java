@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -34,11 +33,6 @@ public class GroupFileManager extends FileBaseGroups {
   }
 
   @Override
-  protected String getDomain() {
-    return "unix";
-  }
-
-  @Override
   protected GroupEntry load(String line) throws IllegalFormatException {
     GroupFileEntry entry = new GroupFileEntry(line);
     byId.put(entry.getGroupId(), entry);
@@ -49,6 +43,7 @@ public class GroupFileManager extends FileBaseGroups {
     return byId.get(id);
   }
 
+  @Override
   public void loadGroups(IdentityEntry identityEntry) {
     for (GroupEntry groupEntry : byId.values()) {
       if (groupEntry.isInGroup(identityEntry.getUsername())) {

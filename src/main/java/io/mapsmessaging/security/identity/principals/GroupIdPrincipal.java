@@ -1,11 +1,11 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,22 +16,31 @@
 
 package io.mapsmessaging.security.identity.principals;
 
-import lombok.Data;
-
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import java.security.Principal;
-import java.util.UUID;
+import java.util.List;
+import lombok.Getter;
 
-@Data
 public class GroupIdPrincipal implements Principal {
 
-  private final UUID groupId;
+  @Getter
+  private final List<GroupIdMap> groupIds;
 
-  public GroupIdPrincipal(UUID groupId) {
-    this.groupId = groupId;
+  public GroupIdPrincipal(List<GroupIdMap> groupIds) {
+    this.groupIds = groupIds;
   }
 
   @Override
   public String getName() {
-    return groupId.toString();
+    return "GroupIds";
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Group Ids:");
+    for (GroupIdMap groupId : groupIds) {
+      sb.append("\n\t").append(groupId.toString());
+    }
+    return sb.toString();
   }
 }

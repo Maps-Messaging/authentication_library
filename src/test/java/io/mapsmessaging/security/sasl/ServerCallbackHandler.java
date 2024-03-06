@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,11 @@
 package io.mapsmessaging.security.sasl;
 
 import io.mapsmessaging.security.identity.IdentityLookup;
+import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
+import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -27,7 +31,6 @@ import javax.security.sasl.RealmCallback;
 
 public class ServerCallbackHandler implements CallbackHandler {
 
-  private String username;
   private char[] hashedPassword;
   private final String serverName;
 
@@ -46,8 +49,20 @@ public class ServerCallbackHandler implements CallbackHandler {
         ac.setAuthorized(true);
       } else if (cb instanceof NameCallback) {
         NameCallback nc = (NameCallback) cb;
-        username = nc.getDefaultName();
-        hashedPassword = identityLookup.getPasswordHash(username);
+        String username = nc.getDefaultName();
+        try {
+          hashedPassword = identityLookup.getPasswordHash(username);
+        } catch (GeneralSecurityException e) {
+          throw new IOException(e);
+        }
+        PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hashedPassword);
+        if (passwordHasher instanceof PlainPasswordHasher) {
+          try {
+            hashedPassword = new String(passwordHasher.getPassword()).toCharArray();
+          } catch (GeneralSecurityException e) {
+            throw new IOException(e);
+          }
+        }
         nc.setName(nc.getDefaultName());
       } else if (cb instanceof PasswordCallback) {
         PasswordCallback pc = (PasswordCallback) cb;
@@ -55,9 +70,6 @@ public class ServerCallbackHandler implements CallbackHandler {
       } else if (cb instanceof RealmCallback) {
         RealmCallback rc = (RealmCallback) cb;
         rc.setText(serverName);
-      }
-      else{
-        System.err.println(cb);
       }
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import io.mapsmessaging.security.sasl.provider.utils.XorStream;
-
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
-import java.io.IOException;
 
 public class BaseScramSasl {
 
@@ -44,7 +44,7 @@ public class BaseScramSasl {
   public byte[] evaluateChallenge(byte[] challenge) throws SaslException {
     try {
       if (challenge != null) {
-        context.getState().handeResponse(new ChallengeResponse(challenge), context);
+        context.getState().handleResponse(new ChallengeResponse(challenge), context);
       }
       ChallengeResponse challengeResponse = context.getState().produceChallenge(context);
       if (context.getState().isComplete()) {
@@ -52,7 +52,7 @@ public class BaseScramSasl {
         outStream = new XorStream(context.getClientKey());
       }
       if (challengeResponse != null) {
-        return challengeResponse.toString().getBytes();
+        return challengeResponse.toString().getBytes(StandardCharsets.UTF_8);
       }
       return null;
     } catch (IOException | UnsupportedCallbackException e) {

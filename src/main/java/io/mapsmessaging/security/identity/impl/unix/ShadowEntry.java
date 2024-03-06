@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
 package io.mapsmessaging.security.identity.impl.unix;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.parsers.PasswordParserFactory;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
-import io.mapsmessaging.security.identity.principals.HomeDirectoryPrinicipal;
-import lombok.Getter;
-import lombok.Setter;
-
+import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
+import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.security.Principal;
 import java.util.Set;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ShadowEntry extends IdentityEntry {
 
@@ -38,7 +37,7 @@ public class ShadowEntry extends IdentityEntry {
     line = line.substring(usernamePos + 1);
     int endOfPassword = line.indexOf(":");
     password = line.substring(0, endOfPassword);
-    passwordParser = PasswordParserFactory.getInstance().parse(password);
+    passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
   }
 
   @Override
@@ -46,7 +45,7 @@ public class ShadowEntry extends IdentityEntry {
     Set<Principal> principals = super.getPrincipals();
     if (passwordEntry != null) {
       principals.add(new FullNamePrincipal(passwordEntry.getDescription()));
-      principals.add(new HomeDirectoryPrinicipal(passwordEntry.getHomeDirectory()));
+      principals.add(new HomeDirectoryPrincipal(passwordEntry.getHomeDirectory()));
     }
     return principals;
   }

@@ -31,13 +31,8 @@ import java.util.Map;
 
 public class SSLCertificateLoginModule extends BaseLoginModule {
 
-
   @Override
-  public void initialize(
-      Subject subject,
-      CallbackHandler callbackHandler,
-      Map<String, ?> sharedState,
-      Map<String, ?> options) {
+  public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
     userPrincipal = null;
   }

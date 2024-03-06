@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,31 +16,15 @@
 
 package io.mapsmessaging.security.access.mapping;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-
 import java.util.UUID;
 
-@Getter
-@EqualsAndHashCode(callSuper = true)
-@ToString
-public class UserIdMap extends IdMap {
+public class UserIdMap extends DomainIdMapping {
 
-  private final String authDomain;
-  private final String remoteHost;
-  private final String username;
-
-  public UserIdMap(UUID authId, String username, String authDomain, String remoteHost) {
-    super(authId);
-    this.username = username;
-    this.authDomain = authDomain;
-    this.remoteHost = remoteHost;
+  public UserIdMap(UUID authId, String username, String authDomain) {
+    super(authId, username, authDomain);
   }
 
-  @Override
-  protected String getKey() {
-    String tmp = remoteHost != null ? remoteHost : "";
-    return authDomain + ":" + username + ": [" + tmp + "]";
+  public String getUsername(){
+    return id;
   }
 }

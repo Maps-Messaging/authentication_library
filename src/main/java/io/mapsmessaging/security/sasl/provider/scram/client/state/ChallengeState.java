@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client.state;
 
-import at.favre.lib.crypto.bcrypt.Radix64Encoder;
+import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.Base64;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 
 public class ChallengeState extends State {
 
@@ -45,25 +44,31 @@ public class ChallengeState extends State {
   }
 
   @Override
-  public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
+  public ChallengeResponse produceChallenge(SessionContext context) throws IOException {
     ChallengeResponse response = new ChallengeResponse();
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.CHANNEL_BINDING, "biws");
 
     String saltedPassword = "";
-    if (context.getPasswordParser() != null) {
-      Radix64Encoder encoder = new Radix64Encoder.Default();
-      byte[] salt = encoder.decode(context.getPasswordSalt().getBytes());
-      byte[] computedHash = context.getPasswordParser().computeHash(context.getPrepPassword().getBytes(), salt, context.getInterations());
-      saltedPassword = new String(computedHash);
-    }
+    try {
+      if (context.getPasswordHasher() != null) {
+        byte[] salt = Base64.getDecoder().decode(context.getPasswordSalt());
+        byte[] computedHash =
+            context
+                .getPasswordHasher()
+                .transformPassword(
+                    context.getPrepPassword().getBytes(StandardCharsets.UTF_8),
+                    salt,
+                    context.getIterations());
+        PasswordHandler breakDown = context.getPasswordHasher().create(new String(computedHash));
+        saltedPassword = new String(breakDown.getPassword());
+      }
 
     //
     // Compute Proof
     //
-    try {
       String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
-      context.computeClientHashes(saltedPassword.getBytes(), authString);
+      context.computeClientHashes(saltedPassword, authString);
       response.put(ChallengeResponse.PROOF, Base64.getEncoder().encodeToString(context.getClientProof()));
 
       //
@@ -71,22 +76,21 @@ public class ChallengeState extends State {
       //
       context.computeServerSignature(saltedPassword.getBytes(), authString);
 
-    } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+    } catch (GeneralSecurityException e) {
       SaslException saslException = new SaslException(e.getMessage());
       saslException.initCause(e);
       throw saslException;
     }
-
-    context.setPrepPassword(saltedPassword);
     context.setState(new FinalValidationState(this));
     return response;
   }
 
   @Override
-  public void handeResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+  public void handleResponse(ChallengeResponse response, SessionContext context)
+      throws IOException, UnsupportedCallbackException {
     context.setInitialServerChallenge(response.toString());
     context.setServerNonce(response.get(ChallengeResponse.NONCE));
-    context.setPasswordSalt(response.get(ChallengeResponse.SALT));
-    context.setInterations(Integer.parseInt(response.get(ChallengeResponse.ITERATION_COUNT)));
+    context.setPasswordSalt(response.get(ChallengeResponse.SALT).getBytes(StandardCharsets.UTF_8));
+    context.setIterations(Integer.parseInt(response.get(ChallengeResponse.ITERATION_COUNT)));
   }
 }

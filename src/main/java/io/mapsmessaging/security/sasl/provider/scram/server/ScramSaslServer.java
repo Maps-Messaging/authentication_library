@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,19 +20,15 @@ import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.server.state.InitialState;
-
+import java.util.Map;
 import javax.crypto.Mac;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
-import java.util.Map;
 
 public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   public ScramSaslServer(String algorithm, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
-    if (algorithm.startsWith("bcrypt")) {
-      algorithm = algorithm.substring("bcrypt-".length());
-    }
     Mac mac = CryptoHelper.findMac(algorithm);
     if (mac != null) {
       context.setMac(mac);

@@ -1,78 +1,43 @@
-# SASL Helpers and implementation
+# SASL and JAAS Implementations
 
-This Java library provides a simple and secure way to authenticate users using the Simple Authentication and Security Layer (SASL) protocol, including the SCRAM family of
-mechanisms. It also includes support for multiple identity backends, including Linux passwd files and htpasswd.
+This Java library is designed to provide a robust and easy-to-integrate solution for user authentication and
+authorization in various environments. Targeted at developers and system administrators, it simplifies implementing
+security protocols in Java applications.
 
-The library includes implementations for the following SASL mechanisms:
+## Features
 
-* PLAIN
-* CRAM-MD5
-* DIGEST-MD5
-* SCRAM-SHA-1
-* SCRAM-SHA-256
-* SCRAM-SHA-512
+* Supports a wide range of SASL mechanisms including PLAIN, CRAM-MD5, DIGEST-MD5, SCRAM-SHA-1, SCRAM-SHA-256, and
+  SCRAM-SHA-512.
+* Compatibility with multiple identity backends like Linux passwd files, htpasswd, and others.
+* Implements the JAAS standard for authentication using various methods including UNIX, Apache Basic Auth, AWS Cognito,
+  Auth0, and LDAP.
+* Provides a generic ACL for resource access authorization.
 
-Applications can also implement custom SASL mechanisms using the library's APIs.
+## Getting Started
 
-The identity backends enable applications to authenticate users based on their username and password, with support for multiple backend types, including Linux passwd files and
-htpasswd files. This allows applications to leverage existing user databases and authentication services without having to implement custom authentication code.
+To quickly integrate this library into your Java project, follow these steps:
 
-The library is easy to use and well-documented, with examples and sample code provided to help developers get started. It is also actively maintained and updated, with bug fixes
-and new features added on a regular basis.
+1. Add the library to your project's dependency list.
+2. Initialize the SASL authentication mechanism.
+3. Configure the identity backend.
+   A simple example is provided below to help you get started.
 
-If you're looking for a robust and flexible SASL authentication library for your Java project, with support for the latest SCRAM mechanisms and multiple identity backends, give
-this library a try!
+## Detailed Usage
 
-# Access Control List (ACL) Entry Format
+For detailed usage instructions and examples, refer to the [Usage Guide](Config.md).
 
-ACL entry strings follow the format "identifier = access" where:
+## Supported Identity Backends
 
-- The identifier represents a username or group name with an optional `[authDomain:]username[remoteHost]` specifier.
-    - The `[authDomain:]` prefix represents an optional authentication domain.
-    - The `username` component represents the username.
-    - The `[remoteHost]` suffix represents an optional remote host specification enclosed in square brackets.
-- The access control string specifies the allowed actions using keywords determined by the provided AccessControlMapping implementation.
-    - Multiple access control keywords can be separated by the `|` (pipe) character.
+The library supports a variety of identity backends, enabling flexible integration with different systems. For each
+backend, specific configuration might be required. Below is a list of supported backends:
 
-## Identifier Format
+- Linux passwd files
+- Apache htpasswd
+- AWS-Cognito
+- Auth0
+- Ldap
+- Easy to extend to other servers
 
-The identifier follows the syntax `[authDomain:]username[remoteHost]`, where:
-
-- `[authDomain:]` (optional): Represents an authentication domain. Use a colon (":") to separate the authDomain from the username.
-- `username`: Represents the username component. It can include alphanumeric characters and special characters.
-- `[remoteHost]` (optional): Represents the remote host specification. Enclose the remote host in square brackets ("[]").
-
-### Examples
-
-- `john.doe`: Represents a username without any authentication domain or remote host.
-- `ldap:john.doe`: Represents a username with the "ldap" authentication domain and no remote host.
-- `unix:admin[localhost]`: Represents a username with the "unix" authentication domain and a remote host specified as "localhost".
-
-## Access Control String
-
-The access control string specifies the allowed actions using keywords determined by the provided AccessControlMapping implementation. Multiple access control keywords can be
-separated by the `|` (pipe) character.
-
-### Examples
-
-- `Read`: Allows the "Read" action.
-- `Write|Create`: Allows both "Write" and "Create" actions.
-
-## ACL Entry Example
-
-Here's an example ACL entry string:
-
-> ldap:john.doe[localhost] = Read|Write|Create
-
-In this example, the identifier represents a username with the "ldap" authentication domain and a remote host specified as "localhost". The access control string allows the "
-Read", "Write", and "Create" actions.
-
-
----
-
-By following the ACL entry format described above, you can define access control rules for your application based on the provided AccessControlMapping implementation.
-
-Please refer to the documentation of the AccessControlMapping class for the specific access control keywords used in your implementation.
 
 # pom.xml setup
 

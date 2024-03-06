@@ -16,10 +16,12 @@
 
 package io.mapsmessaging.security.access.mapping;
 
+import io.mapsmessaging.security.access.mapping.store.MapStore;
+
 public class UserMapManagement extends MapManagement<UserIdMap> {
 
-  public UserMapManagement(String filename) {
-    super(filename, new UserMapParser());
+  public UserMapManagement(MapStore<UserIdMap> store) {
+    super(store, new UserMapParser());
   }
 
 }

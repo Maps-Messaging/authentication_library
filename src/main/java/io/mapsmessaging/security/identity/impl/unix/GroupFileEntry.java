@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 
 package io.mapsmessaging.security.identity.impl.unix;
 
+
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IllegalFormatException;
-import lombok.Getter;
-
 import java.util.Collections;
 import java.util.StringTokenizer;
+import lombok.Getter;
 
+@Getter
 public class GroupFileEntry extends GroupEntry {
 
-  @Getter
   private final int groupId;
 
   public GroupFileEntry(String line) throws IllegalFormatException {
@@ -36,7 +36,7 @@ public class GroupFileEntry extends GroupEntry {
     }
     StringTokenizer stringTokenizer = new StringTokenizer(line, ":");
     name = stringTokenizer.nextElement().toString(); //
-    stringTokenizer.nextElement();// drop
+    stringTokenizer.nextElement(); // drop
     groupId = Integer.parseInt(stringTokenizer.nextElement().toString().trim());
     if (stringTokenizer.hasMoreElements()) {
       String groups = stringTokenizer.nextElement().toString();
@@ -45,5 +45,4 @@ public class GroupFileEntry extends GroupEntry {
       }
     }
   }
-
 }

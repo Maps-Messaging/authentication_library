@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -72,6 +72,21 @@ public abstract class BaseIdentity {
     Assertions.assertTrue(module.login());
     Assertions.assertTrue(subject.getPrincipals().isEmpty());
     Assertions.assertTrue(module.commit());
+    validateSubject(subject);
+  }
+
+
+
+  @Test
+  void simpleLoginValidationTest() {
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    LoginModule module = createLoginModule(clientCallbackHandler);
+    Assertions.assertNotNull(module);
+    Assertions.assertTrue(module instanceof BaseLoginModule);
+    Assertions.assertNotNull(((BaseLoginModule)module).getDomain());
+  }
+
+  protected void validateSubject(Subject subject) {
     Assertions.assertFalse(subject.getPrincipals().isEmpty());
   }
 
