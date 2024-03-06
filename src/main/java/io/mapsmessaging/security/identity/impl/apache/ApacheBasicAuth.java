@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -101,15 +102,15 @@ public class ApacheBasicAuth implements IdentityLookup {
   @Override
   public IdentityLookup create(ConfigurationProperties config) {
     if (config.containsKey("passwordFile")) {
-      String filePath = config.get("passwordFile").toString();
+      String filePath = config.getProperty("passwordFile");
       String groupFile = "";
       if (config.containsKey("groupFile")) {
-        groupFile = config.get("groupFile").toString();
+        groupFile = config.getProperty("groupFile");
       }
       return new ApacheBasicAuth(filePath, groupFile);
     }
     if (config.containsKey("configDirectory")) {
-      String directory = config.get("configDirectory").toString();
+      String directory = config.getProperty("configDirectory");
       File file = new File(directory);
       if (file.isDirectory()) {
         return new ApacheBasicAuth(file.getAbsolutePath() + File.separator + ".htpassword", file.getAbsolutePath() + File.separator + ".htgroups");

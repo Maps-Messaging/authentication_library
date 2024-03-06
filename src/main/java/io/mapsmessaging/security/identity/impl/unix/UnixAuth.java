@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -94,14 +95,14 @@ public class UnixAuth implements IdentityLookup {
   @Override
   public IdentityLookup create(ConfigurationProperties config) {
     if (config.containsKey("passwordFile")) {
-      String filePath = (String) config.get("passwordFile");
-      String groupFile = (String) config.get("groupFile");
-      String passwordFile = (String) config.get("passwd");
+      String filePath = config.getProperty("passwordFile");
+      String groupFile = config.getProperty("groupFile");
+      String passwordFile = config.getProperty("passwd");
 
       return new UnixAuth(filePath, passwordFile, groupFile);
     }
     if (config.containsKey("configDirectory")) {
-      String directory = config.get("configDirectory").toString();
+      String directory = config.getProperty("configDirectory");
       File file = new File(directory);
       if (file.isDirectory()) {
         return new UnixAuth(file.getAbsolutePath() + File.separator + "shadow", file.getAbsolutePath() + File.separator + "passwd", file.getAbsolutePath() + File.separator + "group");

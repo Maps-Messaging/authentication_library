@@ -23,13 +23,14 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
@@ -53,15 +54,15 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   public CognitoAuth(ConfigurationProperties config) {
-    userPoolId = (String) config.get("userPoolId");
-    appClientId = (String) config.get("appClientId");
-    appClientSecret = (String) config.get("appClientSecret");
+    userPoolId = (String) config.getProperty("userPoolId");
+    appClientId = (String) config.getProperty("appClientId");
+    appClientSecret = (String) config.getProperty("appClientSecret");
 
-    regionName = (String) config.get("region");
-    String accesskeyId = (String) config.get("accessKeyId");
-    String secretAccessKey = (String) config.get("secretAccessKey");
+    regionName = (String) config.getProperty("region");
+    String accesskeyId = (String) config.getProperty("accessKeyId");
+    String secretAccessKey = (String) config.getProperty("secretAccessKey");
 
-    String cacheTimeString = (String) config.get("cacheTime");
+    String cacheTimeString = (String) config.getProperty("cacheTime");
     if(cacheTimeString != null && !cacheTimeString.trim().isEmpty()){
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }

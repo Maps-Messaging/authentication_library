@@ -16,9 +16,6 @@
 
 package io.mapsmessaging.security.identity.impl.encrypted;
 
-import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
-import static io.mapsmessaging.security.logging.AuthLogMessages.ENCRYPTED_LOAD_FAILURE;
-
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
@@ -29,8 +26,12 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.apache.HtGroupFileManager;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+
 import java.io.File;
 import java.security.cert.Certificate;
+
+import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+import static io.mapsmessaging.security.logging.AuthLogMessages.ENCRYPTED_LOAD_FAILURE;
 
 public class EncryptedAuth extends ApacheBasicAuth {
 
@@ -61,13 +62,13 @@ public class EncryptedAuth extends ApacheBasicAuth {
     String filePath = null;
     String groupFile = null;
     if (config.containsKey("passwordFile")) {
-      filePath = config.get("passwordFile").toString();
+      filePath = config.getProperty("passwordFile");
       groupFile = "";
       if (config.containsKey("groupFile")) {
-        groupFile = config.get("groupFile").toString();
+        groupFile = config.getProperty("groupFile");
       }
     } else if (config.containsKey("configDirectory")) {
-      String directory = config.get("configDirectory").toString();
+      String directory = config.getProperty("configDirectory");
       File file = new File(directory);
       if (file.isDirectory()) {
         filePath = file.getAbsolutePath() + File.separator + ".htpassword-enc";
@@ -92,11 +93,11 @@ public class EncryptedAuth extends ApacheBasicAuth {
     ConfigurationProperties config = (ConfigurationProperties) topConfig.get("certificateStore");
     String alias = "";
     if (config.containsKey("alias")) {
-      alias = config.get("alias").toString();
+      alias = config.getProperty("alias");
     }
     CertificateManager certificateManager = CertificateManagerFactory.getInstance().getManager(config);
-    String keyPassword = (String) config.get("privateKey.passphrase");
-    String privateKeyName = (String) config.get("privateKey.name");
+    String keyPassword = config.getProperty("privateKey.passphrase");
+    String privateKeyName = config.getProperty("privateKey.name");
     char[] privateKey = keyPassword.toCharArray();
     if (!certificateManager.getExists()) {
       CertificateWithPrivateKey certAndKey = generateSelfSignedCertificateSecret(alias);

@@ -20,12 +20,16 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
-import java.io.*;
+import lombok.Getter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import lombok.Getter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class KeyStoreManager implements CertificateManager {
 
@@ -56,14 +60,14 @@ public class KeyStoreManager implements CertificateManager {
   }
 
   protected KeyStoreManager(ConfigurationProperties config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
-    String providerName = (String) config.get(PROVIDER_NAME);
+    String providerName = config.getProperty(PROVIDER_NAME);
     if (providerName != null && !providerName.isEmpty() && "BC".equals(providerName)) {
       Security.addProvider(new BouncyCastleProvider());
     }
     storage = StorageFactory.getInstance().getStore(config.getMap());
 
-    keyStorePath = (String) config.get(KEYSTORE_PATH);
-    String t = (String) config.get(KEYSTORE_PASSWORD);
+    keyStorePath = config.getProperty(KEYSTORE_PATH);
+    String t = config.getProperty(KEYSTORE_PASSWORD);
     if (t == null) {
       t = "";
     }
@@ -74,7 +78,7 @@ public class KeyStoreManager implements CertificateManager {
     } else {
       existed = true;
     }
-    String type = (String) config.get(KEYSTORE_TYPE);
+    String type = config.getProperty(KEYSTORE_TYPE);
     keyStore = createKeyStore(type, keyStorePath, keyStorePassword, config);
   }
 
