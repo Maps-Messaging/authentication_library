@@ -18,6 +18,7 @@ package io.mapsmessaging.security.certificates;
 
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.security.certificates.jvm.JvmKeyStoreManager;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -35,7 +36,9 @@ public class CertificateManagerFactory {
     return CertificateManagerFactory.Holder.INSTANCE;
   }
 
+
   private final ServiceLoader<CertificateManager> certificateManagers;
+  private final JvmKeyStoreManager jvmKeyStore = new JvmKeyStoreManager();
 
   private CertificateManagerFactory() {
     certificateManagers = ServiceLoader.load(CertificateManager.class);
@@ -47,7 +50,10 @@ public class CertificateManagerFactory {
         return certificateManager.create(config);
       }
     }
-    throw new IOException("No certificate manangers found for the config supplied");
+    if(jvmKeyStore.isValid(config)){
+      return jvmKeyStore.create(config);
+    }
+    throw new IOException("No certificate managers found for the config supplied");
   }
 
 }

@@ -30,7 +30,39 @@ import java.util.Arrays;
 import java.util.List;
 import javax.net.ssl.*;
 
+/**
+ * Factory class for creating SSLContext instances configured from a given set of {@link ConfigurationProperties}.
+ * The {@link ConfigurationProperties} is expected to be a map-like structure containing configuration
+ * details for KeyStores and TrustStores used to initialize the SSLContext.
+ *
+ * Configuration properties must include:
+ *
+ * For KeyStore and TrustStore:
+ * - keyStore: Map<String, Object> configuration for the KeyStore
+ * - trustStore: Map<String, Object> configuration for the TrustStore
+ *
+ * Each store's map can include:
+ * - alias: (String, optional) alias name of the certificate. Can be null.
+ * - managerFactory: (String) KeyManagerFactory or TrustManagerFactory algorithm name.
+ * - passphrase: (String) password for the store.
+ * - type: (String) store type (e.g., "jks", "pkcs12", "pkcs11" for KeyStore).
+ * - path: (String, conditional) file location of the store. Not used if type is "pkcs11".
+ * - providerName: (String, optional) security provider name. Defaults to "SUN", can be "BC" for BouncyCastle.
+ * - configPath: (String, conditional) location of the config file for PKCS11 implementation. Only required if type is "pkcs11" for KeyStore.
+ *
+ * Specifically for TrustStore:
+ * - crlUrl: (String, optional) URL to the Certificate Revocation List (CRL). If supplied, will load the CRL to verify that the certificates are not revoked.
+ *
+ * The TrustManagerFactory instance is created based on the managerFactory property provided for the TrustStore, enabling fine-grained control over trust management strategies.
+ *
+ * Example usage:
+ * SSLContext sslContext = SSLContextFactory.createSSLContext(configurationProperties);
+ *
+ * @see SSLContext
+ */
+
 public class SslHelper {
+
 
   private SslHelper() {
   }
