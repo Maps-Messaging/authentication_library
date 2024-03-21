@@ -38,8 +38,8 @@ import javax.net.ssl.*;
  * Configuration properties must include:
  *
  * For KeyStore and TrustStore:
- * - keyStore: Map<String, Object> configuration for the KeyStore
- * - trustStore: Map<String, Object> configuration for the TrustStore
+ * - keyStore: Map&lt;String, Object&gt; configuration for the KeyStore
+ * - trustStore: Map&lt;String, Object&gt; configuration for the TrustStore
  *
  * Each store's map can include:
  * - alias: (String, optional) alias name of the certificate. Can be null.
