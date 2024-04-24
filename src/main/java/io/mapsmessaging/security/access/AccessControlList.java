@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package io.mapsmessaging.security.access;
 
-import javax.security.auth.Subject;
 import java.util.List;
-
+import java.util.UUID;
+import javax.security.auth.Subject;
 
 public interface AccessControlList {
 
@@ -30,4 +30,7 @@ public interface AccessControlList {
 
   boolean canAccess(Subject subject, long requestedAccess);
 
+  boolean add(UUID uuid, long requestedAccess);
+
+  boolean remove(UUID uuid, long requestedAccess);
 }

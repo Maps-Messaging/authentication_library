@@ -23,10 +23,7 @@ import io.mapsmessaging.security.access.AccessControlMapping;
 import io.mapsmessaging.security.access.AclEntry;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import javax.security.auth.Subject;
 
 public class PermissionAccessControlList implements AccessControlList {
@@ -112,6 +109,19 @@ public class PermissionAccessControlList implements AccessControlList {
       }
     }
     return false;
+  }
+
+  @Override
+  public boolean add(UUID uuid, long requestedAccess) {
+    AclEntry entry = new AclEntry(uuid, requestedAccess);
+    aclEntries.add(entry);
+    return true;
+  }
+
+  @Override
+  public boolean remove(UUID uuid, long requestedAccess) {
+    aclEntries.removeIf(entry -> entry.matches(uuid));
+    return true;
   }
 
 
