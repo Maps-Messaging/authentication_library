@@ -53,14 +53,14 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     Map<String, Object> apacheConfig = new LinkedHashMap<>();
     apacheConfig.put("passwordFile", "htpasswordFile");
     apacheConfig.put("groupFile", "htgroupFile");
-    apacheConfig.put("passwordHander", "PlainPasswordHasher");
+    apacheConfig.put("passwordHandler", "PlainPasswordHasher");
 
     Map<String, Object> cipherConfig = new LinkedHashMap<>();
     Map<String, Object> baseConfig = new LinkedHashMap<>();
     baseConfig.put("certificateStore", cipherConfig);
     baseConfig.put("passwordFile", "htpasswordFile-enc");
     baseConfig.put("groupFile", "htgroupFile-enc");
-    baseConfig.put("passwordHander", "EncryptedPasswordCipher");
+    baseConfig.put("passwordHandler", "EncryptedPasswordCipher");
 
     cipherConfig.put("alias", "alias");
     cipherConfig.put("privateKey.passphrase", "8 5tr0ng pr1v8t3 k3y p855w0rd!@#$%");

@@ -51,7 +51,7 @@ class SimpleSaslTest extends BaseSasl {
     baseConfig.put("certificateStore", cipherConfig);
     baseConfig.put("passwordFile", "htpasswordFile-enc");
     baseConfig.put("groupFile", "htgroupFile-enc");
-    baseConfig.put("passwordHander", "EncryptedPasswordCipher");
+    baseConfig.put("passwordHandler", "EncryptedPasswordCipher");
 
     cipherConfig.put("alias", "alias");
     cipherConfig.put("privateKey.passphrase", "8 5tr0ng pr1v8t3 k3y p855w0rd!@#$%");

@@ -63,7 +63,7 @@ public class IdentityAccessManager {
     for (IdentityEntry entry : identityLookup.getEntries()) {
       mapUser(entry);
     }
-    String handlerName = (String) config.get("passwordHander");
+    String handlerName = (String) config.get("passwordHandler");
     if (handlerName == null || handlerName.isEmpty()) {
       handlerName = "Pbkdf2Sha512PasswordHasher";
     }
