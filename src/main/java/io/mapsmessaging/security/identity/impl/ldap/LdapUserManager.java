@@ -23,12 +23,11 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.logging.AuthLogMessages;
-
+import java.util.*;
+import java.util.Map.Entry;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
-import java.util.*;
-import java.util.Map.Entry;
 
 public class LdapUserManager {
 
@@ -46,6 +45,12 @@ public class LdapUserManager {
     map = new LinkedHashMap<>();
     for (Entry<String, ?> entry : config.entrySet()) {
       map.put(entry.getKey(), entry.getValue().toString());
+    }
+    if(!map.containsKey("java.naming.factory.initial")){
+      map.put("java.naming.factory.initial", "com.sun.jndi.ldap.LdapCtxFactory");
+    }
+    if(!map.containsKey("java.naming.security.authentication")){
+      map.put("java.naming.security.authentication", "simple");
     }
     passwordName = config.getProperty("passwordKeyName");
 

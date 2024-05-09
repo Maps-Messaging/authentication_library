@@ -50,9 +50,6 @@ public class LdapIdentifierTest {
       return;
     }
     Map<String, Object> map = new LinkedHashMap<>();
-    map.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-    map.put(Context.SECURITY_AUTHENTICATION, "simple");
-
     map.put(Context.PROVIDER_URL, properties.getProperty("ldapUrl"));
     map.put(Context.SECURITY_PRINCIPAL, properties.getProperty("ldapUser"));
     map.put(Context.SECURITY_CREDENTIALS, properties.getProperty("ldapPassword"));
