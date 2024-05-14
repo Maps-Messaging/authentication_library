@@ -80,4 +80,9 @@ public class PlainPasswordHasher implements PasswordHasher {
   public String getName() {
     return "PLAIN";
   }
+
+  @Override
+  public boolean matches(char[] attemptedPassword) {
+    return Arrays.equals(attemptedPassword, getPassword());
+  }
 }

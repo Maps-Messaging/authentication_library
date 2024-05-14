@@ -22,10 +22,8 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
-import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
@@ -67,24 +65,13 @@ public class IdentityLoginModule extends BaseLoginModule {
     if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
-    char[] actualPassword;
-    char[] remotePassword = password;
-
     try {
       PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
       if (passwordHasher == null) {
         passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
       }
-
-      if (passwordHasher instanceof PasswordCipher || passwordHasher instanceof PlainPasswordHasher) {
-        actualPassword = passwordHasher.getPassword();
-      } else {
-        remotePassword = passwordHasher.transformPassword(remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
-        actualPassword = passwordHasher.getFullPasswordHash();
-      }
-      boolean result = Arrays.equals(actualPassword, remotePassword);
-      if(actualPassword != null) Arrays.fill(actualPassword, (char) 0x0);
-      if(remotePassword != null) Arrays.fill(remotePassword, (char) 0x0);
+      boolean result = passwordHasher.matches(password);
+      if(password != null) Arrays.fill(password, (char) 0x0);
       if (!result) {
         throw new LoginException("Invalid password");
       }

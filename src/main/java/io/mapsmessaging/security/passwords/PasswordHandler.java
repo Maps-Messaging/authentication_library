@@ -18,6 +18,7 @@ package io.mapsmessaging.security.passwords;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 
 public interface PasswordHandler {
 
@@ -35,6 +36,12 @@ public interface PasswordHandler {
   char[] getPassword() throws GeneralSecurityException, IOException;
 
   char[] getFullPasswordHash();
+
+  default boolean matches(char[] attemptedPassword) throws GeneralSecurityException, IOException {
+    char[] remoteHash = transformPassword(attemptedPassword, getSalt(), getCost());
+    char[] localHash = getFullPasswordHash();
+    return Arrays.equals(remoteHash, localHash);
+  }
 
   String getName();
 
