@@ -20,10 +20,12 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
-import java.security.Principal;
-import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.security.Principal;
+import java.util.Map;
+import java.util.Set;
 
 public class ShadowEntry extends IdentityEntry {
 
@@ -50,5 +52,8 @@ public class ShadowEntry extends IdentityEntry {
     return principals;
   }
 
-
+  public void setAttributeMap(Map<String, String> attributeMap) {
+    attributeMap.put("homeDirectory", passwordEntry.getHomeDirectory());
+    attributeMap.put("description", passwordEntry.getDescription());
+  }
 }

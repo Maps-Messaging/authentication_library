@@ -20,14 +20,16 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
-import java.security.Principal;
-import java.util.Enumeration;
-import java.util.Set;
+import lombok.Getter;
+
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import lombok.Getter;
+import java.security.Principal;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Set;
 
 public class LdapUser extends IdentityEntry {
 
@@ -79,6 +81,15 @@ public class LdapUser extends IdentityEntry {
     return principals;
   }
 
+  public void setAttributeMap(Map<String, String> attributeMap) {
+    attributeMap.put("homeDirectory", homeDirectory);
+    attributeMap.put("description", description);
+    NamingEnumeration<? extends Attribute> enumeration = attrs.getAll();
+    while (enumeration.hasMoreElements()) {
+      Attribute attribute = enumeration.nextElement();
+      attributeMap.put(attribute.getID(), attribute.toString());
+    }
+  }
 
   static class LdapPrincipal implements Principal {
     private final String name;
