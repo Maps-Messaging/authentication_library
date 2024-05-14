@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.passwords.hashes.pbkdf2;
 
 import io.mapsmessaging.security.identity.PasswordGenerator;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.util.ArrayHelper;
 import java.security.NoSuchAlgorithmException;
@@ -28,7 +29,7 @@ import javax.crypto.spec.PBEKeySpec;
 public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
 
   private final byte[] salt;
-  private final char[] hash;
+  private final PasswordBuffer hash;
   private final int cost;
 
   protected Pbkdf2PasswordHasher(char[] password) {
@@ -40,7 +41,7 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
     if (firstDollar == -1 || secondDollar == -1 || thirdDollar == -1) {
       cost = getIterationCount();
       salt = PasswordGenerator.generateSaltBytes(getHashByteSize());
-      hash = null;
+      hash = new PasswordBuffer(new char[0]);
     } else {
       // Extract cost
       char[] costChars = ArrayHelper.substring(password, firstDollar + 1, secondDollar);
@@ -54,7 +55,7 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
       // Extract hash
       char[] hashChars = ArrayHelper.substring(password, thirdDollar + 1);
       byte[] hashBytes = ArrayHelper.charArrayToByteArray(hashChars);
-      hash = ArrayHelper.byteArrayToCharArray(Base64.getDecoder().decode(hashBytes));
+      hash = new PasswordBuffer(ArrayHelper.byteArrayToCharArray(Base64.getDecoder().decode(hashBytes)));
       ArrayHelper.clearCharArray(saltChars);
       ArrayHelper.clearByteArray(saltBytes);
       ArrayHelper.clearCharArray(hashChars);
@@ -106,19 +107,20 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
 
   @Override
   public char[] getPassword() {
-    return hash;
+    return hash.getHash();
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() +
-        "$" +
-        cost +
-        "$" +
-        Base64.getEncoder().encodeToString(salt) +
-        "$" +
-        Base64.getEncoder().encodeToString(ArrayHelper.charArrayToByteArray(hash))
-    ).toCharArray();
+    return ArrayHelper.appendCharArrays(
+        getKey().toCharArray(),
+        "$".toCharArray(),
+        (""+cost).toCharArray(),
+        "$".toCharArray(),
+        Base64.getEncoder().encodeToString(salt).toCharArray(),
+        "$".toCharArray(),
+        Base64.getEncoder().encodeToString(hash.getBytes()).toCharArray()
+    );
   }
 
   @Override

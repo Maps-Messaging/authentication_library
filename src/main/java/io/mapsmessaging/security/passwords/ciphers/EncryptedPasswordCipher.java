@@ -18,8 +18,10 @@ package io.mapsmessaging.security.passwords.ciphers;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.cipher.BufferCipher;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
@@ -28,7 +30,7 @@ import lombok.Setter;
 
 public class EncryptedPasswordCipher implements PasswordCipher {
 
-  private char[] password;
+  private PasswordBuffer password;
 
   private String privateKeyPassword;
 
@@ -58,7 +60,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
       String privateKeyPassword) {
     this.certificateManager = certificateManager;
     this.alias = alias;
-    this.password = password;
+    this.password = new PasswordBuffer(password);
     this.privateKeyPassword = privateKeyPassword;
   }
 
@@ -101,7 +103,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
     System.arraycopy(salt, 0, b, 1, salt.length);
     System.arraycopy(xorPassword, 0, b, salt.length + 1, xorPassword.length);
     String encoded = Base64.getEncoder().encodeToString(bufferCipher.encrypt(alias, b));
-    return (getKey() + alias + "$" + encoded).toCharArray();
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), alias.toCharArray(), "$".toCharArray(), encoded.toCharArray());
   }
 
   @Override
@@ -112,7 +114,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
   @Override
   public char[] getPassword() throws GeneralSecurityException, IOException {
     BufferCipher bufferCipher = new BufferCipher(certificateManager);
-    byte[] decoded = Base64.getDecoder().decode(new String(password).getBytes());
+    byte[] decoded = Base64.getDecoder().decode(password.getBytes());
     byte[] decrypted = bufferCipher.decrypt(alias, decoded, privateKeyPassword.toCharArray());
 
     int saltLength = decrypted[0];
@@ -132,7 +134,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + alias + "$" + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), alias.toCharArray(), "$".toCharArray(), password.getHash());
   }
 
   @Override

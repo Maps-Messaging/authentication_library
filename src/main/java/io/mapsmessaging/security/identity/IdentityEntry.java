@@ -19,13 +19,13 @@ package io.mapsmessaging.security.identity;
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import lombok.Getter;
-
-import javax.security.auth.Subject;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.*;
+import javax.security.auth.Subject;
+import lombok.Getter;
 
 /**
  * Represents an identity entry, which can be a user or a machine-to-machine username.
@@ -63,7 +63,7 @@ import java.util.*;
  * @see GroupEntry
  * @see Subject
  */
-public class IdentityEntry {
+public class IdentityEntry implements Cloneable {
 
   protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
   @Getter
@@ -115,6 +115,22 @@ public class IdentityEntry {
   @SuppressWarnings("java:S1130") // They are thrown by inherited classes
   public char[] getPassword() throws GeneralSecurityException, IOException {
     return password;
+  }
+
+  public IdentityEntry secure() {
+    try{
+      return clone();
+    }
+    catch (CloneNotSupportedException e){
+      // it is
+    }
+    return null;
+  }
+
+  public IdentityEntry clone() throws CloneNotSupportedException {
+    IdentityEntry identityEntry = this.clone();
+    ArrayHelper.clearCharArray(identityEntry.password);
+    return identityEntry;
   }
 
   public void setAttributeMap(Map<String, String> attributeMap) {

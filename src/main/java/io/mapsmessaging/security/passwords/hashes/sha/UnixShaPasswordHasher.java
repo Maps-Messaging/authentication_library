@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.passwords.hashes.sha;
 
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.util.ArrayHelper;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +25,7 @@ import org.apache.commons.codec.digest.Crypt;
 
 public abstract class UnixShaPasswordHasher implements PasswordHasher {
 
-  private final char[] password;
+  private final PasswordBuffer password;
   private final String salt;
   private final char[] key;
 
@@ -32,7 +33,7 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
     this.key = key;
     if (pw.length == 0) {
       salt = "";
-      password = new char[0];
+      password = new PasswordBuffer(new char[0]);
     } else {
       char[] subPassword = ArrayHelper.substring(pw, key.length);
       int idx = ArrayHelper.indexOf(subPassword, '$');
@@ -40,13 +41,13 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
         char[] saltChars = ArrayHelper.substring(subPassword, 0, idx);
         char[] remainingPassword = ArrayHelper.substring(subPassword, idx + 1);
         salt = new String(saltChars);
-        password = Arrays.copyOf(remainingPassword, remainingPassword.length);
+        password = new PasswordBuffer(Arrays.copyOf(remainingPassword, remainingPassword.length));
 
         // Clear sensitive data
         ArrayHelper.clearCharArray(saltChars);
         ArrayHelper.clearCharArray(remainingPassword);
       } else {
-        password = new char[0];
+        password = new PasswordBuffer(new char[0]);
         salt = "";
       }
 
@@ -90,12 +91,12 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
 
   @Override
   public char[] getPassword() {
-    return password;
+    return password.getHash();
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + salt + "$" + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), salt.toCharArray(), "$".toCharArray(), password.getHash());
   }
 
   @Override

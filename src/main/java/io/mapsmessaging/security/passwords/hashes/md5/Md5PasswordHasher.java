@@ -16,23 +16,24 @@
 
 package io.mapsmessaging.security.passwords.hashes.md5;
 
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.util.ArrayHelper;
 import org.apache.commons.codec.digest.Md5Crypt;
 
 public class Md5PasswordHasher implements PasswordHasher {
 
-  protected final char[] password;
+  protected final PasswordBuffer password;
   protected final byte[] salt;
 
   public Md5PasswordHasher() {
-    password = new char[0];
+    password = new PasswordBuffer(new char[0]);
     salt = new byte[0];
   }
 
   protected Md5PasswordHasher(char[] password) {
     if (password == null || password.length == 0) {
-      this.password = new char[0];
+      this.password = new PasswordBuffer(new char[0]);
       this.salt = new byte[0];
     } else {
       char[] sub = ArrayHelper.substring(password, getKey().length());
@@ -46,7 +47,7 @@ public class Md5PasswordHasher implements PasswordHasher {
         pw = ArrayHelper.substring(sub, split + 1);
       }
 
-      this.password = pw;
+      this.password = new PasswordBuffer(pw);
       this.salt = ArrayHelper.charArrayToByteArray(sl);
 
       // Clear temporary arrays to avoid sensitive data lingering in memory
@@ -81,12 +82,12 @@ public class Md5PasswordHasher implements PasswordHasher {
 
   @Override
   public char[] getPassword() {
-    return password;
+    return password.getHash();
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + new String(salt) + "$" + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), ArrayHelper.byteArrayToCharArray(salt), "$".toCharArray(), password.getHash());
   }
 
   @Override

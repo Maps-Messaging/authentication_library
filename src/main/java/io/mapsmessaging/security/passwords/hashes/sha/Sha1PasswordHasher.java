@@ -16,6 +16,7 @@
 
 package io.mapsmessaging.security.passwords.hashes.sha;
 
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.util.ArrayHelper;
 import org.apache.commons.codec.binary.Base64;
@@ -23,10 +24,10 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class Sha1PasswordHasher implements PasswordHasher {
 
-  private final char[] password;
+  private final PasswordBuffer password;
 
   public Sha1PasswordHasher() {
-    password = new char[0];
+    password = new PasswordBuffer(new char[0]);
   }
 
   protected Sha1PasswordHasher(char[] pw) {
@@ -34,7 +35,7 @@ public class Sha1PasswordHasher implements PasswordHasher {
     if (ArrayHelper.startsWithIgnoreCase(pw, key)) {
       pw = ArrayHelper.substring(pw, key.length);
     }
-    password = pw;
+    password = new PasswordBuffer(pw);
   }
 
   public PasswordHasher create(char[] password) {
@@ -64,12 +65,12 @@ public class Sha1PasswordHasher implements PasswordHasher {
 
   @Override
   public char[] getPassword() {
-    return password;
+    return password.getHash();
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), password.getHash());
   }
 
   @Override

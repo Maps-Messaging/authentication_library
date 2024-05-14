@@ -33,10 +33,6 @@ import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import io.mapsmessaging.security.uuid.UuidGenerator;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.security.auth.Subject;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
@@ -44,6 +40,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.security.auth.Subject;
+import lombok.Getter;
+import lombok.Setter;
 
 public class IdentityAccessManager {
 
@@ -267,6 +266,7 @@ public class IdentityAccessManager {
       groupMapManagement.save();
     }
     return true;
+
   }
 
   private UserIdMap mapUser(IdentityEntry entry) {
