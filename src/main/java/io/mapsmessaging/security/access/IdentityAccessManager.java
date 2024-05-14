@@ -153,16 +153,15 @@ public class IdentityAccessManager {
     return identityLookup.findGroup(groupName);
   }
 
-  public UserIdMap createUser(String username, String hash)
+  public UserIdMap createUser(String username, char[] passwordHash)
       throws IOException, GeneralSecurityException {
     IdentityEntry entry = identityLookup.findEntry(username);
+    if (entry != null) {
+      throw new GeneralSecurityException("User already exists");
+    }
+    identityLookup.createUser(username, passwordHash, passwordHandler);
+
     UserIdMap idMap = userMapManagement.get(identityLookup.getDomain() + ":" + username);
-    if (entry != null && idMap != null) {
-      return idMap;
-    }
-    if (entry == null) {
-      identityLookup.createUser(username, hash, passwordHandler);
-    }
     if (idMap == null) {
       idMap = new UserIdMap(UuidGenerator.getInstance().generate(), username, identityLookup.getDomain());
       userMapManagement.add(idMap);
@@ -171,7 +170,7 @@ public class IdentityAccessManager {
     return idMap;
   }
 
-  public boolean updateUserPassword(String username, String hash, PasswordHandler passwordHasher)
+  public boolean updateUserPassword(String username, char[] hash, PasswordHandler passwordHasher)
       throws IOException, GeneralSecurityException {
     if (identityLookup.findEntry(username) != null) {
       identityLookup.deleteUser(username);

@@ -71,7 +71,7 @@ public class LdapIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals(properties.getProperty("hashedPassword"), pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(Md5UnixPasswordHasher.class, passwordHasher.getClass());
     IdentityEntry identityEntry = lookup.findEntry(properties.getProperty("username"));
     Assertions.assertNotNull(identityEntry);

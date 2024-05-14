@@ -34,7 +34,7 @@ public class BaseSasl {
   protected SaslClient saslClient;
 
   protected void createClient(String username,
-      String password,
+      char[] password,
       String[] mechanism,
       String protocol,
       String authorizationId,

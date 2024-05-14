@@ -44,6 +44,11 @@ public class SaslPrep {
     return profile.prepareStored(string);
   }
 
+  // Implements RFC rfc4013
+  public char[] stringPrep(char[] string) {
+    return profile.prepareStored(string);
+  }
+
   private SaslPrep() {
     profile = Stringprep.getProvider("SASLprep");
   }

@@ -49,7 +49,7 @@ public abstract class FileBaseIdentities extends FileLoader {
       logger.log(NO_SUCH_USER_FOUND, username);
       throw new NoSuchUserFoundException("User: " + username + " not found");
     }
-    return identityEntry.getPassword().toCharArray();
+    return identityEntry.getPassword();
   }
 
   public List<IdentityEntry> getEntries() {
@@ -58,13 +58,14 @@ public abstract class FileBaseIdentities extends FileLoader {
 
   protected abstract IdentityEntry load(String line);
 
-  protected abstract IdentityEntry create(String username, String hash);
+  protected abstract IdentityEntry create(String username, char[] hash);
+
   public void parse(String line) {
     IdentityEntry identityEntry = load(line);
     usernamePasswordMap.put(identityEntry.getUsername(), identityEntry);
   }
 
-  public void addEntry(String username, String passwordHash) throws IOException {
+  public void addEntry(String username, char[] passwordHash) throws IOException {
     IdentityEntry identityEntry = create(username, passwordHash);
     usernamePasswordMap.put(username, identityEntry);
     add(identityEntry.toString());

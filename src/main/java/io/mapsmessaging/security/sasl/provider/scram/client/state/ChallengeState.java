@@ -53,14 +53,8 @@ public class ChallengeState extends State {
     try {
       if (context.getPasswordHasher() != null) {
         byte[] salt = Base64.getDecoder().decode(context.getPasswordSalt());
-        byte[] computedHash =
-            context
-                .getPasswordHasher()
-                .transformPassword(
-                    context.getPrepPassword().getBytes(StandardCharsets.UTF_8),
-                    salt,
-                    context.getIterations());
-        PasswordHandler breakDown = context.getPasswordHasher().create(new String(computedHash));
+        char[] computedHash = context.getPasswordHasher().transformPassword(context.getPrepPassword(), salt, context.getIterations());
+        PasswordHandler breakDown = context.getPasswordHasher().create(computedHash);
         saltedPassword = new String(breakDown.getPassword());
       }
 

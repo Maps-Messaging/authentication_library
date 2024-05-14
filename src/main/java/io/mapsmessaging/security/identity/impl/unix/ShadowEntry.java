@@ -36,7 +36,7 @@ public class ShadowEntry extends IdentityEntry {
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
     int endOfPassword = line.indexOf(":");
-    password = line.substring(0, endOfPassword);
+    password = line.substring(0, endOfPassword).toCharArray();
     passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
   }
 

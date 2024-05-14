@@ -24,12 +24,12 @@ class BCryptTest extends BaseHashFunctions {
 
   @Test
   void checkBcryptHash() throws GeneralSecurityException, IOException {
-    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password");
+    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is an bcrypt password".toCharArray());
   }
 
   @Test
   void checkBcryptHashWrongPassword() throws GeneralSecurityException, IOException {
-    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is a wrong password", false);
+    testHashing("$2y$10$BzVXd/hbkglo7bRLVZwYEu/45Uy24FsoZBHEaJqi690AJzIOV/Q5u", "This is a wrong password".toCharArray(), false);
   }
 
 }

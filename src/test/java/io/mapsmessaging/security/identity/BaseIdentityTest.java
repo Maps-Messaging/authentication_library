@@ -32,7 +32,7 @@ public class BaseIdentityTest {
     Assertions.assertEquals(0, testIdentityLookup.getGroups().size());
     Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.createGroup("fred"));
     Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.deleteGroup("fred"));
-    Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.createUser("fred", "", null));
+    Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.createUser("fred", new char[0], null));
     Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.deleteUser("fred"));
     Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.updateGroup(null));
 

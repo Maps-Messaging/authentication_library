@@ -21,10 +21,10 @@ import java.security.GeneralSecurityException;
 
 public interface PasswordHandler {
 
-  byte[] transformPassword(byte[] password, byte[] salt, int cost)
+  char[] transformPassword(char[] password, byte[] salt, int cost)
       throws GeneralSecurityException, IOException;
 
-  PasswordHandler create(String password);
+  PasswordHandler create(char[] password);
 
   String getKey();
 
@@ -32,7 +32,7 @@ public interface PasswordHandler {
 
   byte[] getSalt();
 
-  byte[] getPassword() throws GeneralSecurityException, IOException;
+  char[] getPassword() throws GeneralSecurityException, IOException;
 
   char[] getFullPasswordHash();
 

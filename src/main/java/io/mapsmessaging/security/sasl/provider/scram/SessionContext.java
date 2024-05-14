@@ -47,7 +47,7 @@ public class SessionContext {
   private String username;
   private State state;
   private int iterations;
-  private String prepPassword;
+  private char[] prepPassword;
   private Mac mac;
   private String algorithm;
   private int keySize;
@@ -74,7 +74,7 @@ public class SessionContext {
     initialServerChallenge = "";
     algorithm = "";
     keySize = 0;
-    prepPassword = "";
+    prepPassword = new char[0];
 
     Arrays.fill(clientKey, (byte) 0);
     Arrays.fill(clientSignature, (byte) 0);

@@ -23,6 +23,7 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.logging.AuthLogMessages;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.util.*;
 import java.util.Map.Entry;
 import javax.naming.NamingEnumeration;
@@ -30,6 +31,8 @@ import javax.naming.NamingException;
 import javax.naming.directory.*;
 
 public class LdapUserManager {
+
+  private static final char[] CRYPT_ARRAY = "{crypt}".toCharArray();
 
   private final Logger logger = LoggerFactory.getLogger(LdapUserManager.class);
   private final String passwordName;
@@ -58,6 +61,45 @@ public class LdapUserManager {
     groupMap = new LinkedHashMap<>();
     searchBase = config.getProperty("searchBase");
     groupSearchBase = config.getProperty("groupSearchBase");
+    load();
+  }
+
+
+  private void load(){
+    SearchControls searchControls = new SearchControls();
+    String[] returnedAtts = {"cn" };
+    searchControls.setReturningAttributes(returnedAtts);
+    searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+    String searchFilter =  "(cn=*)";
+    DirContext directoryContext = null;
+    List<String> usernames = new ArrayList<>();
+    try {
+      directoryContext = new InitialDirContext(new Hashtable<>(map));
+      loadGroups(null, directoryContext, "*");
+
+      NamingEnumeration<SearchResult> results = directoryContext.search(searchBase, searchFilter, searchControls);
+      while(results.hasMore()){
+        SearchResult result = results.nextElement();
+        Attributes attrs = result.getAttributes();
+        Attribute user = attrs.get("cn");
+        String userString = (String) user.get();
+        usernames.add(userString);
+      }
+    } catch (NamingException e) {
+      logger.log(AuthLogMessages.LDAP_LOAD_FAILURE, e);
+    } finally {
+      if (directoryContext != null) {
+        try {
+          directoryContext.close();
+        } catch (NamingException e) {
+          // we can ignore the close exception here
+        }
+      }
+    }
+    for(String username:usernames){
+      findUser(username);
+    }
+
   }
 
   public IdentityEntry findEntry(String username) {
@@ -96,11 +138,8 @@ public class LdapUserManager {
         if (password != null) {
           Object v = password.get();
           if (v instanceof byte[]) {
-            String s = new String((byte[]) v);
-            if (s.toLowerCase().startsWith("{crypt}")) {
-              s = s.substring("{crypt}".length());
-            }
-            LdapUser ldapUser = new LdapUser(userString, s.toCharArray(), attrs);
+            char[] passwordArray = checkOrAppend(ArrayHelper.byteArrayToCharArray((byte[])v));
+            LdapUser ldapUser = new LdapUser(userString, passwordArray, attrs);
             loadGroups(ldapUser, directoryContext, username);
             userMap.put(ldapUser.getUsername(), ldapUser);
             return ldapUser;
@@ -121,6 +160,13 @@ public class LdapUserManager {
     return null;
   }
 
+  private char[] checkOrAppend(char[] password){
+    if (password.length > CRYPT_ARRAY.length && ArrayHelper.startsWithIgnoreCase(password, CRYPT_ARRAY)) {
+      return ArrayHelper.substring(password, CRYPT_ARRAY.length);
+    }
+    return password;
+  }
+
   private void loadGroups(LdapUser ldapUser, DirContext directoryContext, String userId) throws NamingException {
     String[] attributes = {"cn"};
     SearchControls groupSearchControls = new SearchControls();
@@ -138,23 +184,24 @@ public class LdapUserManager {
     }
   }
 
-
   private void processGroup(LdapUser ldapUser, Attribute groupName){
     try{
-    if (groupName != null) {
-      String name = groupName.get().toString();
-      LdapGroup groupEntry = groupMap.get(name);
-      if(groupEntry == null){
-        groupEntry = new LdapGroup(name);
-        groupMap.put(groupEntry.getName(), groupEntry);
+      if (groupName != null) {
+        String name = groupName.get().toString();
+        LdapGroup groupEntry = groupMap.get(name);
+        if(groupEntry == null){
+          groupEntry = new LdapGroup(name);
+          groupMap.put(groupEntry.getName(), groupEntry);
+        }
+        if (ldapUser != null) {
+          if (!groupEntry.isInGroup(ldapUser.getUsername())) {
+            groupEntry.addUser(ldapUser.getUsername());
+          }
+          if (!ldapUser.isInGroup(name)) {
+            ldapUser.addGroup(groupEntry);
+          }
+        }
       }
-        if (!groupEntry.isInGroup(ldapUser.getUsername())) {
-        groupEntry.addUser(ldapUser.getUsername());
-      }
-      if (!ldapUser.isInGroup(name)) {
-        ldapUser.addGroup(groupEntry);
-      }
-    }
     }
     catch(NamingException namingException){
       logger.log(AuthLogMessages.LDAP_LOAD_FAILURE, namingException);

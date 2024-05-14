@@ -23,14 +23,13 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
@@ -54,15 +53,15 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   public CognitoAuth(ConfigurationProperties config) {
-    userPoolId = (String) config.getProperty("userPoolId");
-    appClientId = (String) config.getProperty("appClientId");
-    appClientSecret = (String) config.getProperty("appClientSecret");
+    userPoolId = config.getProperty("userPoolId");
+    appClientId = config.getProperty("appClientId");
+    appClientSecret = config.getProperty("appClientSecret");
 
-    regionName = (String) config.getProperty("region");
-    String accesskeyId = (String) config.getProperty("accessKeyId");
-    String secretAccessKey = (String) config.getProperty("secretAccessKey");
+    regionName = config.getProperty("region");
+    String accesskeyId = config.getProperty("accessKeyId");
+    String secretAccessKey = config.getProperty("secretAccessKey");
 
-    String cacheTimeString = (String) config.getProperty("cacheTime");
+    String cacheTimeString = config.getProperty("cacheTime");
     if(cacheTimeString != null && !cacheTimeString.trim().isEmpty()){
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }
@@ -186,7 +185,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   @Override
-  public boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher) {
+  public boolean createUser(String username, char[] passwordHash, PasswordHandler passwordHasher) {
     List<AttributeType> userAttributes = new ArrayList<>();
     if (username.contains("@")) {
       userAttributes.add(AttributeType.builder().name("email_verified").value("true").build());

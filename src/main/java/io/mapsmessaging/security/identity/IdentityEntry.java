@@ -70,7 +70,7 @@ public class IdentityEntry {
   @Getter
   protected PasswordHandler passwordHasher;
 
-  protected String password;
+  protected char[] password;
 
   public boolean isInGroup(String group) {
     return groupList.containsKey(group);
@@ -104,7 +104,7 @@ public class IdentityEntry {
 
   @Override
   public String toString() {
-    return username + ":" + password;
+    return username + ":" + new String(password);
   }
 
   public void removeGroup(GroupEntry groupEntry) {
@@ -112,7 +112,7 @@ public class IdentityEntry {
   }
 
   @SuppressWarnings("java:S1130") // They are thrown by inherited classes
-  public String getPassword() throws GeneralSecurityException, IOException {
+  public char[] getPassword() throws GeneralSecurityException, IOException {
     return password;
   }
 }

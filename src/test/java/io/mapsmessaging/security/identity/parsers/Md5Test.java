@@ -24,12 +24,12 @@ class Md5Test extends BaseHashFunctions {
 
   @Test
   void checkMd5Hash() throws GeneralSecurityException, IOException {
-    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is an md5 password");
+    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is an md5 password".toCharArray());
   }
 
   @Test
   void checkMd5HashWithBadPassword() throws GeneralSecurityException, IOException {
-    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is wrong", false);
+    testHashing("$apr1$po9cazbx$JG5SMaTSVYrtFlYQb821M.", "This is wrong".toCharArray(), false);
   }
 
 }

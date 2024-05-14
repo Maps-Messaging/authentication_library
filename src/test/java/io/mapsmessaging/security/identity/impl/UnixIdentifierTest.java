@@ -48,7 +48,7 @@ class UnixIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
   }
 
@@ -68,7 +68,7 @@ class UnixIdentifierTest {
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
   }
 

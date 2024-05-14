@@ -27,7 +27,6 @@ import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Arrays;
@@ -68,8 +67,8 @@ public class IdentityLoginModule extends BaseLoginModule {
     if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
-    byte[] actualPassword;
-    byte[] remotePassword = new String(password).getBytes(StandardCharsets.UTF_8);
+    char[] actualPassword;
+    char[] remotePassword = password;
 
     try {
       PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
@@ -77,18 +76,15 @@ public class IdentityLoginModule extends BaseLoginModule {
         passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
       }
 
-      if (passwordHasher instanceof PasswordCipher
-          || passwordHasher instanceof PlainPasswordHasher) {
+      if (passwordHasher instanceof PasswordCipher || passwordHasher instanceof PlainPasswordHasher) {
         actualPassword = passwordHasher.getPassword();
       } else {
-        remotePassword =
-            passwordHasher.transformPassword(
-                remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
-        actualPassword = new String(passwordHasher.getFullPasswordHash()).getBytes();
+        remotePassword = passwordHasher.transformPassword(remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
+        actualPassword = passwordHasher.getFullPasswordHash();
       }
       boolean result = Arrays.equals(actualPassword, remotePassword);
-      Arrays.fill(actualPassword, (byte) 0x0);
-      Arrays.fill(remotePassword, (byte) 0x0);
+      if(actualPassword != null) Arrays.fill(actualPassword, (char) 0x0);
+      if(remotePassword != null) Arrays.fill(remotePassword, (char) 0x0);
       if (!result) {
         throw new LoginException("Invalid password");
       }

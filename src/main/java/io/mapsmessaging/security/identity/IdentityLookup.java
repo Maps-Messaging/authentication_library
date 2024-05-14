@@ -52,7 +52,7 @@ public interface IdentityLookup {
     throw new NotImplementedException("Unable to delete groups");
   }
 
-  default boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher)
+  default boolean createUser(String username, char[] passwordHash, PasswordHandler passwordHasher)
       throws IOException, GeneralSecurityException {
     throw new NotImplementedException("Unable to add users to an LDAP server");
   }

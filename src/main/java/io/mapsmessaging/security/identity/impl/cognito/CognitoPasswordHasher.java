@@ -46,7 +46,7 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
     try {
       String passwordString = new String(password);
 
@@ -88,9 +88,9 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
     }
     // If the above code executes without throwing an exception,
     // the JWT token is valid for the given user
-    computedPassword = new byte[10];
-    Arrays.fill(computedPassword, (byte) 0xff);
-    return new byte[0];
+    computedPassword = new char[10];
+    Arrays.fill(computedPassword, (char) 0xff);
+    return new char[0];
   }
 
 

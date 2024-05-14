@@ -50,7 +50,7 @@ class ApacheIdentifierTest {
 
     String pwd = new String(hash);
     Assertions.assertEquals("$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(Md5PasswordHasher.class, passwordHasher.getClass());
   }
 

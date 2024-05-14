@@ -58,9 +58,9 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
     if (auth == null) {
-      return new byte[0];
+      return new char[0];
     }
     String passwordString = new String(password);
     if (isJwt(passwordString)) {
@@ -75,7 +75,7 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
       } catch (JwkException e) {
         logger.log(AUTH0_JWT_FAILURE, e);
       }
-      return new byte[0];
+      return new char[0];
     }
 
     try {
@@ -95,11 +95,11 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
         return computedPassword;
       }
     } catch (Auth0Exception | JwkException e) {
-      computedPassword = new byte[12];
-      Arrays.fill(computedPassword, (byte) 0xff);
+      computedPassword = new char[12];
+      Arrays.fill(computedPassword, (char) 0xff);
       logger.log(AUTH0_JWT_FAILURE, e);
     }
-    return new byte[0];
+    return new char[0];
   }
 
   private void success() {

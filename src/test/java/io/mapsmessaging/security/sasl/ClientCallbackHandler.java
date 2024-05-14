@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import javax.security.sasl.RealmCallback;
 public class ClientCallbackHandler  implements CallbackHandler {
 
   private final String username;
-  private final String password;
+  private final char[] password;
   private final String serverName;
 
-  public ClientCallbackHandler(String username, String password, String serverName) {
+  public ClientCallbackHandler(String username, char[] password, String serverName) {
     this.username = username;
     this.password = password;
     this.serverName = serverName;
@@ -42,7 +42,7 @@ public class ClientCallbackHandler  implements CallbackHandler {
         nc.setName(username);
       } else if (cb instanceof PasswordCallback) {
         PasswordCallback pc = (PasswordCallback) cb;
-        pc.setPassword(password.toCharArray());
+        pc.setPassword(password);
       } else if (cb instanceof RealmCallback) {
         RealmCallback rc = (RealmCallback) cb;
         rc.setText(serverName);

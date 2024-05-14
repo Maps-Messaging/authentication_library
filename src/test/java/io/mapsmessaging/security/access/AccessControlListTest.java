@@ -57,26 +57,26 @@ public class AccessControlListTest {
     PasswordHasher passwordHasher = new BCrypt2YPasswordHasher();
     identityAccessManager.setPasswordHandler(passwordHasher);
 
-    byte[] hash =
+    char[] hash =
         passwordHasher.transformPassword(
-            "password1".getBytes(StandardCharsets.UTF_8),
+            "password1".toCharArray(),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
-    UserIdMap usernameId = identityAccessManager.createUser("username", new String(hash));
+    UserIdMap usernameId = identityAccessManager.createUser("username", hash);
 
     hash =
         passwordHasher.transformPassword(
-            "password2".getBytes(StandardCharsets.UTF_8),
+            "password2".toCharArray(),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
-    UserIdMap username2Id = identityAccessManager.createUser("username2", new String(hash));
+    UserIdMap username2Id = identityAccessManager.createUser("username2", hash);
 
     hash =
         passwordHasher.transformPassword(
-            "password3".getBytes(StandardCharsets.UTF_8),
+            "password3".toCharArray(),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
-    UserIdMap fredId = identityAccessManager.createUser("fred", new String(hash));
+    UserIdMap fredId = identityAccessManager.createUser("fred", hash);
 
     GroupIdMap group1IdMap = identityAccessManager.createGroup("group1");
     GroupIdMap group2IdMap = identityAccessManager.createGroup("group2");

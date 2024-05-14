@@ -62,7 +62,7 @@ class Auth0LoginTest {
             .body(body)
             .asString();
     JSONObject jsonObject = new JSONObject(response.getBody());
-    String access_token = jsonObject.getString("access_token");
+    char[] access_token = jsonObject.getString("access_token").toCharArray();
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("oNnOEXu8CsIYYxpu56ADpfm4Ma8Z1GNt", access_token, "");
     Subject subject = new Subject();
     LoginModule loginModule = new Auth0JwtLoginModule();
@@ -74,7 +74,7 @@ class Auth0LoginTest {
 
   @Test
   void basicExceptionalidation() {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("Auth0", "BadToken", "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("Auth0", "BadToken".toCharArray(), "");
     Subject subject = new Subject();
     LoginModule loginModule = new Auth0JwtLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());

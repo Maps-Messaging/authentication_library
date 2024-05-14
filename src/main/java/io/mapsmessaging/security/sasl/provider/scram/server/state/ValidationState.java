@@ -20,8 +20,8 @@ import io.mapsmessaging.security.logging.AuthLogMessages;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -68,7 +68,7 @@ public class ValidationState extends State {
     String authString = client + "," + context.getInitialServerChallenge() + "," + response;
 
     try {
-      context.computeClientKey(context.getPrepPassword().getBytes(StandardCharsets.UTF_8));
+      context.computeClientKey(ArrayHelper.charArrayToByteArray(context.getPrepPassword()));
       context.computeStoredKeyAndSignature(authString);
 
       byte[] clientKey = context.getClientKey();
@@ -80,7 +80,7 @@ public class ValidationState extends State {
       if (!Arrays.equals(expectedClientProof, proof)) {
         throw new SaslException("Invalid password");
       }
-      context.computeServerSignature(context.getPrepPassword().getBytes(StandardCharsets.UTF_8), authString);
+      context.computeServerSignature(ArrayHelper.charArrayToByteArray(context.getPrepPassword()), authString);
       context.setServerSignature(context.getServerSignature());
     } catch (InvalidKeyException | NoSuchAlgorithmException e) {
       SaslException saslException = new SaslException(e.getMessage());

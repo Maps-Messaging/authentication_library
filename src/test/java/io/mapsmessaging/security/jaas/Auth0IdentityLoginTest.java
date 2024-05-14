@@ -72,14 +72,14 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
   }
 
   @Override
-  String getPassword() {
-    return "testPassword01!";
+  char[] getPassword() {
+    return "testPassword01!".toCharArray();
   }
 
   @Test
   void simpleJwtLoginTest() throws Exception {
     Auth0Client auth0Client = new Auth0Client();
-    String token = auth0Client.authenticateAndGetToken();
+    char[] token = auth0Client.authenticateAndGetToken().toCharArray();
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), token, "");
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
@@ -102,7 +102,7 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
                 .put("grant_type", "client_credentials")
                 .put("grant_type", "password") // Note: using the Resource Owner Password Grant
                 .put("username", getUser())
-                .put("password", getPassword())
+                .put("password", new String(getPassword()))
                 .toString();
 
         StringEntity entity = new StringEntity(json);

@@ -28,20 +28,20 @@ public class EncryptedPasswordEntry extends IdentityEntry {
     int usernamePos = line.indexOf(":");
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
-    password = line;
+    password = line.toCharArray();
     passwordHasher = parser.create(password);
   }
 
-  public EncryptedPasswordEntry(String username, String password, PasswordHandler parser) {
+  public EncryptedPasswordEntry(String username, char[] password, PasswordHandler parser) {
     this.username = username;
     this.password = password;
     this.passwordHasher = parser;
   }
 
   @Override
-  public String getPassword() throws GeneralSecurityException, IOException {
+  public char[] getPassword() throws GeneralSecurityException, IOException {
     PasswordHandler parser1 = passwordHasher.create(password);
-    return new String(parser1.getPassword());
+    return parser1.getPassword();
   }
 
   @Override

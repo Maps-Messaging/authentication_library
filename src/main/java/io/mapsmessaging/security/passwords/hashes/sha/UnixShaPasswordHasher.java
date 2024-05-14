@@ -17,37 +17,47 @@
 package io.mapsmessaging.security.passwords.hashes.sha;
 
 import io.mapsmessaging.security.passwords.PasswordHasher;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import org.apache.commons.codec.digest.Crypt;
 
 public abstract class UnixShaPasswordHasher implements PasswordHasher {
 
-  private final byte[] password;
+  private final char[] password;
   private final String salt;
-  private final String key;
+  private final char[] key;
 
-  protected UnixShaPasswordHasher(String key, String password) {
+  protected UnixShaPasswordHasher(char[] key, char[] pw) {
     this.key = key;
-    if (password.isEmpty()) {
+    if (pw.length == 0) {
       salt = "";
-      this.password = new byte[0];
+      password = new char[0];
     } else {
-      password = password.substring(key.length());
-      int idx = password.indexOf("$");
+      char[] subPassword = ArrayHelper.substring(pw, key.length);
+      int idx = ArrayHelper.indexOf(subPassword, '$');
       if (idx > 0) {
-        salt = password.substring(0, idx);
-        password = password.substring(idx + 1);
-        this.password = password.getBytes(StandardCharsets.UTF_8);
+        char[] saltChars = ArrayHelper.substring(subPassword, 0, idx);
+        char[] remainingPassword = ArrayHelper.substring(subPassword, idx + 1);
+        salt = new String(saltChars);
+        password = Arrays.copyOf(remainingPassword, remainingPassword.length);
+
+        // Clear sensitive data
+        ArrayHelper.clearCharArray(saltChars);
+        ArrayHelper.clearCharArray(remainingPassword);
       } else {
-        this.password = new byte[0];
+        password = new char[0];
         salt = "";
       }
+
+      // Clear sensitive data
+      ArrayHelper.clearCharArray(subPassword);
     }
   }
 
   @Override
   public String getKey() {
-    return key;
+    return new String(key);
   }
 
   @Override
@@ -56,10 +66,10 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
     boolean headerOk = true;
     byte[] packedSalt = salt;
-    byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+    byte[] keyBytes = ArrayHelper.charArrayToByteArray(key);
     for (int x = 0; x < keyBytes.length; x++) {
       if (salt[x] != keyBytes[x]) {
         headerOk = false;
@@ -67,10 +77,10 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
       }
     }
     if (!headerOk) {
-      packedSalt = (key + new String(salt)).getBytes(StandardCharsets.UTF_8);
+      packedSalt = (getKey() + new String(salt)).getBytes(StandardCharsets.UTF_8);
     }
-    String hash = Crypt.crypt(password, new String(packedSalt));
-    return hash.getBytes(StandardCharsets.UTF_8);
+    String hash = Crypt.crypt(ArrayHelper.charArrayToByteArray(password), new String(packedSalt));
+    return hash.toCharArray();
   }
 
   @Override
@@ -79,13 +89,13 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] getPassword() {
+  public char[] getPassword() {
     return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (key + salt + "$" + new String(password)).toCharArray();
+    return (getKey() + salt + "$" + new String(password)).toCharArray();
   }
 
   @Override

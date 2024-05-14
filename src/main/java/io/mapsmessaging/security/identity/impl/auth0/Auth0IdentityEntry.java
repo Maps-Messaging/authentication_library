@@ -35,9 +35,9 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
   }
 
   @Override
-  public String getPassword() {
+  public char[] getPassword() {
     try {
-      return new String(passwordHasher.getPassword());
+      return passwordHasher.getPassword();
     } catch (GeneralSecurityException | IOException e) {
       logger.log(AUTH0_PASSWORD_FAILURE, username, e);
       return null;

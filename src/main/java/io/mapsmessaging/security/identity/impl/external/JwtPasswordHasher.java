@@ -24,10 +24,10 @@ public abstract class JwtPasswordHasher implements PasswordHasher {
 
   @Getter
   protected DecodedJWT jwt;
-  protected byte[] computedPassword;
+  protected char[] computedPassword;
 
   @Override
-  public PasswordHasher create(String password) {
+  public PasswordHasher create(char[] password) {
     return null;
   }
 
@@ -47,7 +47,7 @@ public abstract class JwtPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] getPassword() {
+  public char[] getPassword() {
     return computedPassword;
   }
 

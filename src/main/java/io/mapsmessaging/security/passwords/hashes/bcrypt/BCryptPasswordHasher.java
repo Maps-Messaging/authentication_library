@@ -20,47 +20,49 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import at.favre.lib.crypto.bcrypt.BCrypt.Version;
 import at.favre.lib.crypto.bcrypt.Radix64Encoder;
 import io.mapsmessaging.security.passwords.PasswordHasher;
-import java.nio.charset.StandardCharsets;
+import io.mapsmessaging.security.util.ArrayHelper;
 
 public abstract class BCryptPasswordHasher implements PasswordHasher {
 
+  private static final int SALT_SIZE = 22;
   private static final int DEFAULT_COST = 12;
 
   private final Version version;
-  private final byte[] password;
+  private final char[] password;
   private final byte[] salt;
   private final int cost;
 
   protected BCryptPasswordHasher() {
-    password = new byte[0];
+    password = new char[0];
     salt = new byte[0];
     cost = DEFAULT_COST;
     version = null;
   }
 
   protected BCryptPasswordHasher(Version version) {
-    password = new byte[0];
+    password = new char[0];
     salt = new byte[0];
     cost = DEFAULT_COST;
     this.version = version;
   }
 
-  protected BCryptPasswordHasher(String password, Version version) {
+  protected BCryptPasswordHasher(char[] password, Version version) {
     this.version = version;
-    if (password.isEmpty()) {
+    if (password == null || password.length == 0) {
       salt = new byte[0];
-      this.password = new byte[0];
+      this.password = new char[0];
       cost = DEFAULT_COST;
     } else {
-      String t = password.substring(getKey().length());
-      int dollar = t.indexOf("$");
-      cost = Integer.parseInt(t.substring(0, dollar));
-      t = t.substring(dollar + 1);
-      String s = t.substring(0, 22);
-      String p = t.substring(22);
+      char[] t = ArrayHelper.substring(password, getKey().length());
+
+      int dollar = ArrayHelper.indexOf(t, '$');
+      cost = Integer.parseInt( new String(ArrayHelper.substring(t, 0, dollar)));
+      t = ArrayHelper.substring(t, dollar + 1);
+      char[] s = ArrayHelper.substring(t,0, SALT_SIZE);
+      char[] p = ArrayHelper.substring(t, SALT_SIZE);
       Radix64Encoder encoder = new Radix64Encoder.Default();
-      salt = encoder.decode(s.getBytes(StandardCharsets.UTF_8));
-      this.password = encoder.decode(p.getBytes(StandardCharsets.UTF_8));
+      salt = encoder.decode(ArrayHelper.charArrayToByteArray(s));
+      this.password = ArrayHelper.byteArrayToCharArray(encoder.decode(ArrayHelper.charArrayToByteArray(p)));
     }
   }
 
@@ -75,8 +77,8 @@ public abstract class BCryptPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
-    return BCrypt.with(version).hash(cost, salt, password);
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
+    return ArrayHelper.byteArrayToCharArray(BCrypt.with(version).hash(cost, salt, ArrayHelper.charArrayToByteArray(password)));
   }
 
   @Override
@@ -85,14 +87,14 @@ public abstract class BCryptPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] getPassword() {
+  public char[] getPassword() {
     return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
     Radix64Encoder encoder = new Radix64Encoder.Default();
-    String t = new String(encoder.encode(salt)) + new String(encoder.encode(password));
+    String t = new String(encoder.encode(salt)) + new String(encoder.encode(ArrayHelper.charArrayToByteArray(password)));
     return (getKey() + cost + "$" + t).toCharArray();
   }
 

@@ -40,8 +40,8 @@ public class LdapUser extends IdentityEntry {
 
   public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
-    super.password = new String(password);
-    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(new String(password));
+    super.password = password;
+    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
     this.attrs = attrs;
     NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();
     while (namingEnum.hasMoreElements()) {

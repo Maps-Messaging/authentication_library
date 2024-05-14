@@ -25,10 +25,10 @@ public class Pdkdf2Sha3512PasswordHasher extends Pbkdf2Sha3PasswordHasher {
   private static final int PBKDF2_ITERATIONS = 10000;
 
   public Pdkdf2Sha3512PasswordHasher() {
-    super("");
+    super(new char[0]);
   }
 
-  public Pdkdf2Sha3512PasswordHasher(String password) {
+  public Pdkdf2Sha3512PasswordHasher(char[] password) {
     super(password);
   }
 
@@ -43,7 +43,7 @@ public class Pdkdf2Sha3512PasswordHasher extends Pbkdf2Sha3PasswordHasher {
   }
 
   @Override
-  public PasswordHasher create(String password) {
+  public PasswordHasher create(char[] password) {
     return new Pdkdf2Sha3512PasswordHasher(password);
   }
 

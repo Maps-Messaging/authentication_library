@@ -33,14 +33,14 @@ public abstract class BaseIdentity {
 
   abstract String getUser();
 
-  abstract String getPassword();
+  abstract char[] getPassword();
 
   String getInvalidUser() {
     return "no such user";
   }
 
-  String getInvalidPassword() {
-    return "doesn't really matter";
+  char[] getInvalidPassword() {
+    return "doesn't really matter".toCharArray();
   }
 
   LoginModule createLoginModule(CallbackHandler callbackHandler) {
@@ -82,7 +82,7 @@ public abstract class BaseIdentity {
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertNotNull(module);
-    Assertions.assertTrue(module instanceof BaseLoginModule);
+    Assertions.assertInstanceOf(BaseLoginModule.class, module);
     Assertions.assertNotNull(((BaseLoginModule)module).getDomain());
   }
 

@@ -33,7 +33,7 @@ public abstract class BaseLoginModuleTest {
 
   abstract String getUser();
 
-  abstract String getPassword();
+  abstract char[] getPassword();
 
 
   void testLoad(String jaasConfigName) throws LoginException {
