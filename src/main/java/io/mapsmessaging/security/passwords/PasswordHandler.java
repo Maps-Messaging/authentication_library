@@ -28,6 +28,7 @@ public abstract class PasswordHandler {
     char[] localHash = getFullPasswordHash();
     boolean result = Arrays.equals(remoteHash, localHash);
     ArrayHelper.clearCharArray(localHash);
+    ArrayHelper.clearCharArray(remoteHash);
     return result;
   }
 
