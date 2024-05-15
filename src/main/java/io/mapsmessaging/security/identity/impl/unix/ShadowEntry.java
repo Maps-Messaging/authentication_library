@@ -19,8 +19,10 @@ package io.mapsmessaging.security.identity.impl.unix;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.security.Principal;
+import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,8 +38,8 @@ public class ShadowEntry extends IdentityEntry {
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
     int endOfPassword = line.indexOf(":");
-    password = line.substring(0, endOfPassword);
-    passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
+    password = new PasswordBuffer(line.substring(0, endOfPassword).toCharArray());
+    passwordHasher = PasswordHandlerFactory.getInstance().parse(password.getHash());
   }
 
   @Override
@@ -50,5 +52,8 @@ public class ShadowEntry extends IdentityEntry {
     return principals;
   }
 
-
+  public void setAttributeMap(Map<String, String> attributeMap) {
+    attributeMap.put("homeDirectory", passwordEntry.getHomeDirectory());
+    attributeMap.put("description", passwordEntry.getDescription());
+  }
 }

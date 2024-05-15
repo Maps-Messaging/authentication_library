@@ -57,8 +57,7 @@ public class InitialState extends State {
     //
     // Update the context
     //
-    String rawPassword = new String((((PasswordCallback) callbacks[1]).getPassword()));
-
+    char[] rawPassword = ((PasswordCallback) callbacks[1]).getPassword();
     context.setUsername(((NameCallback) callbacks[0]).getName());
     context.setPrepPassword(SaslPrep.getInstance().stringPrep(rawPassword));
 

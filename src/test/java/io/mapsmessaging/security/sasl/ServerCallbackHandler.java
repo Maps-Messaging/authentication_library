@@ -51,14 +51,14 @@ public class ServerCallbackHandler implements CallbackHandler {
         NameCallback nc = (NameCallback) cb;
         String username = nc.getDefaultName();
         try {
-          hashedPassword = identityLookup.getPasswordHash(username);
+          hashedPassword = identityLookup.getPasswordHash(username).getHash();
         } catch (GeneralSecurityException e) {
           throw new IOException(e);
         }
         PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hashedPassword);
         if (passwordHasher instanceof PlainPasswordHasher) {
           try {
-            hashedPassword = new String(passwordHasher.getPassword()).toCharArray();
+            hashedPassword = passwordHasher.getPassword().getHash();
           } catch (GeneralSecurityException e) {
             throw new IOException(e);
           }

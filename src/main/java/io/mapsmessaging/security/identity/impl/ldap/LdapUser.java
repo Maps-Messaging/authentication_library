@@ -19,9 +19,11 @@ package io.mapsmessaging.security.identity.impl.ldap;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.security.Principal;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -40,8 +42,8 @@ public class LdapUser extends IdentityEntry {
 
   public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
-    super.password = new String(password);
-    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(new String(password));
+    super.password = new PasswordBuffer(password);
+    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
     this.attrs = attrs;
     NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();
     while (namingEnum.hasMoreElements()) {
@@ -79,6 +81,15 @@ public class LdapUser extends IdentityEntry {
     return principals;
   }
 
+  public void setAttributeMap(Map<String, String> attributeMap) {
+    attributeMap.put("homeDirectory", homeDirectory);
+    attributeMap.put("description", description);
+    NamingEnumeration<? extends Attribute> enumeration = attrs.getAll();
+    while (enumeration.hasMoreElements()) {
+      Attribute attribute = enumeration.nextElement();
+      attributeMap.put(attribute.getID(), attribute.toString());
+    }
+  }
 
   static class LdapPrincipal implements Principal {
     private final String name;

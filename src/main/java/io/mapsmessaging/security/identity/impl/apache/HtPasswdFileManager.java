@@ -32,7 +32,7 @@ public class HtPasswdFileManager extends FileBaseIdentities {
   }
 
   @Override
-  protected IdentityEntry create(String username, String hash) {
+  protected IdentityEntry create(String username, char[] hash) {
     return new HtPasswdEntry(username, hash);
   }
 

@@ -26,7 +26,6 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.LinkedHashMap;
@@ -85,18 +84,18 @@ class SimpleSaslTest extends BaseSasl {
         "SCRAM-SHA3-512"
       })
   void validateSaslMechanisms(String mechanism) throws IOException, GeneralSecurityException {
-    testMechanism(mechanism, faker.backToTheFuture().character(), faker.backToTheFuture().quote());
+    testMechanism(mechanism, faker.backToTheFuture().character(), faker.backToTheFuture().quote().toCharArray());
   }
 
   void simpleWrongPasswordTest(String mechanism) {
     Sha1PasswordHasher passwordParser = new Sha1PasswordHasher();
-    byte[] password =
+    char[] password =
         passwordParser.transformPassword(
-            "This is a wrong password".getBytes(StandardCharsets.UTF_8), null, 0);
-    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", new String(password)));
+            "This is a wrong password".toCharArray(), null, 0);
+    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", password));
   }
 
-  void testMechanism(String mechanism, String user, String password)
+  void testMechanism(String mechanism, String user, char[] password)
       throws IOException, GeneralSecurityException {
     user = user.replaceAll(" ", "_");
     if (identityAccessManager.getUser(user) != null) {

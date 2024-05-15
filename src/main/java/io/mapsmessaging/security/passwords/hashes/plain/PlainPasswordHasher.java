@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,28 +16,30 @@
 
 package io.mapsmessaging.security.passwords.hashes.plain;
 
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
+import io.mapsmessaging.security.util.ArrayHelper;
+import java.util.Arrays;
 
-import java.nio.charset.StandardCharsets;
+public class PlainPasswordHasher extends PasswordHasher {
 
-public class PlainPasswordHasher implements PasswordHasher {
-
-  private final byte[] password;
+  private final PasswordBuffer password;
 
   public PlainPasswordHasher() {
-    password = new byte[0];
+    password = new PasswordBuffer(new char[0]);
   }
 
-  public PlainPasswordHasher(String password) {
-    int ind = password.indexOf("$");
+  public PlainPasswordHasher(char[] pw) {
+    int ind = ArrayHelper.indexOf(pw, '$', 1);
     if (ind != -1) {
-      this.password = password.substring(ind + 1).getBytes(StandardCharsets.UTF_8);
-    } else {
-      this.password = password.getBytes(StandardCharsets.UTF_8);
+      pw = ArrayHelper.substring(pw, ind + 1);
     }
+    password = new PasswordBuffer(Arrays.copyOf(pw, pw.length));
+    // Clear the original password array to avoid lingering sensitive data
+    ArrayHelper.clearCharArray(pw);
   }
 
-  public PasswordHasher create(String password) {
+  public PasswordHasher create(char[] password) {
     return new PlainPasswordHasher(password);
   }
 
@@ -52,9 +54,9 @@ public class PlainPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
-    byte[] tmp = (getName() + "$").getBytes(StandardCharsets.UTF_8);
-    byte[] response = new byte[tmp.length + password.length];
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
+    char[] tmp = (getName() + "$").toCharArray();
+    char[] response = new char[tmp.length + password.length];
     System.arraycopy(tmp, 0, response, 0, tmp.length);
     System.arraycopy(password, 0, response, tmp.length, password.length);
     return response;
@@ -66,17 +68,22 @@ public class PlainPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] getPassword() {
+  public PasswordBuffer getPassword() {
     return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getName() + "$" + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getName().toCharArray(), "$".toCharArray(), password.getHash());
   }
 
   @Override
   public String getName() {
     return "PLAIN";
+  }
+
+  @Override
+  public boolean matches(char[] attemptedPassword) {
+    return Arrays.equals(attemptedPassword, getPassword().getHash());
   }
 }

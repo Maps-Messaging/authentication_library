@@ -22,6 +22,7 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.impl.ldap.LdapAuth;
 import io.mapsmessaging.security.identity.impl.ldap.LdapUser;
 import io.mapsmessaging.security.jaas.PropertiesLoader;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.md5.Md5UnixPasswordHasher;
@@ -66,12 +67,12 @@ public class LdapIdentifierTest {
     Assertions.assertEquals(lookup.getClass(), LdapAuth.class);
     Assertions.assertEquals("ldap", lookup.getDomain());
 
-    char[] hash = lookup.getPasswordHash(properties.getProperty("username"));
+    PasswordBuffer hash = lookup.getPasswordHash(properties.getProperty("username"));
     Assertions.assertNotNull(hash);
-    Assertions.assertNotEquals(0, hash.length);
-    String pwd = new String(hash);
+    Assertions.assertNotEquals(0, hash.getHash().length);
+    String pwd = new String(hash.getHash());
     Assertions.assertEquals(properties.getProperty("hashedPassword"), pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash.getHash());
     Assertions.assertEquals(Md5UnixPasswordHasher.class, passwordHasher.getClass());
     IdentityEntry identityEntry = lookup.findEntry(properties.getProperty("username"));
     Assertions.assertNotNull(identityEntry);

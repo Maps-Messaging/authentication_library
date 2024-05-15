@@ -21,6 +21,7 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_PARSER_
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -64,29 +65,14 @@ public class PasswordHandlerFactory {
 
   public PasswordHandler parse(char[] password) {
     for (PasswordHandler handler : passwordHandlers) {
+      char[] key = handler.getKey().toCharArray();
       if (!handler.getName().equals("PLAIN")
-          && password.length >= handler.getKey().length()
-          && startWith(password, handler.getKey().toCharArray())) {
-        return handler.create(new String(password));
+          && password.length >= key.length
+          && ArrayHelper.startsWithIgnoreCase(password, key)) {
+        return handler.create(password);
       }
     }
-    return new PlainPasswordHasher(new String(password));
-  }
-
-  private boolean startWith(char[] longString, char[] start) {
-    if (start.length >= longString.length) {
-      return false;
-    }
-    for (int x = 0; x < start.length; x++) {
-      if (longString[x] != start[x]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public PasswordHandler parse(String password) {
-    return parse(password.toCharArray());
+    return new PlainPasswordHasher(password);
   }
 
 }

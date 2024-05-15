@@ -17,17 +17,18 @@
 package io.mapsmessaging.security.identity.impl.external;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import lombok.Getter;
 
-public abstract class JwtPasswordHasher implements PasswordHasher {
+public abstract class JwtPasswordHasher extends PasswordHasher {
 
   @Getter
   protected DecodedJWT jwt;
-  protected byte[] computedPassword;
+  protected PasswordBuffer computedPassword;
 
   @Override
-  public PasswordHasher create(String password) {
+  public PasswordHasher create(char[] password) {
     return null;
   }
 
@@ -47,12 +48,15 @@ public abstract class JwtPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] getPassword() {
+  public PasswordBuffer getPassword() {
     return computedPassword;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return new String(computedPassword).toCharArray();
+    if(computedPassword == null){
+      return new char[0];
+    }
+    return computedPassword.getHash();
   }
 }

@@ -18,6 +18,7 @@ package io.mapsmessaging.security.identity;
 
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -62,7 +63,7 @@ import lombok.Getter;
  * @see GroupEntry
  * @see Subject
  */
-public class IdentityEntry {
+public class IdentityEntry implements Cloneable {
 
   protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
   @Getter
@@ -70,7 +71,7 @@ public class IdentityEntry {
   @Getter
   protected PasswordHandler passwordHasher;
 
-  protected String password;
+  protected PasswordBuffer password;
 
   public boolean isInGroup(String group) {
     return groupList.containsKey(group);
@@ -104,7 +105,7 @@ public class IdentityEntry {
 
   @Override
   public String toString() {
-    return username + ":" + password;
+    return username + ":" + new String(password.getHash());
   }
 
   public void removeGroup(GroupEntry groupEntry) {
@@ -112,7 +113,27 @@ public class IdentityEntry {
   }
 
   @SuppressWarnings("java:S1130") // They are thrown by inherited classes
-  public String getPassword() throws GeneralSecurityException, IOException {
+  public PasswordBuffer getPassword() throws GeneralSecurityException, IOException {
     return password;
+  }
+
+  public IdentityEntry secure() {
+    try{
+      return clone();
+    }
+    catch (CloneNotSupportedException e){
+      // it is
+    }
+    return null;
+  }
+
+  public IdentityEntry clone() throws CloneNotSupportedException {
+    IdentityEntry identityEntry = this.clone();
+    identityEntry.password.clear();
+    return identityEntry;
+  }
+
+  public void setAttributeMap(Map<String, String> attributeMap) {
+
   }
 }

@@ -29,7 +29,7 @@ public class AnonymousLoginTest {
   @Test
   void simpleLoginTest() throws LoginException {
     Subject subject = new Subject();
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("", "", "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("", new char[0], "");
     AnonymousLoginModule module = new AnonymousLoginModule();
     module.initialize(subject, clientCallbackHandler, new LinkedHashMap<>(), new LinkedHashMap<>());
 
@@ -48,7 +48,7 @@ public class AnonymousLoginTest {
 
     // Ensure the principal is of the correct type
     Principal principal = subject.getPrincipals().iterator().next();
-    Assertions.assertTrue(principal instanceof AnonymousPrincipal, "Principal is not of type AnonymousPrincipal");
+    Assertions.assertInstanceOf(AnonymousPrincipal.class, principal, "Principal is not of type AnonymousPrincipal");
 
     // Test the functionality of AnonymousPrincipal
     AnonymousPrincipal anonymousPrincipal = (AnonymousPrincipal) principal;

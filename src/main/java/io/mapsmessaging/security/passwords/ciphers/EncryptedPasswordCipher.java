@@ -18,18 +18,19 @@ package io.mapsmessaging.security.passwords.ciphers;
 
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.cipher.BufferCipher;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
 
-public class EncryptedPasswordCipher implements PasswordCipher {
+public class EncryptedPasswordCipher extends PasswordCipher {
 
-  private byte[] password;
+  private PasswordBuffer password;
 
   private String privateKeyPassword;
 
@@ -55,21 +56,22 @@ public class EncryptedPasswordCipher implements PasswordCipher {
   public EncryptedPasswordCipher(
       CertificateManager certificateManager,
       String alias,
-      byte[] password,
+      char[] password,
       String privateKeyPassword) {
     this.certificateManager = certificateManager;
     this.alias = alias;
-    this.password = password;
+    this.password = new PasswordBuffer(password);
     this.privateKeyPassword = privateKeyPassword;
   }
 
 
   @Override
-  public PasswordHandler create(String password) {
-    String t = password.substring(getKey().length());
+  public PasswordHandler create(char[] password) {
+    String sub = new String(password);
+    String t = sub.substring(getKey().length());
     int dollar = t.indexOf("$");
     String al = t.substring(0, dollar);
-    byte[] pass = t.substring(dollar + 1).getBytes(StandardCharsets.UTF_8);
+    char[] pass = t.substring(dollar + 1).toCharArray();
     return new EncryptedPasswordCipher(certificateManager, al, pass, privateKeyPassword);
   }
 
@@ -84,7 +86,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost)
+  public char[] transformPassword(char[] password, byte[] salt, int cost)
       throws GeneralSecurityException, IOException {
     BufferCipher bufferCipher = new BufferCipher(certificateManager);
     if (salt.length > 256) {
@@ -101,7 +103,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
     System.arraycopy(salt, 0, b, 1, salt.length);
     System.arraycopy(xorPassword, 0, b, salt.length + 1, xorPassword.length);
     String encoded = Base64.getEncoder().encodeToString(bufferCipher.encrypt(alias, b));
-    return (getKey() + alias + "$" + encoded).getBytes(StandardCharsets.UTF_8);
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), alias.toCharArray(), "$".toCharArray(), encoded.toCharArray());
   }
 
   @Override
@@ -110,9 +112,9 @@ public class EncryptedPasswordCipher implements PasswordCipher {
   }
 
   @Override
-  public byte[] getPassword() throws GeneralSecurityException, IOException {
+  public PasswordBuffer getPassword() throws GeneralSecurityException, IOException {
     BufferCipher bufferCipher = new BufferCipher(certificateManager);
-    byte[] decoded = Base64.getDecoder().decode(password);
+    byte[] decoded = Base64.getDecoder().decode(password.getBytes());
     byte[] decrypted = bufferCipher.decrypt(alias, decoded, privateKeyPassword.toCharArray());
 
     int saltLength = decrypted[0];
@@ -127,12 +129,16 @@ public class EncryptedPasswordCipher implements PasswordCipher {
     for (int i = 0; i < xorPassword.length; i++) {
       originalPassword[i] = (byte) (xorPassword[i] ^ salt[i % salt.length]);
     }
-    return originalPassword;
+    ArrayHelper.clearByteArray(salt);
+    ArrayHelper.clearByteArray(xorPassword);
+    ArrayHelper.clearByteArray(decoded);
+    ArrayHelper.clearByteArray(decrypted);
+    return new PasswordBuffer(originalPassword);
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + alias + "$" + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), alias.toCharArray(), "$".toCharArray(), password.getHash());
   }
 
   @Override

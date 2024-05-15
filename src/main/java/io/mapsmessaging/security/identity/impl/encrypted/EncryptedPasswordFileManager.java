@@ -22,9 +22,10 @@ import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import lombok.Getter;
 
+@Getter
 public class EncryptedPasswordFileManager extends FileBaseIdentities {
 
-  @Getter private final EncryptedPasswordCipher cipher;
+  private final EncryptedPasswordCipher cipher;
 
   public EncryptedPasswordFileManager(
       String filepath,
@@ -37,7 +38,7 @@ public class EncryptedPasswordFileManager extends FileBaseIdentities {
   }
 
   @Override
-  protected IdentityEntry create(String username, String hash) {
+  protected IdentityEntry create(String username, char[] hash) {
     return new EncryptedPasswordEntry(username, hash, cipher);
   }
 

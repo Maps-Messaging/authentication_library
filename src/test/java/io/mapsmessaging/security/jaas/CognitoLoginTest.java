@@ -60,7 +60,7 @@ public class CognitoLoginTest {
     if (properties == null || properties.isEmpty()) {
       return;
     }
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "testPassword01!", "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "testPassword01!".toCharArray(), "");
     Subject subject = new Subject();
     AwsCognitoLoginModule loginModule = new AwsCognitoLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
@@ -74,7 +74,7 @@ public class CognitoLoginTest {
     if (properties == null || properties.isEmpty()) {
       return;
     }
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "BadToken", "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "BadToken".toCharArray(), "");
     Subject subject = new Subject();
     LoginModule loginModule = new AwsCognitoLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());

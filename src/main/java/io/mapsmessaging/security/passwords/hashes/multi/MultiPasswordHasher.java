@@ -16,26 +16,23 @@
 
 package io.mapsmessaging.security.passwords.hashes.multi;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.PasswordHasher;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import lombok.Getter;
 
-public class MultiPasswordHasher implements PasswordHasher {
+public class MultiPasswordHasher extends PasswordHasher {
 
   @Getter
   private final List<PasswordHandler> parsers;
 
-  private String password;
+  private PasswordBuffer password;
 
   public MultiPasswordHasher() {
     parsers = new ArrayList<>();
@@ -44,21 +41,18 @@ public class MultiPasswordHasher implements PasswordHasher {
   public MultiPasswordHasher(List<PasswordHandler> list) {
     parsers = new ArrayList<>();
     for (PasswordHandler handler : list) {
-      parsers.add(handler.create("")); // do a copy
+      parsers.add(handler.create(new char[0])); // do a copy
     }
-    password = "";
+    password = new PasswordBuffer(new char[0]);
   }
 
-  public MultiPasswordHasher(String password) {
+  public MultiPasswordHasher(char[] pw) {
     parsers = new ArrayList<>();
-    int ind = password.indexOf("$");
+    int ind = ArrayHelper.indexOf(pw, '$');
     if (ind != -1) {
-      this.password = password.substring(ind + 1);
-
-      Type listType = new TypeToken<List<String>>() {
-      }.getType();
-      List<String> hashes = new Gson().fromJson(this.password, listType);
-      for (String hash : hashes) {
+      password = new PasswordBuffer(ArrayHelper.substring(pw, ind + 1));
+      char[][] hashes = ArrayHelper.jsonArrayToCharArrays(password.getHash());
+      for (char[] hash : hashes) {
         parsers.add(PasswordHandlerFactory.getInstance().parse(hash));
       }
     }
@@ -68,7 +62,7 @@ public class MultiPasswordHasher implements PasswordHasher {
     parsers.add(passwordHasher);
   }
 
-  public PasswordHasher create(String password) {
+  public PasswordHasher create(char[] password) {
     return new MultiPasswordHasher(password);
   }
 
@@ -83,22 +77,21 @@ public class MultiPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost)
+  public char[] transformPassword(char[] password, byte[] salt, int cost)
       throws GeneralSecurityException, IOException {
-    List<String> hashes = new ArrayList<>();
+    List<char[]> hashes = new ArrayList<>();
     for (PasswordHandler handler : parsers) {
       int localCost = cost;
       if (cost == 0) {
         localCost = handler.getCost();
       }
-      byte[] tmpPassword = new byte[password.length];
+      char[] tmpPassword = new char[password.length];
       System.arraycopy(password, 0, tmpPassword, 0, tmpPassword.length);
-      String hash = new String(handler.transformPassword(tmpPassword, salt, localCost));
-      Arrays.fill(tmpPassword, (byte)0);
+      char[] hash = handler.transformPassword(tmpPassword, salt, localCost);
+      ArrayHelper.clearCharArray(tmpPassword);
       hashes.add(hash);
     }
-    this.password = new Gson().toJson(hashes);
-    return (getName() + "$" + this.password).getBytes(StandardCharsets.UTF_8);
+    return ArrayHelper.appendCharArrays(getName().toCharArray(), "$".toCharArray(),  ArrayHelper.charArraysToJsonArray(hashes));
   }
 
   @Override
@@ -107,13 +100,13 @@ public class MultiPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] getPassword() {
-    return password.getBytes(StandardCharsets.UTF_8);
+  public PasswordBuffer getPassword() {
+    return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getName() + "$" + password).toCharArray();
+    return ArrayHelper.appendCharArrays(getName().toCharArray(), "$".toCharArray(), password.getHash());
   }
 
   @Override

@@ -16,6 +16,9 @@
 
 package io.mapsmessaging.security.identity.impl.auth0;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_FAILURE;
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_REQUEST_FAILURE;
+
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.exception.Auth0Exception;
@@ -31,13 +34,10 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
-import lombok.Getter;
-
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_FAILURE;
-import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_REQUEST_FAILURE;
+import lombok.Getter;
 
 public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
@@ -69,7 +69,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     auth0Domain = config.getProperty("domain");
     clientId = config.getProperty("clientId");
     clientSecret = config.getProperty("clientSecret");
-    String cacheTimeString = (String) config.getProperty("cacheTime");
+    String cacheTimeString = config.getProperty("cacheTime");
     if (cacheTimeString != null && !cacheTimeString.trim().isEmpty()) {
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }
@@ -103,8 +103,8 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
-    return new char[0];
+  public PasswordBuffer getPasswordHash(String username) throws NoSuchUserFoundException {
+    return new PasswordBuffer(new char[0]);
   }
 
   @Override

@@ -1,11 +1,11 @@
 /*
  * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,18 +20,18 @@ import io.mapsmessaging.security.passwords.PasswordHasher;
 
 public class UnixSha256PasswordHasher extends UnixShaPasswordHasher {
 
-  private static final String KEY = "$5$";
+  private static final char[] KEY = "$5$".toCharArray();
 
   public UnixSha256PasswordHasher() {
-    this(KEY);
+    this(new char[0]);
   }
 
-  public UnixSha256PasswordHasher(String password) {
+  public UnixSha256PasswordHasher(char[] password) {
     super(KEY, password);
   }
 
   @Override
-  public PasswordHasher create(String password) {
+  public PasswordHasher create(char[] password) {
     return new UnixSha256PasswordHasher(password);
   }
 

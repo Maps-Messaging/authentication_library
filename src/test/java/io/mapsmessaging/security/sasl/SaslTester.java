@@ -38,13 +38,12 @@ public class SaslTester extends BaseSasl {
   private static final String QOP_LEVEL = "auth";
 
   public void testMechanism(
-      IdentityLookup identityLookup, String mechanism, String user, String password)
+      IdentityLookup identityLookup, String mechanism, String user, char[] password)
       throws IOException {
     Map<String, String> props = new HashMap<>();
     props.put(Sasl.QOP, QOP_LEVEL);
     createServer(identityLookup, mechanism, PROTOCOL, SERVER_NAME, props);
-    createClient(
-        user, password, new String[] {mechanism}, PROTOCOL, AUTHORIZATION_ID, SERVER_NAME, props);
+    createClient(user, password, new String[] {mechanism}, PROTOCOL, AUTHORIZATION_ID, SERVER_NAME, props);
     simpleValidation(user);
   }
 

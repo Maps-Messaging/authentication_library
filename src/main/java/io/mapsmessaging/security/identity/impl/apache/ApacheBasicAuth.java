@@ -20,12 +20,13 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ApacheBasicAuth implements IdentityLookup {
@@ -59,7 +60,7 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
+  public PasswordBuffer getPasswordHash(String username) throws IOException, GeneralSecurityException {
     if (passwdFileManager == null) {
       throw new NoSuchUserFoundException(username);
     }
@@ -80,23 +81,34 @@ public class ApacheBasicAuth implements IdentityLookup {
 
   @Override
   public GroupEntry findGroup(String groupName) {
-    return groupFileManager.findGroup(groupName);
+    if (groupFileManager != null) {
+      return groupFileManager.findGroup(groupName);
+    }
+    return null;
   }
 
   @Override
   public List<GroupEntry> getGroups() {
-    return groupFileManager.getGroups();
+    if (groupFileManager != null) {
+      return groupFileManager.getGroups();
+    }
+    return new ArrayList<>();
   }
 
   @Override
   public void updateGroup(GroupEntry groupEntry) throws IOException {
-    groupFileManager.deleteEntry(groupEntry.getName());
-    groupFileManager.addEntry(groupEntry.toString());
+    if (groupFileManager != null) {
+      groupFileManager.deleteEntry(groupEntry.getName());
+      groupFileManager.addEntry(groupEntry.toString());
+    }
   }
 
   @Override
   public List<IdentityEntry> getEntries() {
-    return passwdFileManager.getEntries();
+    if (passwdFileManager != null) {
+      return passwdFileManager.getEntries();
+    }
+    return new ArrayList<>();
   }
 
   @Override
@@ -120,14 +132,14 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public boolean createUser(String username, String password, PasswordHandler handler)
+  public boolean createUser(String username, char[] password, PasswordHandler handler)
       throws IOException, GeneralSecurityException {
     String salt = PasswordGenerator.generateSalt(16);
-    byte[] hash =
-        handler.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 12);
+    char[] hash =
+        handler.transformPassword(password, salt.getBytes(StandardCharsets.UTF_8), 12);
     if (passwdFileManager != null) {
-      passwdFileManager.addEntry(username, new String(hash));
+      passwdFileManager.addEntry(username, hash);
+      return true;
     }
     return false;
   }
@@ -157,5 +169,10 @@ public class ApacheBasicAuth implements IdentityLookup {
       return true;
     }
     return false;
+  }
+
+  @Override
+  public boolean canManage(){
+    return true;
   }
 }

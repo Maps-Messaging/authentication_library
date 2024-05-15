@@ -31,7 +31,7 @@ import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.impl.external.JwtPasswordHasher;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
-import java.util.Arrays;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 
 public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvider {
 
@@ -58,9 +58,9 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
     if (auth == null) {
-      return new byte[0];
+      return new char[0];
     }
     String passwordString = new String(password);
     if (isJwt(passwordString)) {
@@ -68,14 +68,14 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, passwordString);
         if (jwt != null) {
-          computedPassword = password;
+          computedPassword = new PasswordBuffer(password);
           success();
-          return computedPassword;
+          return computedPassword.getHash();
         }
       } catch (JwkException e) {
         logger.log(AUTH0_JWT_FAILURE, e);
       }
-      return new byte[0];
+      return new char[0];
     }
 
     try {
@@ -90,16 +90,17 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
         String idToken = token.getIdToken();
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, idToken);
-        computedPassword = password;
+        computedPassword = new PasswordBuffer(password);
         success();
-        return computedPassword;
+        return computedPassword.getHash();
       }
     } catch (Auth0Exception | JwkException e) {
-      computedPassword = new byte[12];
-      Arrays.fill(computedPassword, (byte) 0xff);
+      if(computedPassword != null){
+        computedPassword.clear();
+      }
       logger.log(AUTH0_JWT_FAILURE, e);
     }
-    return new byte[0];
+    return "Invalid username / password combination.".toCharArray();
   }
 
   private void success() {

@@ -24,9 +24,9 @@ import io.mapsmessaging.security.identity.impl.external.JwtPasswordHasher;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
 import io.mapsmessaging.security.jaas.aws.AwsAuthHelper;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Map;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
@@ -38,15 +38,14 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
   private final String username;
   private final CognitoIdentityEntry identityEntry;
 
-  public CognitoPasswordHasher(
-      String username, CognitoAuth cognitoAuth, CognitoIdentityEntry identityEntry) {
+  public CognitoPasswordHasher(String username, CognitoAuth cognitoAuth, CognitoIdentityEntry identityEntry) {
     this.cognitoAuth = cognitoAuth;
     this.username = username;
     this.identityEntry = identityEntry;
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
     try {
       String passwordString = new String(password);
 
@@ -54,9 +53,9 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
       if (isJwt(passwordString)) {
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, passwordString);
-        computedPassword = password;
+        computedPassword = new PasswordBuffer(password);
         success();
-        return password;
+        return computedPassword.getHash();
       }
       // Login based on user/password
       String secretHash = generateSecretHash(username);
@@ -79,18 +78,19 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
       if (authResult != null) {
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, authResult.idToken());
-        computedPassword = password;
+        computedPassword = new PasswordBuffer(password);
         success();
-        return password;
+        return computedPassword.getHash();
       }
     } catch (Exception ex) {
       // This is an invalid user, lets not log entries since DDOS lets just fail it
     }
     // If the above code executes without throwing an exception,
     // the JWT token is valid for the given user
-    computedPassword = new byte[10];
-    Arrays.fill(computedPassword, (byte) 0xff);
-    return new byte[0];
+    if(computedPassword != null){
+      computedPassword.clear();
+    }
+    return "Invalid username / password combination.".toCharArray();
   }
 
 

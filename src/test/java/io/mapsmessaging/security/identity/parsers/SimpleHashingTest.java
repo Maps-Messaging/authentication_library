@@ -24,6 +24,7 @@ import io.mapsmessaging.security.passwords.hashes.multi.MultiPasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.pbkdf2.Pbkdf2PasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -70,13 +71,13 @@ public class SimpleHashingTest {
 
     List<PasswordHandler> parsers = knownParsers().collect(Collectors.toList());
     MultiPasswordHasher parser = new MultiPasswordHasher(parsers);
-    byte[] hash = parser.transformPassword(password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 0);
+    char[] hash = parser.transformPassword(password.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), 0);
     String storeHash = new String(hash);
-    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(new String(hash));
+    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed =
+    char[] computed =
         lookup.transformPassword(
-            generatePassword(16).getBytes(StandardCharsets.UTF_8),
+            generatePassword(16).toCharArray(),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             0);
     String computedString = new String(computed);
@@ -89,18 +90,18 @@ public class SimpleHashingTest {
       throws GeneralSecurityException, IOException {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordHandler parser = base.create("");
-    byte[] hash =
+    PasswordHandler parser = base.create(new char[0]);
+    char[] hash =
         parser.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8),
+            password.toCharArray(),
             salt.getBytes(StandardCharsets.UTF_8),
             parser.getCost());
     String storeHash = new String(hash);
-    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(storeHash);
+    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed =
+    char[] computed =
         lookup.transformPassword(
-            generatePassword(16).getBytes(StandardCharsets.UTF_8),
+            generatePassword(16).toCharArray(),
             lookup.getSalt(),
             lookup.getCost());
     String computedString = new String(computed);
@@ -116,18 +117,18 @@ public class SimpleHashingTest {
   void testHashAndValidate(PasswordHasher base) throws GeneralSecurityException, IOException {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordHandler parser = base.create("");
-    byte[] hash =
+    PasswordHandler parser = base.create(new char[0]);
+    char[] hash =
         parser.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8),
+            password.toCharArray(),
             salt.getBytes(StandardCharsets.UTF_8),
             parser.getCost());
     String storeHash = new String(hash);
-    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(storeHash);
+    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed =
+    char[] computed =
         lookup.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
+            password.toCharArray(), lookup.getSalt(), lookup.getCost());
     String computedString = new String(computed);
     Assertions.assertEquals(storeHash, computedString);
   }
@@ -138,16 +139,16 @@ public class SimpleHashingTest {
   void testSaltedHashAndValidate(PasswordHasher base) throws GeneralSecurityException, IOException {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordHandler parser = base.create("");
-    byte[] hash =
+    PasswordHandler parser = base.create(new char[0]);
+    char[] hash =
         parser.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8),
+            password.toCharArray(),
             salt.getBytes(StandardCharsets.UTF_8),
             parser.getCost());
     String storeHash = new String(hash);
-    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(storeHash);
+    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed = lookup.transformPassword(password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
+    char[] computed = lookup.transformPassword(password.toCharArray(), lookup.getSalt(), lookup.getCost());
     String computedString = new String(computed);
     Assertions.assertEquals(storeHash, computedString);
     Assertions.assertTrue(lookup.hasSalt());
@@ -156,11 +157,11 @@ public class SimpleHashingTest {
 
 
     String hashed = new String(lookup.getFullPasswordHash());
-    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(hashed);
+    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(hashed.toCharArray());
     Assertions.assertEquals(handler.getClass(), lookup.getClass());
     Assertions.assertArrayEquals(handler.getSalt(), lookup.getSalt());
     Assertions.assertEquals(handler.getCost(), lookup.getCost());
-    Assertions.assertArrayEquals(handler.getPassword(), lookup.getPassword());
+    Assertions.assertArrayEquals(handler.getPassword().getHash(), lookup.getPassword().getHash());
     Assertions.assertEquals(handler.getKey(), lookup.getKey());
 
   }
@@ -170,26 +171,26 @@ public class SimpleHashingTest {
   void testUnSaltedHashAndValidate(PasswordHasher base) throws GeneralSecurityException, IOException {
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordHandler parser = base.create("");
-    byte[] hash =
+    PasswordHandler parser = base.create(new char[0]);
+    char[] hash =
         parser.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8),
+            password.toCharArray(),
             salt.getBytes(StandardCharsets.UTF_8),
             parser.getCost());
     String storeHash = new String(hash);
-    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(storeHash);
+    PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(lookup.getClass().toString(), parser.getClass().toString());
-    byte[] computed = lookup.transformPassword(password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
+    char[] computed = lookup.transformPassword(password.toCharArray(), lookup.getSalt(), lookup.getCost());
     String computedString = new String(computed);
     Assertions.assertEquals(storeHash, computedString);
     Assertions.assertFalse(lookup.hasSalt());
     Assertions.assertEquals(0, lookup.getSalt().length);
     String hashed = new String(lookup.getFullPasswordHash());
-    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(hashed);
+    PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(hashed.toCharArray());
     Assertions.assertEquals(handler.getClass(), lookup.getClass());
     Assertions.assertArrayEquals(handler.getSalt(), lookup.getSalt());
     Assertions.assertEquals(handler.getCost(), lookup.getCost());
-    Assertions.assertArrayEquals(handler.getPassword(), lookup.getPassword());
+    Assertions.assertArrayEquals(handler.getPassword().getHash(), lookup.getPassword().getHash());
     Assertions.assertEquals(handler.getKey(), lookup.getKey());
   }
 
@@ -199,14 +200,13 @@ public class SimpleHashingTest {
     FileOutputStream fileOutputStream = new FileOutputStream("hash.txt", false);
     String password = generatePassword(16);
     String salt = PasswordGenerator.generateSalt(16);
-    PasswordHandler parser = base.create("");
-    byte[] hash =
+    PasswordHandler parser = base.create(new char[0]);
+    char[] hash =
         parser.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8),
+            password.toCharArray(),
             salt.getBytes(StandardCharsets.UTF_8),
             parser.getCost());
-    String storeHash = new String(hash);
-    fileOutputStream.write(hash);
+    fileOutputStream.write(ArrayHelper.charArrayToByteArray(hash));
     fileOutputStream.write("\n".getBytes(StandardCharsets.UTF_8));
     fileOutputStream.close();
 
@@ -221,11 +221,11 @@ public class SimpleHashingTest {
       e.printStackTrace();
     }
     for (String received : hashes) {
-      PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(received);
-      byte[] computed =
+      PasswordHandler lookup = PasswordHandlerFactory.getInstance().parse(received.toCharArray());
+      char[] computed =
           lookup.transformPassword(
-              password.getBytes(StandardCharsets.UTF_8), lookup.getSalt(), lookup.getCost());
-      Assertions.assertArrayEquals(received.getBytes(StandardCharsets.UTF_8), computed);
+              password.toCharArray(), lookup.getSalt(), lookup.getCost());
+      Assertions.assertArrayEquals(received.toCharArray(), computed);
     }
   }
 

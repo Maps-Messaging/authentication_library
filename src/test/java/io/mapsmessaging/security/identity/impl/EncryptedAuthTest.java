@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,18 +58,18 @@ public class EncryptedAuthTest  {
     EncryptedAuth auth = (EncryptedAuth) IdentityLookupFactory.getInstance().get("Encrypted-Auth", baseMap);
 
     Faker faker = new Faker();
-    Map<String, String> users = new LinkedHashMap<>();
+    Map<String, char[]> users = new LinkedHashMap<>();
     for (int x = 0; x < 100; x++) {
       String username = faker.name().username();
-      String password = PasswordGenerator.generateSalt(20);
+      char[] password = PasswordGenerator.generateSalt(20).toCharArray();
       users.put(username, password);
       auth.createUser(username, password, auth.getPasswordHandler());
     }
 
     for (String user : users.keySet()) {
       IdentityEntry entry = auth.findEntry(user);
-      String pass = entry.getPassword();
-      Assertions.assertEquals(pass, users.get(user));
+      PasswordBuffer pass = entry.getPassword();
+      Assertions.assertArrayEquals(pass.getHash(), users.get(user));
     }
   }
 
@@ -92,18 +93,18 @@ public class EncryptedAuthTest  {
     EncryptedAuth auth = (EncryptedAuth) IdentityLookupFactory.getInstance().get("Encrypted-Auth", baseMap);
 
     Faker faker = new Faker();
-    Map<String, String> users = new LinkedHashMap<>();
+    Map<String, char[]> users = new LinkedHashMap<>();
     for (int x = 0; x < 100; x++) {
       String username = faker.name().username();
-      String password = PasswordGenerator.generateSalt(20);
+      char[] password = PasswordGenerator.generateSalt(20).toCharArray();
       users.put(username, password);
       auth.createUser(username, password, auth.getPasswordHandler());
     }
 
     for (String user : users.keySet()) {
       IdentityEntry entry = auth.findEntry(user);
-      String pass = entry.getPassword();
-      Assertions.assertEquals(pass, users.get(user));
+      char[] pass = entry.getPassword().getHash();
+      Assertions.assertArrayEquals(pass, users.get(user));
     }
 
     EncryptedAuth auth2 = (EncryptedAuth) IdentityLookupFactory.getInstance().get("Encrypted-Auth", baseMap);

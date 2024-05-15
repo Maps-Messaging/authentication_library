@@ -29,6 +29,7 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
@@ -36,21 +37,21 @@ import io.mapsmessaging.security.uuid.UuidGenerator;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.security.auth.Subject;
 import lombok.Getter;
 import lombok.Setter;
 
 public class IdentityAccessManager {
 
-  @Getter private final IdentityLookup identityLookup;
+  @Getter
+  private final IdentityLookup identityLookup;
   private final GroupMapManagement groupMapManagement;
   private final UserMapManagement userMapManagement;
 
-  @Getter @Setter private PasswordHandler passwordHandler;
+  @Getter
+  @Setter
+  private PasswordHandler passwordHandler;
 
   public IdentityAccessManager(
       String identity,
@@ -149,20 +150,28 @@ public class IdentityAccessManager {
     return groupMapManagement.get(identityLookup.getDomain() + ":" + groupName);
   }
 
-  public GroupEntry getGroupDetails(String groupName) {
-    return identityLookup.findGroup(groupName);
+  public boolean validateUser(String username, char[] passwordHash) throws IOException {
+    IdentityEntry entry = identityLookup.findEntry(username);
+    if (entry != null) {
+      try {
+        PasswordBuffer passwordTest = entry.getPasswordHasher().getPassword();
+        return Arrays.equals(passwordHash, passwordTest.getHash());
+      } catch (GeneralSecurityException e) {
+        throw new IOException(e);
+      }
+    }
+    return false;
   }
 
-  public UserIdMap createUser(String username, String hash)
+  public UserIdMap createUser(String username, char[] passwordHash)
       throws IOException, GeneralSecurityException {
     IdentityEntry entry = identityLookup.findEntry(username);
+    if (entry != null) {
+      throw new GeneralSecurityException("User already exists");
+    }
+    identityLookup.createUser(username, passwordHash, passwordHandler);
+
     UserIdMap idMap = userMapManagement.get(identityLookup.getDomain() + ":" + username);
-    if (entry != null && idMap != null) {
-      return idMap;
-    }
-    if (entry == null) {
-      identityLookup.createUser(username, hash, passwordHandler);
-    }
     if (idMap == null) {
       idMap = new UserIdMap(UuidGenerator.getInstance().generate(), username, identityLookup.getDomain());
       userMapManagement.add(idMap);
@@ -171,18 +180,43 @@ public class IdentityAccessManager {
     return idMap;
   }
 
-  public boolean updateUserPassword(String username, String hash, PasswordHandler passwordHasher)
+  public boolean updateUserPassword(String username, char[] hash)
       throws IOException, GeneralSecurityException {
-    if (identityLookup.findEntry(username) != null) {
+    IdentityEntry entry = identityLookup.findEntry(username);
+    if (entry != null) {
       identityLookup.deleteUser(username);
-      identityLookup.createUser(username, hash, passwordHasher);
+      identityLookup.createUser(username, hash, entry.getPasswordHasher());
       return true;
     }
     return false;
   }
 
-  public IdentityEntry getUserIdentity(String username) {
-    return identityLookup.findEntry(username);
+  public Identity getUserDetails(String username) {
+    IdentityEntry entry = identityLookup.findEntry(username);
+    if (entry != null) {
+      return new Identity(entry);
+    }
+    return null;
+  }
+
+  public List<Identity> getAllUserDetails() {
+    List<Identity> identities = new ArrayList<>();
+    for (IdentityEntry entry : identityLookup.getEntries()) {
+      identities.add(new Identity(entry));
+    }
+    return identities;
+  }
+
+  public GroupEntry getGroupDetails(String groupName) {
+    return identityLookup.findGroup(groupName);
+  }
+
+  public List<GroupEntry> getAllGroupDetails() {
+    List<GroupEntry> list = new ArrayList<>();
+    for (GroupEntry entry : identityLookup.getGroups()) {
+      list.add(entry);
+    }
+    return list;
   }
 
   public boolean deleteUser(String username) throws IOException {
@@ -261,5 +295,9 @@ public class IdentityAccessManager {
       }
     }
     return userIdMap;
+  }
+
+  public void setAsSystemIdentityLookup(){
+    IdentityLookupFactory.getInstance().registerSiteIdentityLookup("system", identityLookup);
   }
 }

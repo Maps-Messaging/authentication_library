@@ -114,7 +114,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       groupNames.add(group);
     }
 
-    Map<String, String> userPasswordMap = new LinkedHashMap<>();
+    Map<String, char[]> userPasswordMap = new LinkedHashMap<>();
     for (int x = 0; x < 100; x++) {
       Assertions.assertEquals(x, identityAccessManager.getAllUsers().size());
       String username = faker.starTrek().character();
@@ -140,7 +140,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
         count++;
         username = username.replaceAll(" ", "_");
       }
-      String password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20)));
+      char[] password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20))).toCharArray();
       identityAccessManager.createUser(username, password);
       String group = groupNames.get(Math.abs(random.nextInt(groupNames.size())));
       identityAccessManager.addUserToGroup(username, group);
@@ -149,16 +149,15 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       Assertions.assertNotNull(identityAccessManager.getUser(username).getAuthId());
     }
 
-    for (Map.Entry<String, String> user : userPasswordMap.entrySet()) {
+    for (Map.Entry<String, char[]> user : userPasswordMap.entrySet()) {
       Assertions.assertTrue(validateLogin(auth, user.getKey(), user.getValue()));
-      Assertions.assertFalse(validateLogin(auth, user.getKey(), user.getValue() + "_bad_password"));
+      Assertions.assertFalse(validateLogin(auth, user.getKey(), (user.getValue() + "_bad_password").toCharArray()));
     }
 
     if (!mechanism.isEmpty()) {
-      for (Map.Entry<String, String> user : userPasswordMap.entrySet()) {
+      for (Map.Entry<String, char[]> user : userPasswordMap.entrySet()) {
         SaslTester saslTester = new SaslTester();
-        saslTester.testMechanism(
-            identityAccessManager.getIdentityLookup(), mechanism, user.getKey(), user.getValue());
+        saslTester.testMechanism(identityAccessManager.getIdentityLookup(), mechanism, user.getKey(), user.getValue());
       }
     }
 
@@ -173,7 +172,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     Assertions.assertEquals(0, identityAccessManager.getAllGroups().size());
   }
 
-  private boolean validateLogin(String auth, String username, String password) {
+  private boolean validateLogin(String auth, String username, char[] password) {
     Map<String, String> initMap = new LinkedHashMap<>();
     initMap.put("siteWide", auth);
     Subject subject = new Subject();

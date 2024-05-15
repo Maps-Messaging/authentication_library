@@ -22,12 +22,9 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
-import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Arrays;
@@ -68,27 +65,13 @@ public class IdentityLoginModule extends BaseLoginModule {
     if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
-    byte[] actualPassword;
-    byte[] remotePassword = new String(password).getBytes(StandardCharsets.UTF_8);
-
     try {
       PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
       if (passwordHasher == null) {
-        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
+        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword().getHash());
       }
-
-      if (passwordHasher instanceof PasswordCipher
-          || passwordHasher instanceof PlainPasswordHasher) {
-        actualPassword = passwordHasher.getPassword();
-      } else {
-        remotePassword =
-            passwordHasher.transformPassword(
-                remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
-        actualPassword = new String(passwordHasher.getFullPasswordHash()).getBytes();
-      }
-      boolean result = Arrays.equals(actualPassword, remotePassword);
-      Arrays.fill(actualPassword, (byte) 0x0);
-      Arrays.fill(remotePassword, (byte) 0x0);
+      boolean result = passwordHasher.matches(password);
+      if(password != null) Arrays.fill(password, (char) 0x0);
       if (!result) {
         throw new LoginException("Invalid password");
       }
