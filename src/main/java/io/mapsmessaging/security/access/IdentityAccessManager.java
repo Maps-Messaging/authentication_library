@@ -29,6 +29,7 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
@@ -36,10 +37,7 @@ import io.mapsmessaging.security.uuid.UuidGenerator;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.security.auth.Subject;
 import lombok.Getter;
 import lombok.Setter;
@@ -150,6 +148,19 @@ public class IdentityAccessManager {
 
   public GroupIdMap getGroup(String groupName) {
     return groupMapManagement.get(identityLookup.getDomain() + ":" + groupName);
+  }
+
+  public boolean validateUser(String username, char[] passwordHash) throws IOException {
+    IdentityEntry entry = identityLookup.findEntry(username);
+    if (entry != null) {
+      try {
+        PasswordBuffer passwordTest = entry.getPasswordHasher().getPassword();
+        return Arrays.equals(passwordHash, passwordTest.getHash());
+      } catch (GeneralSecurityException e) {
+        throw new IOException(e);
+      }
+    }
+    return false;
   }
 
   public UserIdMap createUser(String username, char[] passwordHash)
