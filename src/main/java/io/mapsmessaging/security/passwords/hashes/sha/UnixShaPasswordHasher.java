@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.apache.commons.codec.digest.Crypt;
 
-public abstract class UnixShaPasswordHasher implements PasswordHasher {
+public abstract class UnixShaPasswordHasher extends PasswordHasher {
 
   private final PasswordBuffer password;
   private final String salt;
@@ -90,8 +90,8 @@ public abstract class UnixShaPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public char[] getPassword() {
-    return password.getHash();
+  public PasswordBuffer getPassword() {
+    return password;
   }
 
   @Override

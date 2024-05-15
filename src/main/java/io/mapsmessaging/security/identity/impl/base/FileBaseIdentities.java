@@ -22,6 +22,7 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public abstract class FileBaseIdentities extends FileLoader {
     return usernamePasswordMap.get(username);
   }
 
-  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
+  public PasswordBuffer getPasswordHash(String username) throws IOException, GeneralSecurityException {
     IdentityEntry identityEntry = usernamePasswordMap.get(username);
     if (identityEntry == null) {
       logger.log(NO_SUCH_USER_FOUND, username);

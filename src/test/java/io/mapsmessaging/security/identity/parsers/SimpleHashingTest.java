@@ -161,7 +161,7 @@ public class SimpleHashingTest {
     Assertions.assertEquals(handler.getClass(), lookup.getClass());
     Assertions.assertArrayEquals(handler.getSalt(), lookup.getSalt());
     Assertions.assertEquals(handler.getCost(), lookup.getCost());
-    Assertions.assertArrayEquals(handler.getPassword(), lookup.getPassword());
+    Assertions.assertArrayEquals(handler.getPassword().getHash(), lookup.getPassword().getHash());
     Assertions.assertEquals(handler.getKey(), lookup.getKey());
 
   }
@@ -190,7 +190,7 @@ public class SimpleHashingTest {
     Assertions.assertEquals(handler.getClass(), lookup.getClass());
     Assertions.assertArrayEquals(handler.getSalt(), lookup.getSalt());
     Assertions.assertEquals(handler.getCost(), lookup.getCost());
-    Assertions.assertArrayEquals(handler.getPassword(), lookup.getPassword());
+    Assertions.assertArrayEquals(handler.getPassword().getHash(), lookup.getPassword().getHash());
     Assertions.assertEquals(handler.getKey(), lookup.getKey());
   }
 

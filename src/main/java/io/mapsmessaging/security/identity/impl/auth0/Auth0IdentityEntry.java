@@ -21,6 +21,7 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_PASSWORD_F
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
@@ -35,7 +36,7 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
   }
 
   @Override
-  public char[] getPassword() {
+  public PasswordBuffer getPassword() {
     try {
       return passwordHasher.getPassword();
     } catch (GeneralSecurityException | IOException e) {

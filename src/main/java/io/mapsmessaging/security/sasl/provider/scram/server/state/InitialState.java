@@ -95,7 +95,7 @@ public class InitialState extends State {
     try {
       PasswordHandler handler = PasswordHandlerFactory.getInstance().parse(password);
       context.setPasswordHasher(handler);
-      context.setPrepPassword(SaslPrep.getInstance().stringPrep(handler.getPassword()));
+      context.setPrepPassword(SaslPrep.getInstance().stringPrep(handler.getPassword().getHash()));
       byte[] salt = handler.getSalt();
       if (salt == null || salt.length == 0) {
         salt = PasswordGenerator.generateSalt(64).getBytes(StandardCharsets.UTF_8);

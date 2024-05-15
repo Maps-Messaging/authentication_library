@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.identity;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
@@ -51,8 +52,8 @@ public class BaseIdentityTest {
     }
 
     @Override
-    public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
-      return new char[0];
+    public PasswordBuffer getPasswordHash(String username) throws IOException, GeneralSecurityException {
+      return new PasswordBuffer(new char[0]);
     }
 
     @Override

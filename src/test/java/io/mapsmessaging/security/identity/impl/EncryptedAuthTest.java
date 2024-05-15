@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -67,8 +68,8 @@ public class EncryptedAuthTest  {
 
     for (String user : users.keySet()) {
       IdentityEntry entry = auth.findEntry(user);
-      char[] pass = entry.getPassword();
-      Assertions.assertArrayEquals(pass, users.get(user));
+      PasswordBuffer pass = entry.getPassword();
+      Assertions.assertArrayEquals(pass.getHash(), users.get(user));
     }
   }
 
@@ -102,7 +103,7 @@ public class EncryptedAuthTest  {
 
     for (String user : users.keySet()) {
       IdentityEntry entry = auth.findEntry(user);
-      char[] pass = entry.getPassword();
+      char[] pass = entry.getPassword().getHash();
       Assertions.assertArrayEquals(pass, users.get(user));
     }
 

@@ -68,7 +68,7 @@ public class IdentityLoginModule extends BaseLoginModule {
     try {
       PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
       if (passwordHasher == null) {
-        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
+        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword().getHash());
       }
       boolean result = passwordHasher.matches(password);
       if(password != null) Arrays.fill(password, (char) 0x0);

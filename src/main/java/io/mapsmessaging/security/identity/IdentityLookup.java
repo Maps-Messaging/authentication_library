@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.identity;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -30,7 +31,7 @@ public interface IdentityLookup {
 
   String getDomain();
 
-  char[] getPasswordHash(String username) throws IOException, GeneralSecurityException;
+  PasswordBuffer getPasswordHash(String username) throws IOException, GeneralSecurityException;
 
   IdentityEntry findEntry(String username);
 
@@ -63,5 +64,9 @@ public interface IdentityLookup {
 
   default void updateGroup(GroupEntry groupEntry) throws IOException {
     throw new NotImplementedException("Unable to delete users to an LDAP server");
+  }
+
+  default boolean canManage(){
+    return false;
   }
 }

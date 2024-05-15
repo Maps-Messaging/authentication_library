@@ -143,9 +143,9 @@ public class SessionContext {
     clientSignature = computeHmac(storedKey, authString);
   }
 
-  public void computeClientHashes(String password, String authString)
+  public void computeClientHashes(byte[] password, String authString)
       throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
-    computeClientKey(password.getBytes(StandardCharsets.UTF_8));
+    computeClientKey(password);
     computeStoredKeyAndSignature(authString);
     clientProof = clientKey.clone();
     for (int i = 0; i < clientProof.length; i++) {

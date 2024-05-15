@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
-public interface PasswordCipher extends PasswordHandler {
+public abstract class PasswordCipher extends PasswordHandler {
 
   @Override
-  default boolean matches(char[] attemptedPassword) throws GeneralSecurityException, IOException {
-    return Arrays.equals(attemptedPassword, getPassword());
+  public boolean matches(char[] attemptedPassword) throws GeneralSecurityException, IOException {
+    return Arrays.equals(attemptedPassword, getPassword().getHash());
   }
 }

@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.md5.Md5PasswordHasher;
@@ -42,15 +43,15 @@ class ApacheIdentifierTest {
     Assertions.assertEquals("apache", lookup.getDomain());
     Assertions.assertEquals("Apache-Basic-Auth", lookup.getName());
 
-    char[] hash = lookup.getPasswordHash("test");
+    PasswordBuffer hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
-    Assertions.assertNotEquals(0, hash.length);
+    Assertions.assertNotEquals(0, hash.getHash().length);
     Assertions.assertNotNull(lookup.findGroup("user"));
     Assertions.assertNull(lookup.findGroup("user1"));
 
-    String pwd = new String(hash);
+    String pwd = new String(hash.getHash());
     Assertions.assertEquals("$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash.getHash());
     Assertions.assertEquals(Md5PasswordHasher.class, passwordHasher.getClass());
   }
 

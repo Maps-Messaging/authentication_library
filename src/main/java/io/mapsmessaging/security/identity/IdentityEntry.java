@@ -18,8 +18,8 @@ package io.mapsmessaging.security.identity;
 
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
@@ -71,7 +71,7 @@ public class IdentityEntry implements Cloneable {
   @Getter
   protected PasswordHandler passwordHasher;
 
-  protected char[] password;
+  protected PasswordBuffer password;
 
   public boolean isInGroup(String group) {
     return groupList.containsKey(group);
@@ -105,7 +105,7 @@ public class IdentityEntry implements Cloneable {
 
   @Override
   public String toString() {
-    return username + ":" + new String(password);
+    return username + ":" + new String(password.getHash());
   }
 
   public void removeGroup(GroupEntry groupEntry) {
@@ -113,7 +113,7 @@ public class IdentityEntry implements Cloneable {
   }
 
   @SuppressWarnings("java:S1130") // They are thrown by inherited classes
-  public char[] getPassword() throws GeneralSecurityException, IOException {
+  public PasswordBuffer getPassword() throws GeneralSecurityException, IOException {
     return password;
   }
 
@@ -129,7 +129,7 @@ public class IdentityEntry implements Cloneable {
 
   public IdentityEntry clone() throws CloneNotSupportedException {
     IdentityEntry identityEntry = this.clone();
-    ArrayHelper.clearCharArray(identityEntry.password);
+    identityEntry.password.clear();
     return identityEntry;
   }
 

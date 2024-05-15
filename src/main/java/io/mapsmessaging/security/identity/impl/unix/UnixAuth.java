@@ -21,7 +21,7 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
-
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -60,7 +60,7 @@ public class UnixAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
+  public PasswordBuffer getPasswordHash(String username) throws IOException, GeneralSecurityException {
     return passwordFileIdentities.getPasswordHash(username);
   }
 

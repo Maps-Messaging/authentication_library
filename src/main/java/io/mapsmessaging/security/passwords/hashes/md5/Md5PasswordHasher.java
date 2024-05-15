@@ -21,7 +21,7 @@ import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.util.ArrayHelper;
 import org.apache.commons.codec.digest.Md5Crypt;
 
-public class Md5PasswordHasher implements PasswordHasher {
+public class Md5PasswordHasher extends PasswordHasher {
 
   protected final PasswordBuffer password;
   protected final byte[] salt;
@@ -81,8 +81,8 @@ public class Md5PasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public char[] getPassword() {
-    return password.getHash();
+  public PasswordBuffer getPassword() {
+    return password;
   }
 
   @Override

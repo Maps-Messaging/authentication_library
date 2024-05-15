@@ -16,37 +16,39 @@
 
 package io.mapsmessaging.security.passwords;
 
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
-public interface PasswordHandler {
+public abstract class PasswordHandler {
 
-  char[] transformPassword(char[] password, byte[] salt, int cost)
-      throws GeneralSecurityException, IOException;
-
-  PasswordHandler create(char[] password);
-
-  String getKey();
-
-  boolean hasSalt();
-
-  byte[] getSalt();
-
-  char[] getPassword() throws GeneralSecurityException, IOException;
-
-  char[] getFullPasswordHash();
-
-  default boolean matches(char[] attemptedPassword) throws GeneralSecurityException, IOException {
+  public boolean matches(char[] attemptedPassword) throws GeneralSecurityException, IOException {
     char[] remoteHash = transformPassword(attemptedPassword, getSalt(), getCost());
     char[] localHash = getFullPasswordHash();
-    return Arrays.equals(remoteHash, localHash);
+    boolean result = Arrays.equals(remoteHash, localHash);
+    ArrayHelper.clearCharArray(localHash);
+    return result;
   }
 
-  String getName();
-
-  default int getCost() {
+  public int getCost() {
     return 0;
   }
+
+  public abstract String getName();
+
+  public abstract char[] transformPassword(char[] password, byte[] salt, int cost) throws GeneralSecurityException, IOException;
+
+  public abstract PasswordHandler create(char[] password);
+
+  public abstract String getKey();
+
+  public abstract boolean hasSalt();
+
+  public abstract byte[] getSalt();
+
+  public abstract PasswordBuffer getPassword() throws GeneralSecurityException, IOException;
+
+  public abstract char[] getFullPasswordHash();
 
 }

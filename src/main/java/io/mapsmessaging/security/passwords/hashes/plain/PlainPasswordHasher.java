@@ -16,16 +16,17 @@
 
 package io.mapsmessaging.security.passwords.hashes.plain;
 
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.util.ArrayHelper;
 import java.util.Arrays;
 
-public class PlainPasswordHasher implements PasswordHasher {
+public class PlainPasswordHasher extends PasswordHasher {
 
-  private final char[] password;
+  private final PasswordBuffer password;
 
   public PlainPasswordHasher() {
-    password = new char[0];
+    password = new PasswordBuffer(new char[0]);
   }
 
   public PlainPasswordHasher(char[] pw) {
@@ -33,7 +34,7 @@ public class PlainPasswordHasher implements PasswordHasher {
     if (ind != -1) {
       pw = ArrayHelper.substring(pw, ind + 1);
     }
-    password = Arrays.copyOf(pw, pw.length);
+    password = new PasswordBuffer(Arrays.copyOf(pw, pw.length));
     // Clear the original password array to avoid lingering sensitive data
     ArrayHelper.clearCharArray(pw);
   }
@@ -67,13 +68,13 @@ public class PlainPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public char[] getPassword() {
+  public PasswordBuffer getPassword() {
     return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getName() + "$" + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getName().toCharArray(), "$".toCharArray(), password.getHash());
   }
 
   @Override
@@ -83,6 +84,6 @@ public class PlainPasswordHasher implements PasswordHasher {
 
   @Override
   public boolean matches(char[] attemptedPassword) {
-    return Arrays.equals(attemptedPassword, getPassword());
+    return Arrays.equals(attemptedPassword, getPassword().getHash());
   }
 }

@@ -24,12 +24,17 @@ public class PasswordBuffer {
 
   public PasswordBuffer(char[] hash) {
     byte[] buf = ArrayHelper.charArrayToByteArray(hash);
-    ArrayHelper.clearCharArray(hash);
     buffer = ByteBuffer.allocateDirect(buf.length);
     buffer.put(buf);
     buffer.flip();
-    ArrayHelper.clearByteArray(buf);
   }
+
+  public PasswordBuffer(byte[] buf) {
+    buffer = ByteBuffer.allocateDirect(buf.length);
+    buffer.put(buf);
+    buffer.flip();
+  }
+
   public void clear(){
     byte[] buf = buffer.array();
     ArrayHelper.clearByteArray(buf);

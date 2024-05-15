@@ -19,17 +19,17 @@ package io.mapsmessaging.security.identity.impl.ldap;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
-import lombok.Getter;
-
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
 import java.security.Principal;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import lombok.Getter;
 
 public class LdapUser extends IdentityEntry {
 
@@ -42,7 +42,7 @@ public class LdapUser extends IdentityEntry {
 
   public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
-    super.password = password;
+    super.password = new PasswordBuffer(password);
     super.passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
     this.attrs = attrs;
     NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();

@@ -49,13 +49,13 @@ public class ChallengeState extends State {
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
     response.put(ChallengeResponse.CHANNEL_BINDING, "biws");
 
-    String saltedPassword = "";
+    byte[] saltedPassword=new byte[0];
     try {
       if (context.getPasswordHasher() != null) {
         byte[] salt = Base64.getDecoder().decode(context.getPasswordSalt());
         char[] computedHash = context.getPasswordHasher().transformPassword(context.getPrepPassword(), salt, context.getIterations());
         PasswordHandler breakDown = context.getPasswordHasher().create(computedHash);
-        saltedPassword = new String(breakDown.getPassword());
+        saltedPassword = breakDown.getPassword().getBytes();
       }
 
     //
@@ -68,7 +68,7 @@ public class ChallengeState extends State {
       //
       // Compute the expected server response
       //
-      context.computeServerSignature(saltedPassword.getBytes(), authString);
+      context.computeServerSignature(saltedPassword, authString);
 
     } catch (GeneralSecurityException e) {
       SaslException saslException = new SaslException(e.getMessage());

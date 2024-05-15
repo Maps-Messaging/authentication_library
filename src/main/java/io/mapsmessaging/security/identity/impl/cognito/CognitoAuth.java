@@ -22,6 +22,7 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,8 +94,8 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
-    return new char[0];
+  public PasswordBuffer getPasswordHash(String username) throws NoSuchUserFoundException {
+    return new PasswordBuffer(new char[0]);
   }
 
   @Override

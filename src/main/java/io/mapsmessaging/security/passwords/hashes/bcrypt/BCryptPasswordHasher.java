@@ -23,7 +23,7 @@ import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
 import io.mapsmessaging.security.util.ArrayHelper;
 
-public abstract class BCryptPasswordHasher implements PasswordHasher {
+public abstract class BCryptPasswordHasher extends PasswordHasher {
 
   private static final int SALT_SIZE = 22;
   private static final int DEFAULT_COST = 12;
@@ -88,8 +88,8 @@ public abstract class BCryptPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public char[] getPassword() {
-    return password.getHash();
+  public PasswordBuffer getPassword() {
+    return password;
   }
 
   @Override

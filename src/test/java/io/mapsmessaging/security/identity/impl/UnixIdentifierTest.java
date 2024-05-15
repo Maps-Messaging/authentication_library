@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.UnixSha512PasswordHasher;
@@ -43,12 +44,12 @@ class UnixIdentifierTest {
     Assertions.assertNull(lookup.findGroup("admin"));
     Assertions.assertEquals(lookup.getDomain(), "unix");
     Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
-    char[] hash = lookup.getPasswordHash("test");
+    PasswordBuffer hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
-    Assertions.assertNotEquals(0, hash.length);
-    String pwd = new String(hash);
+    Assertions.assertNotEquals(0, hash.getHash().length);
+    String pwd = new String(hash.getHash());
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash.getHash());
     Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
   }
 
@@ -63,7 +64,7 @@ class UnixIdentifierTest {
     Assertions.assertNull(lookup.findGroup("admin"));
     Assertions.assertEquals(lookup.getDomain(), "unix");
     Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
-    char[] hash = lookup.getPasswordHash("test");
+    char[] hash = lookup.getPasswordHash("test").getHash();
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);

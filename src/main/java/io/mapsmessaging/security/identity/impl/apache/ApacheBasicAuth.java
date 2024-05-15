@@ -20,6 +20,7 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.identity.*;
 import io.mapsmessaging.security.identity.impl.base.FileBaseGroups;
 import io.mapsmessaging.security.identity.impl.base.FileBaseIdentities;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +60,7 @@ public class ApacheBasicAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws IOException, GeneralSecurityException {
+  public PasswordBuffer getPasswordHash(String username) throws IOException, GeneralSecurityException {
     if (passwdFileManager == null) {
       throw new NoSuchUserFoundException(username);
     }
@@ -168,5 +169,10 @@ public class ApacheBasicAuth implements IdentityLookup {
       return true;
     }
     return false;
+  }
+
+  @Override
+  public boolean canManage(){
+    return true;
   }
 }

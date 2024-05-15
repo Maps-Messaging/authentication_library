@@ -21,6 +21,7 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.util.List;
 import javax.naming.Context;
 
@@ -51,7 +52,7 @@ public class LdapAuth implements IdentityLookup {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+  public PasswordBuffer getPasswordHash(String username) throws NoSuchUserFoundException {
     return ldapUserManager.getPasswordHash(username);
   }
 

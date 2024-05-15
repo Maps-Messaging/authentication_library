@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.identity.impl.cognito;
 
 import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import lombok.Getter;
@@ -38,7 +39,7 @@ public class CognitoIdentityEntry extends JwtIdentityEntry {
   }
 
   @Override
-  public char[] getPassword() throws GeneralSecurityException, IOException {
+  public PasswordBuffer getPassword() throws GeneralSecurityException, IOException {
     return passwordHasher.getPassword();
   }
 }

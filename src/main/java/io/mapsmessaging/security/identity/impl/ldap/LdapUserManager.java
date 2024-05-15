@@ -23,6 +23,7 @@ import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.logging.AuthLogMessages;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.util.ArrayHelper;
 import java.util.*;
 import java.util.Map.Entry;
@@ -110,10 +111,10 @@ public class LdapUserManager {
     return entry;
   }
 
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
+  public PasswordBuffer getPasswordHash(String username) throws NoSuchUserFoundException {
     IdentityEntry entry = findEntry(username);
     if (entry != null) {
-      return entry.getPasswordHasher().getFullPasswordHash();
+      return new PasswordBuffer(entry.getPasswordHasher().getFullPasswordHash());
     }
     throw new NoSuchUserFoundException("Password entry for " + username + " not found");
   }

@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.identity.impl.encrypted;
 
 import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
 import java.io.IOException;
@@ -28,26 +29,26 @@ public class EncryptedPasswordEntry extends IdentityEntry {
     int usernamePos = line.indexOf(":");
     username = line.substring(0, usernamePos);
     line = line.substring(usernamePos + 1);
-    password = line.toCharArray();
-    passwordHasher = parser.create(password);
+    password = new PasswordBuffer(line.toCharArray());
+    passwordHasher = parser.create(password.getHash());
   }
 
   public EncryptedPasswordEntry(String username, char[] password, PasswordHandler parser) {
     this.username = username;
-    this.password = password;
+    this.password = new PasswordBuffer(password);
     this.passwordHasher = parser;
   }
 
   @Override
-  public char[] getPassword() throws GeneralSecurityException, IOException {
-    PasswordHandler parser1 = passwordHasher.create(password);
+  public PasswordBuffer getPassword() throws GeneralSecurityException, IOException {
+    PasswordHandler parser1 = passwordHasher.create(password.getHash());
     return parser1.getPassword();
   }
 
   @Override
   public PasswordHandler getPasswordHasher() {
     EncryptedPasswordCipher base = (EncryptedPasswordCipher) passwordHasher;
-    EncryptedPasswordCipher response = (EncryptedPasswordCipher) passwordHasher.create(password);
+    EncryptedPasswordCipher response = (EncryptedPasswordCipher) passwordHasher.create(password.getHash());
     response.setCertificateManager(base.getCertificateManager());
     return response;
   }

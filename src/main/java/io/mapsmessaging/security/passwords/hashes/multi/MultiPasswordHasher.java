@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 
-public class MultiPasswordHasher implements PasswordHasher {
+public class MultiPasswordHasher extends PasswordHasher {
 
   @Getter
   private final List<PasswordHandler> parsers;
@@ -100,8 +100,8 @@ public class MultiPasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public char[] getPassword() {
-    return password.getHash();
+  public PasswordBuffer getPassword() {
+    return password;
   }
 
   @Override

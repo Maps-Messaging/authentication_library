@@ -26,7 +26,7 @@ import java.util.Base64;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
+public abstract class Pbkdf2PasswordHasher extends PasswordHasher {
 
   private final byte[] salt;
   private final PasswordBuffer hash;
@@ -106,8 +106,8 @@ public abstract class Pbkdf2PasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public char[] getPassword() {
-    return hash.getHash();
+  public PasswordBuffer getPassword() {
+    return hash;
   }
 
   @Override

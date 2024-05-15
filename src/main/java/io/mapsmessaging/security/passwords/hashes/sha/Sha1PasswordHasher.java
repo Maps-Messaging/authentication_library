@@ -22,7 +22,7 @@ import io.mapsmessaging.security.util.ArrayHelper;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
-public class Sha1PasswordHasher implements PasswordHasher {
+public class Sha1PasswordHasher extends PasswordHasher {
 
   private final PasswordBuffer password;
 
@@ -64,8 +64,8 @@ public class Sha1PasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public char[] getPassword() {
-    return password.getHash();
+  public PasswordBuffer getPassword() {
+    return password;
   }
 
   @Override

@@ -51,7 +51,9 @@ public class IdentityAccessManager {
   private final GroupMapManagement groupMapManagement;
   private final UserMapManagement userMapManagement;
 
-  @Getter @Setter private PasswordHandler passwordHandler;
+  @Getter
+  @Setter
+  private PasswordHandler passwordHandler;
 
   public IdentityAccessManager(
       String identity,
@@ -282,5 +284,9 @@ public class IdentityAccessManager {
       }
     }
     return userIdMap;
+  }
+
+  public void setAsSystemIdentityLookup(){
+    IdentityLookupFactory.getInstance().registerSiteIdentityLookup("system", identityLookup);
   }
 }

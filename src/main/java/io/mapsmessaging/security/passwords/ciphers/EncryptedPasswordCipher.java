@@ -28,7 +28,7 @@ import java.util.Base64;
 import lombok.Getter;
 import lombok.Setter;
 
-public class EncryptedPasswordCipher implements PasswordCipher {
+public class EncryptedPasswordCipher extends PasswordCipher {
 
   private PasswordBuffer password;
 
@@ -112,7 +112,7 @@ public class EncryptedPasswordCipher implements PasswordCipher {
   }
 
   @Override
-  public char[] getPassword() throws GeneralSecurityException, IOException {
+  public PasswordBuffer getPassword() throws GeneralSecurityException, IOException {
     BufferCipher bufferCipher = new BufferCipher(certificateManager);
     byte[] decoded = Base64.getDecoder().decode(password.getBytes());
     byte[] decrypted = bufferCipher.decrypt(alias, decoded, privateKeyPassword.toCharArray());
@@ -129,7 +129,11 @@ public class EncryptedPasswordCipher implements PasswordCipher {
     for (int i = 0; i < xorPassword.length; i++) {
       originalPassword[i] = (byte) (xorPassword[i] ^ salt[i % salt.length]);
     }
-    return new String(originalPassword).toCharArray();
+    ArrayHelper.clearByteArray(salt);
+    ArrayHelper.clearByteArray(xorPassword);
+    ArrayHelper.clearByteArray(decoded);
+    ArrayHelper.clearByteArray(decrypted);
+    return new PasswordBuffer(originalPassword);
   }
 
   @Override
