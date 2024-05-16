@@ -21,14 +21,12 @@ import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.uuid.UuidGenerator;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
@@ -117,12 +115,11 @@ public class UserManagement {
     return false;
   }
 
-  public boolean validateUser(String username, char[] passwordHash) throws IOException {
+  public boolean validateUser(String username, char[] password) throws IOException {
     IdentityEntry entry = identityLookup.findEntry(username);
     if (entry != null) {
       try {
-        PasswordBuffer passwordTest = entry.getPasswordHasher().getPassword();
-        return Arrays.equals(passwordHash, passwordTest.getHash());
+        return entry.getPasswordHasher().matches(password);
       } catch (GeneralSecurityException e) {
         throw new IOException(e);
       }
