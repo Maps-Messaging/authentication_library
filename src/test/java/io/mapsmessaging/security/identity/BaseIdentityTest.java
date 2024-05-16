@@ -72,6 +72,11 @@ public class BaseIdentityTest {
     }
 
     @Override
+    public List<GroupEntry> getGroups() {
+      return List.of();
+    }
+
+    @Override
     public IdentityLookup create(ConfigurationProperties config) {
       return null;
     }

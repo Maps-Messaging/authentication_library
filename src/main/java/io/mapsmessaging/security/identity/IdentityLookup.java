@@ -21,7 +21,6 @@ import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -39,9 +38,7 @@ public interface IdentityLookup {
 
   GroupEntry findGroup(String groupName);
 
-  default List<GroupEntry> getGroups() {
-    return new ArrayList<>();
-  }
+  List<GroupEntry> getGroups();
 
   IdentityLookup create(ConfigurationProperties config);
 
