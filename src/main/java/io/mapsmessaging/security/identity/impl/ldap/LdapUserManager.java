@@ -213,6 +213,10 @@ public class LdapUserManager {
     return new ArrayList<>(userMap.values());
   }
 
+  public List<GroupEntry> getGroups(){
+    return new ArrayList<>(groupMap.values());
+  }
+
   public GroupEntry findGroup(String groupName) {
     return groupMap.get(groupName);
   }

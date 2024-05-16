@@ -52,6 +52,11 @@ public class LdapAuth implements IdentityLookup {
   }
 
   @Override
+  public List<GroupEntry> getGroups() {
+    return ldapUserManager.getGroups();
+  }
+
+  @Override
   public PasswordBuffer getPasswordHash(String username) throws NoSuchUserFoundException {
     return ldapUserManager.getPasswordHash(username);
   }

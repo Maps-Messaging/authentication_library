@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package io.mapsmessaging.security;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
+import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-
-import javax.security.auth.Subject;
+import java.util.List;
 import java.util.UUID;
+import javax.security.auth.Subject;
 
 public class SubjectHelper {
 
@@ -54,6 +56,13 @@ public class SubjectHelper {
     return subject.getPrincipals(UniqueIdentifierPrincipal.class).stream()
         .findFirst()
         .map(UniqueIdentifierPrincipal::getAuthId)
+        .orElse(null);
+  }
+
+  public static List<GroupIdMap> getGroupId(Subject subject) {
+    return subject.getPrincipals(GroupIdPrincipal.class).stream()
+        .findFirst()
+        .map(GroupIdPrincipal::getGroupIds)
         .orElse(null);
   }
 }
