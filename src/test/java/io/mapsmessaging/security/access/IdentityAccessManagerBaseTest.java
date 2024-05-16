@@ -92,36 +92,36 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups);
     IdentityLookupFactory.getInstance().registerSiteIdentityLookup(auth, identityAccessManager.getIdentityLookup());
 
-    for (UserIdMap userIdMap : identityAccessManager.getAllUsers()) {
-      identityAccessManager.deleteUser(userIdMap.getUsername());
+    for (Identity userIdMap : identityAccessManager.getUserManagement().getAllUsers()) {
+      identityAccessManager.getUserManagement().deleteUser(userIdMap.getUsername());
     }
-    for (GroupIdMap groupIdMap : identityAccessManager.getAllGroups()) {
-      identityAccessManager.deleteGroup(groupIdMap.getGroupName());
+    for (Group groupIdMap : identityAccessManager.getGroupManagement().getAllGroups()) {
+      identityAccessManager.getGroupManagement().deleteGroup(groupIdMap.getName());
     }
-    Assertions.assertEquals(0, identityAccessManager.getAllUsers().size());
-    Assertions.assertEquals(0, identityAccessManager.getAllGroups().size());
+    Assertions.assertEquals(0, identityAccessManager.getUserManagement().getAllUsers().size());
+    Assertions.assertEquals(0, identityAccessManager.getGroupManagement().getAllGroups().size());
 
     Faker faker = new Faker();
     Random random = new Random(System.currentTimeMillis());
     List<String> groupNames = new ArrayList<>();
     for (int x = 0; x < 10; x++) {
-      Assertions.assertEquals(x, identityAccessManager.getAllGroups().size());
+      Assertions.assertEquals(x, identityAccessManager.getGroupManagement().getAllGroups().size());
       String group = faker.starTrek().specie();
-      while (identityAccessManager.getGroup(group) != null) {
+      while (identityAccessManager.getGroupManagement().getGroup(group) != null) {
         group = faker.starTrek().specie();
       }
-      identityAccessManager.createGroup(group);
+      identityAccessManager.getGroupManagement().createGroup(group);
       groupNames.add(group);
     }
 
     Map<String, char[]> userPasswordMap = new LinkedHashMap<>();
     for (int x = 0; x < 100; x++) {
-      Assertions.assertEquals(x, identityAccessManager.getAllUsers().size());
+      Assertions.assertEquals(x, identityAccessManager.getUserManagement().getAllUsers().size());
       String username = faker.starTrek().character();
       username = username.replaceAll(" ", "_");
 
       int count = 0;
-      while (identityAccessManager.getUser(username) != null) {
+      while (identityAccessManager.getUserManagement().getUser(username) != null) {
         if (count > 90) {
           username = faker.witcher().character();
         } else if (count > 75) {
@@ -141,12 +141,12 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
         username = username.replaceAll(" ", "_");
       }
       char[] password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20))).toCharArray();
-      identityAccessManager.createUser(username, password);
+      identityAccessManager.getUserManagement().createUser(username, password);
       String group = groupNames.get(Math.abs(random.nextInt(groupNames.size())));
-      identityAccessManager.addUserToGroup(username, group);
+      identityAccessManager.getGroupManagement().addUserToGroup(username, group);
       userPasswordMap.put(username, password);
-      Assertions.assertEquals(username, identityAccessManager.getUser(username).getUsername());
-      Assertions.assertNotNull(identityAccessManager.getUser(username).getAuthId());
+      Assertions.assertEquals(username, identityAccessManager.getUserManagement().getUser(username).getUsername());
+      Assertions.assertNotNull(identityAccessManager.getUserManagement().getUser(username).getId());
     }
 
     for (Map.Entry<String, char[]> user : userPasswordMap.entrySet()) {
@@ -161,15 +161,15 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       }
     }
 
-    for (UserIdMap userIdMap : identityAccessManager.getAllUsers()) {
-      identityAccessManager.deleteUser(userIdMap.getUsername());
+    for (Identity userIdMap : identityAccessManager.getUserManagement().getAllUsers()) {
+      identityAccessManager.getUserManagement().deleteUser(userIdMap.getUsername());
     }
-    List<GroupIdMap> groupList = identityAccessManager.getAllGroups();
-    for (GroupIdMap groupIdMap : groupList) {
-      identityAccessManager.deleteGroup(groupIdMap.getGroupName());
+    List<Group> groupList = identityAccessManager.getGroupManagement().getAllGroups();
+    for (Group groupIdMap : groupList) {
+      identityAccessManager.getGroupManagement().deleteGroup(groupIdMap.getName());
     }
-    Assertions.assertEquals(0, identityAccessManager.getAllUsers().size());
-    Assertions.assertEquals(0, identityAccessManager.getAllGroups().size());
+    Assertions.assertEquals(0, identityAccessManager.getUserManagement().getAllUsers().size());
+    Assertions.assertEquals(0, identityAccessManager.getGroupManagement().getAllGroups().size());
   }
 
   private boolean validateLogin(String auth, String username, char[] password) {

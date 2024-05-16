@@ -22,36 +22,24 @@ import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
-import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
-import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
-import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.ciphers.EncryptedPasswordCipher;
-import io.mapsmessaging.security.uuid.UuidGenerator;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.Principal;
 import java.util.*;
 import javax.security.auth.Subject;
 import lombok.Getter;
-import lombok.Setter;
 
+@Getter
 public class IdentityAccessManager {
 
-  @Getter
   private final IdentityLookup identityLookup;
-  private final GroupMapManagement groupMapManagement;
-  private final UserMapManagement userMapManagement;
-
-  @Getter
-  @Setter
-  private PasswordHandler passwordHandler;
+  private final UserManagement userManagement;
+  private final GroupManagement groupManagement;
 
   public IdentityAccessManager(
       String identity,
@@ -59,11 +47,10 @@ public class IdentityAccessManager {
       MapStore<UserIdMap> userStore,
       MapStore<GroupIdMap> groupStore) {
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
-    groupMapManagement = new GroupMapManagement(groupStore);
-    userMapManagement = new UserMapManagement(userStore);
-    for (IdentityEntry entry : identityLookup.getEntries()) {
-      mapUser(entry);
-    }
+    GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
+    UserMapManagement userMapManagement = new UserMapManagement(userStore);
+
+    PasswordHandler passwordHandler;
     String handlerName = (String) config.get("passwordHandler");
     if (handlerName == null || handlerName.isEmpty()) {
       handlerName = "Pbkdf2Sha512PasswordHasher";
@@ -74,227 +61,27 @@ public class IdentityAccessManager {
     } else {
       passwordHandler = baseHandler;
     }
+    groupManagement = new GroupManagement(identityLookup, groupMapManagement);
+    userManagement = new UserManagement(identityLookup, userMapManagement, groupManagement, passwordHandler);
+
     userMapManagement.save();
     groupMapManagement.save();
   }
 
-  public List<UserIdMap> getAllUsers() {
-    return userMapManagement.getAll();
-  }
-
-  public List<GroupIdMap> getAllGroups() {
-    return groupMapManagement.getAll();
-  }
-
   public Subject updateSubject(Subject subject) {
     String username = SubjectHelper.getUsername(subject);
-    IdentityEntry identityEntry = identityLookup.findEntry(username);
-    if (identityEntry == null) {
-      return null;
+    IdentityEntry identityEntry = userManagement.updateSubject(subject, username);
+    if (identityEntry != null) {
+      subject = groupManagement.updateSubject(subject, identityEntry);
     }
-    String key = identityLookup.getDomain() + ":" + username;
-    UserIdMap userIdMap = userMapManagement.get(key);
-    if (userIdMap == null) {
-      userIdMap = mapUser(identityEntry);
-      userMapManagement.save();
-      groupMapManagement.save();
+    else{
+      subject = null;
     }
-    Set<Principal> principalSet = subject.getPrincipals();
-    principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
-    List<GroupIdMap> groups = new ArrayList<>();
-    for (GroupEntry groupEntry : identityEntry.getGroups()) {
-      String gKey = identityLookup.getDomain() + ":" + groupEntry.getName();
-      GroupIdMap groupIdMap = groupMapManagement.get(gKey);
-      if (groupIdMap != null) {
-        groups.add(groupIdMap);
-      }
-    }
-
-    principalSet.add(new GroupIdPrincipal(groups));
     return subject;
   }
 
-  public GroupIdMap createGroup(String groupName) throws IOException {
-    GroupEntry groupEntry = identityLookup.findGroup(groupName);
-    GroupIdMap groupIdMap = groupMapManagement.get(identityLookup.getDomain() + ":" + groupName);
-    if (groupEntry != null && groupIdMap != null) {
-      return groupIdMap;
-    }
-    if (groupEntry == null) {
-      identityLookup.createGroup(groupName);
-    }
-    if (groupIdMap == null) {
-      groupIdMap = new GroupIdMap(UuidGenerator.getInstance().generate(), groupName, identityLookup.getDomain());
-      groupMapManagement.add(groupIdMap);
-      groupMapManagement.save();
-    }
-    return groupIdMap;
-  }
-
-  public boolean deleteGroup(String groupName) throws IOException {
-    GroupEntry groupEntry = identityLookup.findGroup(groupName);
-    if (groupEntry != null) {
-      identityLookup.deleteGroup(groupName);
-      groupMapManagement.delete(identityLookup.getDomain() + ":" + groupName);
-      groupMapManagement.save();
-      return true;
-    }
-    return false;
-  }
-
-  public UserIdMap getUser(String username) {
-    return userMapManagement.get(identityLookup.getDomain() + ":" + username);
-  }
-
-  public GroupIdMap getGroup(String groupName) {
-    return groupMapManagement.get(identityLookup.getDomain() + ":" + groupName);
-  }
-
-  public boolean validateUser(String username, char[] passwordHash) throws IOException {
-    IdentityEntry entry = identityLookup.findEntry(username);
-    if (entry != null) {
-      try {
-        PasswordBuffer passwordTest = entry.getPasswordHasher().getPassword();
-        return Arrays.equals(passwordHash, passwordTest.getHash());
-      } catch (GeneralSecurityException e) {
-        throw new IOException(e);
-      }
-    }
-    return false;
-  }
-
-  public UserIdMap createUser(String username, char[] passwordHash)
-      throws IOException, GeneralSecurityException {
-    IdentityEntry entry = identityLookup.findEntry(username);
-    if (entry != null) {
-      throw new GeneralSecurityException("User already exists");
-    }
-    identityLookup.createUser(username, passwordHash, passwordHandler);
-
-    UserIdMap idMap = userMapManagement.get(identityLookup.getDomain() + ":" + username);
-    if (idMap == null) {
-      idMap = new UserIdMap(UuidGenerator.getInstance().generate(), username, identityLookup.getDomain());
-      userMapManagement.add(idMap);
-      userMapManagement.save();
-    }
-    return idMap;
-  }
-
-  public boolean updateUserPassword(String username, char[] hash)
-      throws IOException, GeneralSecurityException {
-    IdentityEntry entry = identityLookup.findEntry(username);
-    if (entry != null) {
-      identityLookup.deleteUser(username);
-      identityLookup.createUser(username, hash, entry.getPasswordHasher());
-      return true;
-    }
-    return false;
-  }
-
-  public Identity getUserDetails(String username) {
-    IdentityEntry entry = identityLookup.findEntry(username);
-    if (entry != null) {
-      return new Identity(entry);
-    }
-    return null;
-  }
-
-  public List<Identity> getAllUserDetails() {
-    List<Identity> identities = new ArrayList<>();
-    for (IdentityEntry entry : identityLookup.getEntries()) {
-      identities.add(new Identity(entry));
-    }
-    return identities;
-  }
-
-  public GroupEntry getGroupDetails(String groupName) {
-    return identityLookup.findGroup(groupName);
-  }
-
-  public List<GroupEntry> getAllGroupDetails() {
-    List<GroupEntry> list = new ArrayList<>();
-    for (GroupEntry entry : identityLookup.getGroups()) {
-      list.add(entry);
-    }
-    return list;
-  }
-
-  public boolean deleteUser(String username) throws IOException {
-    if (identityLookup.findEntry(username) != null) {
-      identityLookup.deleteUser(username);
-      userMapManagement.delete(identityLookup.getDomain() + ":" + username);
-      userMapManagement.save();
-      for (GroupEntry groupEntry : identityLookup.getGroups()) {
-        if (groupEntry.isInGroup(username)) {
-          groupEntry.removeUser(username);
-          if (groupEntry.getUserCount() == 0) {
-            identityLookup.deleteGroup(groupEntry.getName());
-            groupMapManagement.delete(groupEntry.getName());
-          }
-          identityLookup.updateGroup(groupEntry);
-        }
-      }
-      groupMapManagement.save();
-      return true;
-    }
-    return false;
-  }
-
-  public boolean addUserToGroup(String username, String group) throws IOException {
-    IdentityEntry identityEntry = identityLookup.findEntry(username);
-    if (identityEntry == null) {
-      return false;
-    }
-    GroupEntry groupEntry = identityLookup.findGroup(group);
-    if (groupEntry == null) {
-      return false;
-    }
-    if (identityEntry.isInGroup(groupEntry.getName())) {
-      return false;
-    }
-    identityEntry.addGroup(groupEntry);
-    groupEntry.addUser(username);
-    identityLookup.updateGroup(groupEntry);
-    return true;
-  }
-
-  public boolean removeUserFromGroup(String username, String group) throws IOException {
-    IdentityEntry identityEntry = identityLookup.findEntry(username);
-    if (identityEntry == null) {
-      return false;
-    }
-    GroupEntry groupEntry = identityLookup.findGroup(group);
-    if (groupEntry == null) {
-      return false;
-    }
-    if (!identityEntry.isInGroup(groupEntry.getName())) {
-      return false;
-    }
-    identityEntry.removeGroup(groupEntry);
-    groupEntry.removeUser(username);
-    identityLookup.updateGroup(groupEntry);
-    if (groupEntry.getUserCount() == 0) {
-      identityLookup.deleteGroup(groupEntry.getName());
-      groupMapManagement.delete(groupEntry.getName());
-      groupMapManagement.save();
-    }
-    return true;
-
-  }
-
-  private UserIdMap mapUser(IdentityEntry entry) {
-    UserIdMap userIdMap = null;
-    if (userMapManagement.get(entry.getUsername()) == null) {
-      userIdMap = new UserIdMap(UuidGenerator.getInstance().generate(), entry.getUsername(), identityLookup.getDomain());
-      userMapManagement.add(userIdMap);
-    }
-    for (GroupEntry group : entry.getGroups()) {
-      if (groupMapManagement.get(group.getName()) == null) {
-        GroupIdMap groupIdMap = new GroupIdMap(UuidGenerator.getInstance().generate(), group.getName(), identityLookup.getDomain());
-        groupMapManagement.add(groupIdMap);
-      }
-    }
-    return userIdMap;
+  public boolean validateUser(String username, char[] passwordHash) throws IOException{
+    return userManagement.validateUser(username, passwordHash);
   }
 
   public void setAsSystemIdentityLookup(){

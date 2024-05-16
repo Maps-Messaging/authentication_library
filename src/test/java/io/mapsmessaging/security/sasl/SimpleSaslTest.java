@@ -98,13 +98,13 @@ class SimpleSaslTest extends BaseSasl {
   void testMechanism(String mechanism, String user, char[] password)
       throws IOException, GeneralSecurityException {
     user = user.replaceAll(" ", "_");
-    if (identityAccessManager.getUser(user) != null) {
-      identityAccessManager.deleteUser(user);
+    if (identityAccessManager.getUserManagement().getUser(user) != null) {
+      identityAccessManager.getUserManagement().deleteUser(user);
     }
-    identityAccessManager.createUser(user, password);
+    identityAccessManager.getUserManagement().createUser(user, password);
     SaslTester saslTester = new SaslTester();
     saslTester.testMechanism(identityAccessManager.getIdentityLookup(), mechanism, user, password);
-    identityAccessManager.deleteUser(user);
+    identityAccessManager.getUserManagement().deleteUser(user);
   }
 
 }

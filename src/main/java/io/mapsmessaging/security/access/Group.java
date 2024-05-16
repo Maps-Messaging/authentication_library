@@ -16,34 +16,25 @@
 
 package io.mapsmessaging.security.access;
 
-import io.mapsmessaging.security.identity.IdentityEntry;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import io.mapsmessaging.security.identity.GroupEntry;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 @ToString
-public class Identity {
+public class Group {
 
   private final UUID id;
-  private final String username;
-  private final Map<String, String> attributes;
-  private final List<Group> groupList;
+  private final String name;
+  private final Set<String> userSet;
 
-  public Identity(UUID id, IdentityEntry identityEntry, List<Group> groupList) {
+  public Group(final UUID id, GroupEntry groupEntry) {
     this.id = id;
-    username = identityEntry.getUsername();
-    this.groupList = groupList;
-    attributes = buildAttributes(identityEntry);
-  }
-
-  private Map<String, String> buildAttributes(IdentityEntry identityEntry) {
-    Map<String, String> map = new LinkedHashMap<>();
-    identityEntry.setAttributeMap(map);
-    return map;
+    this.name = groupEntry.getName();
+    this.userSet = new HashSet<>(groupEntry.getUsers());
   }
 
 }
