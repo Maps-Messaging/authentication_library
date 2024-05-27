@@ -303,7 +303,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-secretsmanager</artifactId>
-      <version>1.12.722</version>
+      <version>1.12.730</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/secretsmanager -->
     <dependency>
