@@ -123,8 +123,8 @@ public class SslHelper {
 
       // Now check to see if there is a CRL configured, if so then construct the cert revocation during cert validation
       TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-      if(config.containsKey("crlUrl")){
-        String crlUrlPath = config.getProperty("crlUrl");
+      String crlUrlPath = config.getProperty("crlUrl");
+      if(crlUrlPath != null && !crlUrlPath.isEmpty()){
         List<TrustManager> trustManagerList = Arrays.asList(trustManagers);
         CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(new URL(crlUrlPath), config.getLongProperty("crlInterval", 60*60*24)); // Default daily
         trustManagerList.add(new CrlTrustManager(certificateRevocationManager));
