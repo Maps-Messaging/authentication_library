@@ -22,6 +22,7 @@ import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.security.auth.Subject;
@@ -63,6 +64,6 @@ public class SubjectHelper {
     return subject.getPrincipals(GroupIdPrincipal.class).stream()
         .findFirst()
         .map(GroupIdPrincipal::getGroupIds)
-        .orElse(null);
+        .orElse(new ArrayList<>());
   }
 }
