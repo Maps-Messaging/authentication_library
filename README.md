@@ -54,4 +54,6 @@ Include the dependency
     </dependency>
 ```   
 
+[![Build status](https://badge.buildkite.com/4fe7fb40cfdb2f718310fbc030aa1e9f0df618201fa21f9736.svg)](https://buildkite.com/mapsmessaging/040-authentication-and-authorisation-library-snapshot-build)
+
 [![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/summary/new_code?id=Authentication_Library)
