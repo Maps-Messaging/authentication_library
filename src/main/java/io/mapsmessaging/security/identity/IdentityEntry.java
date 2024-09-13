@@ -63,7 +63,7 @@ import lombok.Getter;
  * @see GroupEntry
  * @see Subject
  */
-public class IdentityEntry implements Cloneable {
+public class IdentityEntry {
 
   protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
   @Getter
@@ -72,6 +72,7 @@ public class IdentityEntry implements Cloneable {
   protected PasswordHandler passwordHasher;
 
   protected PasswordBuffer password;
+
 
   public boolean isInGroup(String group) {
     return groupList.containsKey(group);
@@ -119,7 +120,7 @@ public class IdentityEntry implements Cloneable {
 
   public IdentityEntry secure() {
     try{
-      return clone();
+      return new IdentityEntry(this);
     }
     catch (CloneNotSupportedException e){
       // it is
@@ -127,13 +128,16 @@ public class IdentityEntry implements Cloneable {
     return null;
   }
 
-  public IdentityEntry clone() throws CloneNotSupportedException {
-    IdentityEntry identityEntry = this.clone();
-    identityEntry.password.clear();
-    return identityEntry;
-  }
-
   public void setAttributeMap(Map<String, String> attributeMap) {
 
+  }
+
+  protected IdentityEntry(){}
+
+  protected IdentityEntry(IdentityEntry rhs) throws CloneNotSupportedException {
+    username = rhs.username;
+    passwordHasher = rhs.passwordHasher;
+    password = new PasswordBuffer(rhs.password.getBytes());
+    groupList.putAll(rhs.groupList);
   }
 }

@@ -52,6 +52,7 @@ public class ShadowEntry extends IdentityEntry {
     return principals;
   }
 
+  @Override
   public void setAttributeMap(Map<String, String> attributeMap) {
     attributeMap.put("homeDirectory", passwordEntry.getHomeDirectory());
     attributeMap.put("description", passwordEntry.getDescription());

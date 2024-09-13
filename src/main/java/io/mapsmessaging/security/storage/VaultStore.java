@@ -34,9 +34,9 @@ public class VaultStore implements Store {
     keyName = null;
   }
 
-  public VaultStore(Vault vault, String keyName) {
+  public VaultStore(Vault vault, String name) {
     this.vault = vault;
-    this.keyName = keyName;
+    this.keyName = name;
   }
 
   @Override
@@ -91,11 +91,10 @@ public class VaultStore implements Store {
     if(config.containsKey("sslVerify")){
       sslverify = Boolean.parseBoolean(config.get("sslVerify").toString());
     }
-    String keyName = "data";
+    String key = "data";
     if(config.containsKey("secretEngine")){
-      keyName = (String) config.get("secretEngine");
+      key = (String) config.get("secretEngine");
     }
-
 
     VaultConfig vaultConfig;
     try {
@@ -111,7 +110,7 @@ public class VaultStore implements Store {
     } catch (VaultException e) {
       throw new IOException(e);
     }
-    Vault vault = new Vault(vaultConfig);
-    return new VaultStore(vault, keyName);
+    Vault v = new Vault(vaultConfig);
+    return new VaultStore(v, key);
   }
 }

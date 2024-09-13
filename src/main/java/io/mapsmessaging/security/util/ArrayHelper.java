@@ -64,6 +64,22 @@ public class ArrayHelper {
 
     CharArrayWriter writer = new CharArrayWriter();
     writer.append('[');
+    processCharArray(charArrays, writer);
+    charArrays.clear();
+    writer.append(']');
+    char[] response = writer.toCharArray();
+    writer.reset();
+    char[] reset = new char[response.length];
+    clearCharArray(reset);
+    try {
+      writer.write(reset);
+    } catch (IOException e) {
+      // No need to
+    }
+    return response;
+  }
+
+  private static void processCharArray(List<char[]> charArrays, CharArrayWriter writer){
     for (int i = 0; i < charArrays.size(); i++) {
       if (charArrays.get(i) != null) {
         char[] working = charArrays.get(i);
@@ -81,18 +97,6 @@ public class ArrayHelper {
         }
       }
     }
-    charArrays.clear();
-    writer.append(']');
-    char[] response = writer.toCharArray();
-    writer.reset();
-    char[] reset = new char[response.length];
-    clearCharArray(reset);
-    try {
-      writer.write(reset);
-    } catch (IOException e) {
-      // ignore
-    }
-    return response;
   }
 
   public static char[] appendCharArrays(char[]... arrays) {

@@ -81,6 +81,7 @@ public class LdapUser extends IdentityEntry {
     return principals;
   }
 
+  @Override
   public void setAttributeMap(Map<String, String> attributeMap) {
     attributeMap.put("homeDirectory", homeDirectory);
     attributeMap.put("description", description);

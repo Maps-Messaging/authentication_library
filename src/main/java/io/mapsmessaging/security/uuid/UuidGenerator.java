@@ -18,13 +18,11 @@ package io.mapsmessaging.security.uuid;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.NameBasedGenerator;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-
 
 @SuppressWarnings("java:S6548") // yes it is a singleton
 public class UuidGenerator {
@@ -40,6 +38,7 @@ public class UuidGenerator {
   private final RandomVersions uuidDefaultVersion;
   private final Map<UUID, NameBasedGenerator> namedGeneratorMap;
 
+  @SuppressWarnings("java:S3824") // the getInstance throws an exception. It is better for it to be handled like this
   public UUID generate(NamedVersions namedVersions, UUID namespaceUuid, String namespace) throws NoSuchAlgorithmException {
     NameBasedGenerator namespaceGenerator = namedGeneratorMap.get(namespaceUuid);
     if (namespaceGenerator == null) {
@@ -75,7 +74,7 @@ public class UuidGenerator {
     if (version != null) {
       try {
         val = Integer.parseInt(version);
-      } catch (Throwable th) {
+      } catch (NumberFormatException th) {
         // ignore
       }
     }
