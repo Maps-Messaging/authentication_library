@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class Pkcs11ManagerTest extends BaseCertificateTest {
@@ -41,7 +40,6 @@ class Pkcs11ManagerTest extends BaseCertificateTest {
     certificateManager = CertificateManagerFactory.getInstance().getManager(new ConfigurationProperties(config));
   }
 
-  @Disabled
   @Test
   void testAddAndGetCertificate() throws Exception {
     File file = new File("./softhsm.cfg");
