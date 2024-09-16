@@ -20,9 +20,6 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
-import lombok.Getter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,6 +27,8 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import lombok.Getter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class KeyStoreManager implements CertificateManager {
 

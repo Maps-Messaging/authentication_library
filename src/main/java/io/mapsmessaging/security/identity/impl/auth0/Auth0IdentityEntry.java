@@ -44,5 +44,4 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
       return null;
     }
   }
-
 }

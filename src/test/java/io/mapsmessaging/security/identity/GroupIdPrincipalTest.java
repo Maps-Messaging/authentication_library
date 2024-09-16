@@ -16,16 +16,15 @@
 
 package io.mapsmessaging.security.identity;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.uuid.UuidGenerator;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class GroupIdPrincipalTest {
 

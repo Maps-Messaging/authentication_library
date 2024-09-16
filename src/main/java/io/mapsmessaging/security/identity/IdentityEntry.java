@@ -63,7 +63,7 @@ import lombok.Getter;
  * @see GroupEntry
  * @see Subject
  */
-public class IdentityEntry {
+public abstract class IdentityEntry {
 
   protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
   @Getter
@@ -118,23 +118,13 @@ public class IdentityEntry {
     return password;
   }
 
-  public IdentityEntry secure() {
-    try{
-      return new IdentityEntry(this);
-    }
-    catch (CloneNotSupportedException e){
-      // it is
-    }
-    return null;
-  }
-
-  public void setAttributeMap(Map<String, String> attributeMap) {
-
+  public void setAttributeMap(Map<String, String> attributeMap){
+    attributeMap.put("username", username);
   }
 
   protected IdentityEntry(){}
 
-  protected IdentityEntry(IdentityEntry rhs) throws CloneNotSupportedException {
+  protected IdentityEntry(IdentityEntry rhs){
     username = rhs.username;
     passwordHasher = rhs.passwordHasher;
     password = new PasswordBuffer(rhs.password.getBytes());

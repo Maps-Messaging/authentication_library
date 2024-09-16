@@ -21,10 +21,9 @@ import io.mapsmessaging.security.access.mapping.GroupMapParser;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapParser;
 import io.mapsmessaging.security.uuid.UuidGenerator;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
 
 public class UserAndGroupIdTest {
 

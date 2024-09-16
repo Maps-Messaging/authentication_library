@@ -20,7 +20,6 @@ import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.client.state.InitialState;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.sasl.Sasl;
@@ -28,7 +27,7 @@ import javax.security.sasl.SaslClient;
 
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
-  public ScramSaslClient(String algorithm, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws NoSuchAlgorithmException {
+  public ScramSaslClient(String algorithm, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
     context.setPasswordHasher(new PlainPasswordHasher());
     context.setMac(CryptoHelper.findMac(algorithm));
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));

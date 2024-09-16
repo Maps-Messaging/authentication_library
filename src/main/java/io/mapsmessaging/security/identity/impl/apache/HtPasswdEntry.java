@@ -35,5 +35,4 @@ public class HtPasswdEntry extends IdentityEntry {
     password = new PasswordBuffer(line.toCharArray());
     passwordHasher = PasswordHandlerFactory.getInstance().parse(password.getHash());
   }
-
 }

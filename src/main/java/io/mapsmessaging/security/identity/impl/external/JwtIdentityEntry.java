@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2023 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package io.mapsmessaging.security.identity.impl.external;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.JwtPrincipal;
-
 import java.security.Principal;
 import java.util.Set;
 

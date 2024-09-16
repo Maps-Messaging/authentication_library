@@ -27,6 +27,7 @@ import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -40,7 +41,7 @@ public class AwsCognitoRSAKeyProvider implements RSAKeyProvider {
   public AwsCognitoRSAKeyProvider(String awsCognitoRegion, String awsUserPoolsId) throws IOException {
     String url = String.format("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json", awsCognitoRegion, awsUserPoolsId);
     try {
-      awsKidStoreUrl = new URL(url);
+      awsKidStoreUrl = URI.create(url).toURL();
       provider = new JwkProviderBuilder(awsKidStoreUrl).build();
     } catch (MalformedURLException e) {
       logger.log(AWS_INVALID_URL, url);

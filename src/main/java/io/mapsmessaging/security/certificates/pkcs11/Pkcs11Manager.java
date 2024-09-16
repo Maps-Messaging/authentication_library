@@ -19,7 +19,6 @@ package io.mapsmessaging.security.certificates.pkcs11;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.keystore.KeyStoreManager;
-
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;

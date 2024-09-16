@@ -16,6 +16,9 @@
 
 package io.mapsmessaging.security.identity.impl.encrypted;
 
+import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+import static io.mapsmessaging.security.logging.AuthLogMessages.ENCRYPTED_LOAD_FAILURE;
+
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
@@ -26,12 +29,8 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.impl.apache.ApacheBasicAuth;
 import io.mapsmessaging.security.identity.impl.apache.HtGroupFileManager;
 import io.mapsmessaging.security.passwords.PasswordHandler;
-
 import java.io.File;
 import java.security.cert.Certificate;
-
-import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
-import static io.mapsmessaging.security.logging.AuthLogMessages.ENCRYPTED_LOAD_FAILURE;
 
 public class EncryptedAuth extends ApacheBasicAuth {
 
