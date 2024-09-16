@@ -29,7 +29,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 class Pkcs11ManagerTest extends BaseCertificateTest {
 
   @BeforeEach
