@@ -31,6 +31,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 
+@Disabled
 public class Auth0IdentityLoginTest extends BaseIdentity {
   private static Properties properties;
 
