@@ -32,12 +32,10 @@ class Pkcs11ManagerTest extends BaseCertificateTest {
 
   @BeforeEach
   void setUp() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
-    File file = new File(".");
-    System.err.println(file.getAbsolutePath());
     Map<String, Object> config = new LinkedHashMap<>();
     config.put("configPath", "./softhsm.cfg");
     config.put("type", "pkcs11");
-    config.put("passphrase", "123456");
+    config.put("passphrase", "1111");
     config.put("providerName", "SunPKCS11");
     certificateManager = CertificateManagerFactory.getInstance().getManager(new ConfigurationProperties(config));
   }
