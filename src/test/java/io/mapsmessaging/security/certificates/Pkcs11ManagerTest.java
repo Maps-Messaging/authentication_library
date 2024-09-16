@@ -35,7 +35,7 @@ class Pkcs11ManagerTest extends BaseCertificateTest {
     Map<String, Object> config = new LinkedHashMap<>();
     config.put("configPath", "./softhsm.cfg");
     config.put("type", "pkcs11");
-    config.put("passphrase", "1111");
+    config.put("passphrase", "2222");
     config.put("providerName", "SunPKCS11");
     certificateManager = CertificateManagerFactory.getInstance().getManager(new ConfigurationProperties(config));
   }
