@@ -56,7 +56,7 @@ public class Pkcs11Manager extends KeyStoreManager {
       throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
     String pkcs11ConfigPath = config.getProperty(PKCS11_CONFIG);
     String providerName = config.getProperty(PROVIDER_NAME);
-    String pin = config.getProperty(KEYSTORE_PASSWORD);
+    String pin = config.getProperty(KEYSTORE_PASSWORD, config.getProperty(KEYSTORE_PASSWORD_ALT));
 
     Provider provider = Security.getProvider(providerName);
     if (provider == null) {
