@@ -34,7 +34,8 @@ public class KeyStoreManager implements CertificateManager {
 
   protected static final String KEYSTORE_TYPE = "type";
   protected static final String KEYSTORE_PATH = "path";
-  protected static final String KEYSTORE_PASSWORD = "passphrase";
+  protected static final String KEYSTORE_PASSWORD = "store_passphrase";
+  protected static final String KEYSTORE_PASSWORD_ALT = "passphrase";
   protected static final String PROVIDER_NAME = "providerName";
 
   @Getter
@@ -54,7 +55,7 @@ public class KeyStoreManager implements CertificateManager {
 
   public boolean isValid(ConfigurationProperties config) {
     return config.containsKey(KEYSTORE_TYPE) &&
-        config.containsKey(KEYSTORE_PASSWORD) &&
+        (config.containsKey(KEYSTORE_PASSWORD) || config.containsKey(KEYSTORE_PASSWORD_ALT)) &&
         config.containsKey(KEYSTORE_PATH);
   }
 
@@ -66,7 +67,7 @@ public class KeyStoreManager implements CertificateManager {
     storage = StorageFactory.getInstance().getStore(config.getMap());
 
     keyStorePath = config.getProperty(KEYSTORE_PATH);
-    String t = config.getProperty(KEYSTORE_PASSWORD);
+    String t = config.getProperty(KEYSTORE_PASSWORD, config.getProperty(KEYSTORE_PASSWORD_ALT));
     if (t == null) {
       t = "";
     }
@@ -96,7 +97,7 @@ public class KeyStoreManager implements CertificateManager {
         return store;
       }
     }
-    store.load(null, null);
+    store.load(null, password);
     return store;
   }
 
