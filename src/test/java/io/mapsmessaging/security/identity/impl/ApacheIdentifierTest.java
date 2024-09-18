@@ -49,6 +49,7 @@ class ApacheIdentifierTest {
     Assertions.assertNotNull(lookup.findGroup("user"));
     Assertions.assertNull(lookup.findGroup("user1"));
 
+    Assertions.assertTrue(lookup.canManage());
     String pwd = new String(hash.getHash());
     Assertions.assertEquals("$apr1$9r.m87gj$5wXLLFhGKzknbwSLJj0HC1", pwd);
     PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash.getHash());

@@ -78,6 +78,8 @@ public class LdapIdentifierTest {
     Assertions.assertNotNull(identityEntry);
     Assertions.assertEquals(LdapUser.class, identityEntry.getClass());
     LdapUser ldapUser = (LdapUser) identityEntry;
+    Assertions.assertNotNull(ldapUser.getGroups());
+    Assertions.assertEquals(4, ldapUser.getGroups().size());
     Assertions.assertEquals(ldapUser.getUsername(), properties.getProperty("username"));
     Assertions.assertNotNull(ldapUser.getDescription());
     Assertions.assertNotNull(ldapUser.getHomeDirectory());
@@ -89,6 +91,24 @@ public class LdapIdentifierTest {
     Assertions.assertEquals(groupName, lookup.findGroup(groupName).getName());
     Assertions.assertNotNull(lookup.getEntries());
     Assertions.assertFalse(lookup.getEntries().isEmpty());
+    Assertions.assertFalse(lookup.canManage());
   }
 
+  @Test
+  void testInvalidConfig(){
+    Map<String, Object> map = new LinkedHashMap<>();
+    map.put(Context.SECURITY_PRINCIPAL, properties.getProperty("ldapUser"));
+    map.put(Context.SECURITY_CREDENTIALS, properties.getProperty("ldapPassword"));
+
+    map.put("passwordKeyName", "userpassword");
+
+    map.put("searchBase", properties.getProperty("searchBase"));
+    map.put("searchFilter", properties.getProperty("searchFilter"));
+
+    map.put("groupSearchBase", properties.getProperty("groupSearchBase"));
+    map.put("groupSearchFilter", properties.getProperty("groupSearchFilter"));
+
+    IdentityLookup lookup = IdentityLookupFactory.getInstance().get("ldap", map);
+    Assertions.assertNull(lookup);
+  }
 }

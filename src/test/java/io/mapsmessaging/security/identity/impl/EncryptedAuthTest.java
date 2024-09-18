@@ -56,6 +56,7 @@ public class EncryptedAuthTest  {
     baseMap.put("groupFile", "./.htgroups" );
 
     EncryptedAuth auth = (EncryptedAuth) IdentityLookupFactory.getInstance().get("Encrypted-Auth", baseMap);
+    Assertions.assertTrue(auth.canManage());
 
     Faker faker = new Faker();
     Map<String, char[]> users = new LinkedHashMap<>();

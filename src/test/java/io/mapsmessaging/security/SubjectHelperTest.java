@@ -19,11 +19,14 @@ package io.mapsmessaging.security;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
+import java.util.List;
 import java.util.UUID;
 import javax.security.auth.Subject;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -79,6 +82,8 @@ class SubjectHelperTest {
     assertEquals(testUUID, uniqueId, "Unique ID should match the UUID in UniqueIdentifierPrincipal");
     assertNotNull(uniqueIdentifierPrincipal.toString());
 
+    List<GroupIdMap>  groupIdMap=SubjectHelper.getGroupId(subject);
+    Assertions.assertEquals(0, groupIdMap.size());
   }
 }
 
