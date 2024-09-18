@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.access;
 
 import io.mapsmessaging.security.access.open.OpenAccessControlList;
+import io.mapsmessaging.security.uuid.UuidGenerator;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import javax.security.auth.Subject;
@@ -30,6 +31,8 @@ public class OpenAccessTest {
     AccessControlList openAccessControlList = AccessControlFactory.getInstance().get("Open", null,null);
     Assertions.assertEquals("Open", openAccessControlList.getName());
     Assertions.assertEquals(OpenAccessControlList.class, openAccessControlList.create(null, null).getClass());
+    Assertions.assertTrue(openAccessControlList.add(UuidGenerator.getInstance().generate(), 2));
+    Assertions.assertTrue(openAccessControlList.remove(UuidGenerator.getInstance().generate(), 2));
   }
 
 
@@ -39,6 +42,7 @@ public class OpenAccessTest {
     Subject subject = new Subject();
     for (int x = 0; x < 100; x++) {
       Assertions.assertTrue(identityAccessManager.canAccess(subject, 0));
+      Assertions.assertTrue(identityAccessManager.getSubjectAccess(subject)  != 0);
     }
   }
 
