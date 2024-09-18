@@ -44,10 +44,10 @@ public class SaslTester extends BaseSasl {
     props.put(Sasl.QOP, QOP_LEVEL);
     createServer(identityLookup, mechanism, PROTOCOL, SERVER_NAME, props);
     createClient(user, password, new String[] {mechanism}, PROTOCOL, AUTHORIZATION_ID, SERVER_NAME, props);
-    simpleValidation(user);
+    simpleValidation(user, mechanism);
   }
 
-  void simpleValidation(String user) throws IOException {
+  void simpleValidation(String user, String mechanism) throws IOException {
     assertNotNull(saslServer, "This should not be null");
     assertNotNull(saslClient, "This should not be null");
     runAuth();
@@ -71,6 +71,8 @@ public class SaslTester extends BaseSasl {
       byte[] unwrapped = writeInIncrements(serverWriter, wrapped, 43);
       Assertions.assertArrayEquals(testBuffer, unwrapped);
     }
+    Assertions.assertTrue(mechanism.startsWith(saslServer.getMechanismName()));
+    Assertions.assertTrue(mechanism.startsWith(saslClient.getMechanismName()));
   }
 
   private byte[] writeInIncrements(Writer writer, byte[] testBuffer, int inc) throws IOException {

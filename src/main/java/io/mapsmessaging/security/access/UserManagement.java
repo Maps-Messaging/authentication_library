@@ -16,6 +16,8 @@
 
 package io.mapsmessaging.security.access;
 
+import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.identity.IdentityEntry;
@@ -61,6 +63,9 @@ public class UserManagement {
     }
     Set<Principal> principalSet = subject.getPrincipals();
     principalSet.add(new UniqueIdentifierPrincipal(userIdMap.getAuthId()));
+    if(SubjectHelper.getUsername(subject) == null){
+      principalSet.add(new UserPrincipal(username));
+    }
     return identityEntry;
   }
 
@@ -147,7 +152,7 @@ public class UserManagement {
     return null;
   }
 
-  private UserIdMap mapUser(IdentityEntry entry) {
+  protected UserIdMap mapUser(IdentityEntry entry) {
     UserIdMap userIdMap = null;
     if (userMapManagement.get(entry.getUsername()) == null) {
       userIdMap = new UserIdMap(UuidGenerator.getInstance().generate(), entry.getUsername(), identityLookup.getDomain());

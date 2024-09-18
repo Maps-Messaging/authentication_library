@@ -20,6 +20,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.github.javafaker.Faker;
 import io.mapsmessaging.security.MapsSecurityProvider;
+import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
@@ -144,9 +145,20 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       identityAccessManager.getUserManagement().createUser(username, password);
       String group = groupNames.get(Math.abs(random.nextInt(groupNames.size())));
       identityAccessManager.getGroupManagement().addUserToGroup(username, group);
-      userPasswordMap.put(username, password);
       Assertions.assertEquals(username, identityAccessManager.getUserManagement().getUser(username).getUsername());
       Assertions.assertNotNull(identityAccessManager.getUserManagement().getUser(username).getId());
+      Assertions.assertTrue(identityAccessManager.getUserManagement().validateUser(username, password));
+      Identity identity = identityAccessManager.getUserManagement().getUser(username);
+      Assertions.assertEquals(username, identity.getUsername());
+      password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20))).toCharArray();
+      identityAccessManager.getUserManagement().updateUserPassword(username, password);
+      Assertions.assertTrue(identityAccessManager.getUserManagement().validateUser(username, password));
+      userPasswordMap.put(username, password);
+      Subject subject = new Subject();
+      identityAccessManager.getUserManagement().updateSubject(subject, username);
+      Assertions.assertEquals(username, SubjectHelper.getUsername(subject));
+      identityAccessManager.updateSubject(subject);
+      Assertions.assertNotNull(SubjectHelper.getGroupId(subject));
     }
 
     for (Map.Entry<String, char[]> user : userPasswordMap.entrySet()) {
