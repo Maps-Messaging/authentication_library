@@ -107,7 +107,7 @@ public class KeyStoreManager implements CertificateManager {
 
   @Override
   public List<String> getAliases() throws KeyStoreException {
-    List<String> aliasList = new ArrayList<String>();
+    List<String> aliasList = new ArrayList<>();
     Enumeration<String> aliases = keyStore.aliases();
     while (aliases.hasMoreElements()) {
       aliasList.add(aliases.nextElement());

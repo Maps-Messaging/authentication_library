@@ -39,10 +39,11 @@ class SslHelperTest extends BaseCertificateTest {
     keyStoreProps.put("passphrase", new String(KEY_PASSWORD));
     keyStoreProps.put("path", "./testkeystore.JKS");
     keyStoreProps.put("managerFactory", "SunX509");
-
     ConfigurationProperties properties = new ConfigurationProperties();
     properties.put("keyStore", keyStoreProps);
     properties.put("trustStore", keyStoreProps);
+    properties.put("crlUrl", "http://crls.pki.goog/gts1c3/zdATt0Ex_Fk.crl");
+    properties.put("crlInterval", "360000");
     SSLContext sslContext = SslHelper.createContext("TLSv1.3", properties, logger);
     Assertions.assertNotNull(sslContext);
 

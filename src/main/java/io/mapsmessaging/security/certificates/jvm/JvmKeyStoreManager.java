@@ -65,7 +65,7 @@ public class JvmKeyStoreManager implements CertificateManager {
   }
 
   public List<String> getAliases() throws KeyStoreException {
-    List<String> aliasList = new ArrayList<String>();
+    List<String> aliasList = new ArrayList<>();
     Enumeration<String> aliases = keyStore.aliases();
     while (aliases.hasMoreElements()) {
       aliasList.add(aliases.nextElement());

@@ -70,7 +70,7 @@ public class UuidGenerator {
   private UuidGenerator() {
     namedGeneratorMap = new LinkedHashMap<>();
     int val = 7;
-    String version = System.getProperty("UUID_VERSION");
+    String version = System.getProperty("UUID_VERSION", "7");
     if (version != null) {
       try {
         val = Integer.parseInt(version);

@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.net.ssl.*;
@@ -126,7 +127,7 @@ public class SslHelper {
       TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
       String crlUrlPath = config.getProperty("crlUrl");
       if(crlUrlPath != null && !crlUrlPath.isEmpty()){
-        List<TrustManager> trustManagerList = Arrays.asList(trustManagers);
+        List<TrustManager> trustManagerList = new ArrayList<>(Arrays.asList(trustManagers));
         URL crlUrl = URI.create(crlUrlPath).toURL();
         CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(crlUrl, config.getLongProperty("crlInterval", 60*60*24)); // Default daily
         trustManagerList.add(new CrlTrustManager(certificateRevocationManager));
