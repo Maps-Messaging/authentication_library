@@ -27,6 +27,9 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import lombok.Getter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -99,6 +102,17 @@ public class KeyStoreManager implements CertificateManager {
     }
     store.load(null, password);
     return store;
+  }
+
+
+  @Override
+  public List<String> getAliases() throws KeyStoreException {
+    List<String> aliasList = new ArrayList<String>();
+    Enumeration<String> aliases = keyStore.aliases();
+    while (aliases.hasMoreElements()) {
+      aliasList.add(aliases.nextElement());
+    }
+    return aliasList;
   }
 
   @Override

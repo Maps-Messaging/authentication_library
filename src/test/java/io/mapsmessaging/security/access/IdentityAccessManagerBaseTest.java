@@ -24,6 +24,8 @@ import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.identity.GroupEntry;
+import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.jaas.IdentityLoginModule;
@@ -174,6 +176,10 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     }
 
     for (Identity userIdMap : identityAccessManager.getUserManagement().getAllUsers()) {
+      IdentityEntry identityEntry = identityAccessManager.getIdentityLookup().findEntry(userIdMap.getUsername());
+      for(GroupEntry groupEntry:identityEntry.getGroups()) {
+        identityAccessManager.getGroupManagement().removeUserFromGroup(identityEntry.getUsername(), groupEntry.getName());
+      }
       identityAccessManager.getUserManagement().deleteUser(userIdMap.getUsername());
     }
     List<Group> groupList = identityAccessManager.getGroupManagement().getAllGroups();

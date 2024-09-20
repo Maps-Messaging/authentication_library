@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.List;
 
 public interface CertificateManager {
 
@@ -45,4 +46,7 @@ public interface CertificateManager {
   KeyStore getKeyStore();
 
   boolean getExists();
+
+  List<String> getAliases() throws KeyStoreException;
+
 }

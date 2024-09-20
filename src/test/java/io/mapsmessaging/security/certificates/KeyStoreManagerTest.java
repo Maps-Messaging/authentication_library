@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -39,8 +40,35 @@ class KeyStoreManagerTest extends BaseCertificateTest {
         retrievedCert,
         "Retrieved certificate should match the original");
     certificateManager.deleteCertificate(TEST_ALIAS);
-
   }
+
+  @ParameterizedTest
+  @MethodSource("knownTypes")
+  void validateGetAliases(String type, String store) throws Exception {
+    setUp(type, store);
+    CertificateWithPrivateKey testCert = addCert(certificateManager);
+    Certificate retrievedCert = certificateManager.getCertificate(TEST_ALIAS);
+    assertNotNull(retrievedCert, "Certificate should not be null");
+    assertEquals(
+        testCert.getCertificate(),
+        retrievedCert,
+        "Retrieved certificate should match the original");
+
+    List<String> aliases = certificateManager.getAliases();
+    Assertions.assertNotNull(aliases, "Aliases should not be null");
+    Assertions.assertFalse(aliases.isEmpty(), "Aliases should not be empty");
+    Assertions.assertNotNull(certificateManager.getCertificate(aliases.get(0)));
+    certificateManager.deleteCertificate(TEST_ALIAS);
+  }
+
+  @ParameterizedTest
+  @MethodSource("knownTypes")
+  void ensureExceptionsRaised(String type, String store) throws Exception {
+    setUp(type, store);
+    Assertions.assertThrowsExactly(CertificateException.class, () -> certificateManager.getCertificate("Not Real Alias"));
+    Assertions.assertThrowsExactly(CertificateException.class, () -> certificateManager.deleteCertificate("Not Real Alias"));
+  }
+
 
   @ParameterizedTest
   @MethodSource("knownTypes")

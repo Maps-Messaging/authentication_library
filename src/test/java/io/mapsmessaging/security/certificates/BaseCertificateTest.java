@@ -18,15 +18,14 @@ package io.mapsmessaging.security.certificates;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.jaas.PropertiesLoader;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.junit.jupiter.params.provider.Arguments;
-
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.stream.Stream;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.junit.jupiter.params.provider.Arguments;
 
 public class BaseCertificateTest {
 
@@ -43,7 +42,6 @@ public class BaseCertificateTest {
     List<Arguments> argumentsList = new ArrayList<>();
     String[] types = {"JKS", "PKCS12", "JCEKS", "BKS", "UBER"};
     String[] stores = {"file", "vault"};
-    //    String[] stores = {"file"};
     for (String store : stores) {
       for (String type : types) {
         argumentsList.add(Arguments.of(type, store));
