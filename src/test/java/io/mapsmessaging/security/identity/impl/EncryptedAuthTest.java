@@ -22,11 +22,12 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.impl.encrypted.EncryptedAuth;
 import io.mapsmessaging.security.passwords.PasswordBuffer;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 public class EncryptedAuthTest  {
 
@@ -71,6 +72,7 @@ public class EncryptedAuthTest  {
       IdentityEntry entry = auth.findEntry(user);
       PasswordBuffer pass = entry.getPassword();
       Assertions.assertArrayEquals(pass.getHash(), users.get(user));
+      entry.setAttributeMap(certificateMap);
     }
   }
 

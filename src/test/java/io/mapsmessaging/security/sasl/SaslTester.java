@@ -16,19 +16,20 @@
 
 package io.mapsmessaging.security.sasl;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import io.mapsmessaging.security.identity.IdentityLookup;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.jupiter.api.Assertions;
+
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslClient;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
-import org.junit.jupiter.api.Assertions;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SaslTester extends BaseSasl {
 
@@ -73,6 +74,8 @@ public class SaslTester extends BaseSasl {
     }
     Assertions.assertTrue(mechanism.startsWith(saslServer.getMechanismName()));
     Assertions.assertTrue(mechanism.startsWith(saslClient.getMechanismName()));
+    saslServer.dispose();
+    saslClient.dispose();
   }
 
   private byte[] writeInIncrements(Writer writer, byte[] testBuffer, int inc) throws IOException {
