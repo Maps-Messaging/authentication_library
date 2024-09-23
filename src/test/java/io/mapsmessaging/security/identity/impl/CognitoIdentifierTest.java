@@ -81,9 +81,11 @@ public class CognitoIdentifierTest {
     if(identityEntry != null){
       lookup.deleteUser("testUser");
     }
-    lookup.createUser("testUser", "dummy password".toCharArray(), null );
+    lookup.createUser("testUser", "dummy password".toCharArray(), null);
+
     Assertions.assertArrayEquals(new char[0], lookup.getPasswordHash("testUser").getHash() );
     identityEntry = lookup.findEntry("testUser");
+    Assertions.assertArrayEquals(new char[0], identityEntry.getPassword().getHash() );
     Assertions.assertNotNull(identityEntry);
     Assertions.assertEquals("testUser", identityEntry.getUsername());
     Assertions.assertTrue(lookup.deleteUser(identityEntry.getUsername()));

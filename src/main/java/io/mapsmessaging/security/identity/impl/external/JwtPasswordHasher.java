@@ -49,6 +49,9 @@ public abstract class JwtPasswordHasher extends PasswordHasher {
 
   @Override
   public PasswordBuffer getPassword() {
+    if(computedPassword == null) {
+      return new PasswordBuffer(new char[0]);
+    }
     return computedPassword;
   }
 

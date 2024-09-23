@@ -59,18 +59,6 @@ public class JvmKeyStoreManager extends BasKeyStoreManager {
   }
 
   @Override
-  public Certificate getCertificate(String alias) throws CertificateException {
-    try {
-      if (keyStore.containsAlias(alias)) {
-        return keyStore.getCertificate(alias);
-      }
-    } catch (KeyStoreException e) {
-      throw new CertificateException("Error retrieving certificate", e);
-    }
-    throw new CertificateException("Alias does not exist");
-  }
-
-  @Override
   public void addCertificate(String alias, Certificate certificate) throws CertificateException {
     throw new CertificateException("Unable to add certificates to JVM Key Store");
   }
@@ -78,20 +66,6 @@ public class JvmKeyStoreManager extends BasKeyStoreManager {
   @Override
   public void deleteCertificate(String alias) throws CertificateException {
     throw new CertificateException("Unable to delete certificates to JVM Key Store");
-  }
-
-  @Override
-  public PrivateKey getKey(String alias, char[] keyPassword) throws CertificateException {
-    try {
-      Key key = keyStore.getKey(alias, keyPassword);
-      if (key instanceof PrivateKey) {
-        return (PrivateKey) key;
-      } else {
-        throw new KeyStoreException("No private key found for alias: " + alias);
-      }
-    } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
-      throw new CertificateException(e);
-    }
   }
 
   @Override

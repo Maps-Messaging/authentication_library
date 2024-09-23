@@ -92,6 +92,8 @@ public class LdapIdentifierTest {
     Assertions.assertNotNull(lookup.getEntries());
     Assertions.assertFalse(lookup.getEntries().isEmpty());
     Assertions.assertFalse(lookup.canManage());
+    Assertions.assertNotNull(lookup.getGroups());
+    Assertions.assertFalse(lookup.getGroups().isEmpty());
   }
 
   @Test

@@ -16,8 +16,9 @@
 
 package io.mapsmessaging.security.certificates;
 
-import java.security.KeyStore;
-import java.security.KeyStoreException;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -33,6 +34,32 @@ public abstract class BasKeyStoreManager implements CertificateManager {
 
   protected BasKeyStoreManager(KeyStore keyStore) {
     this.keyStore = keyStore;
+  }
+
+  @Override
+  public Certificate getCertificate(String alias) throws CertificateException {
+    try {
+      if (keyStore.containsAlias(alias)) {
+        return keyStore.getCertificate(alias);
+      }
+    } catch (KeyStoreException e) {
+      throw new CertificateException("Error retrieving certificate", e);
+    }
+    throw new CertificateException("Alias does not exist");
+  }
+
+  @Override
+  public PrivateKey getKey(String alias, char[] keyPassword) throws CertificateException {
+    try {
+      Key key = keyStore.getKey(alias, keyPassword);
+      if (key instanceof PrivateKey) {
+        return (PrivateKey) key;
+      } else {
+        throw new KeyStoreException("No private key found for alias: " + alias);
+      }
+    } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+      throw new CertificateException(e);
+    }
   }
 
   @Override
