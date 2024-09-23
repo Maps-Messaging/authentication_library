@@ -40,6 +40,12 @@ class JdkKeyStoreTest {
 
 
   @Test
+  void invalidConfig(){
+    ConfigurationProperties config = new ConfigurationProperties();
+    Assertions.assertThrowsExactly(IOException.class, () -> {CertificateManagerFactory.getInstance().getManager(config);});
+  }
+
+  @Test
   void retrieveCertificate()throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException  {
     ConfigurationProperties config = new ConfigurationProperties();
     config.put("passphrase", "changeit");

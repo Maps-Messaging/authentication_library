@@ -78,6 +78,9 @@ public class LdapIdentifierTest {
     Assertions.assertNotNull(identityEntry);
     Assertions.assertEquals(LdapUser.class, identityEntry.getClass());
     LdapUser ldapUser = (LdapUser) identityEntry;
+    Map<String, String> attributes = new LinkedHashMap<>();
+    ldapUser.setAttributeMap(attributes);
+    Assertions.assertNotNull(attributes.get("homeDirectory"));
     Assertions.assertNotNull(ldapUser.getGroups());
     Assertions.assertEquals(4, ldapUser.getGroups().size());
     Assertions.assertEquals(ldapUser.getUsername(), properties.getProperty("username"));

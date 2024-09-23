@@ -124,10 +124,4 @@ public abstract class IdentityEntry {
 
   protected IdentityEntry(){}
 
-  protected IdentityEntry(IdentityEntry rhs){
-    username = rhs.username;
-    passwordHasher = rhs.passwordHasher;
-    password = new PasswordBuffer(rhs.password.getBytes());
-    groupList.putAll(rhs.groupList);
-  }
 }
