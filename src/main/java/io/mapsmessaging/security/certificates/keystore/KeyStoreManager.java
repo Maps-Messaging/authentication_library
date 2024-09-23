@@ -17,6 +17,7 @@
 package io.mapsmessaging.security.certificates.keystore;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.security.certificates.BasKeyStoreManager;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
@@ -27,13 +28,9 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import lombok.Getter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-public class KeyStoreManager implements CertificateManager {
+public class KeyStoreManager extends BasKeyStoreManager {
 
   protected static final String KEYSTORE_TYPE = "type";
   protected static final String KEYSTORE_PATH = "path";
@@ -41,15 +38,13 @@ public class KeyStoreManager implements CertificateManager {
   protected static final String KEYSTORE_PASSWORD_ALT = "passphrase";
   protected static final String PROVIDER_NAME = "providerName";
 
-  @Getter
-  private final KeyStore keyStore;
   private final String keyStorePath;
   private final char[] keyStorePassword;
   private final boolean existed;
   private final Store storage;
 
   public KeyStoreManager() {
-    keyStore = null;
+    super();
     keyStorePath = "";
     keyStorePassword = new char[0];
     existed = true;
@@ -102,17 +97,6 @@ public class KeyStoreManager implements CertificateManager {
     }
     store.load(null, password);
     return store;
-  }
-
-
-  @Override
-  public List<String> getAliases() throws KeyStoreException {
-    List<String> aliasList = new ArrayList<>();
-    Enumeration<String> aliases = keyStore.aliases();
-    while (aliases.hasMoreElements()) {
-      aliasList.add(aliases.nextElement());
-    }
-    return aliasList;
   }
 
   @Override

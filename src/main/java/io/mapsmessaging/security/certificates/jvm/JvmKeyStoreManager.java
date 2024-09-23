@@ -17,26 +17,20 @@
 package io.mapsmessaging.security.certificates.jvm;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.security.certificates.BasKeyStoreManager;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import lombok.Getter;
 
-public class JvmKeyStoreManager implements CertificateManager {
+public class JvmKeyStoreManager extends BasKeyStoreManager {
 
   protected static final String KEYSTORE_PASSWORD = "passphrase";
 
-  @Getter
-  private final KeyStore keyStore;
 
   public JvmKeyStoreManager() {
-    keyStore = null;
   }
 
   public boolean isValid(ConfigurationProperties config) {
@@ -62,15 +56,6 @@ public class JvmKeyStoreManager implements CertificateManager {
 
   public CertificateManager create(ConfigurationProperties config) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     return new JvmKeyStoreManager(config);
-  }
-
-  public List<String> getAliases() throws KeyStoreException {
-    List<String> aliasList = new ArrayList<>();
-    Enumeration<String> aliases = keyStore.aliases();
-    while (aliases.hasMoreElements()) {
-      aliasList.add(aliases.nextElement());
-    }
-    return aliasList;
   }
 
   @Override
