@@ -1,5 +1,5 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2025 ] [Matthew Buckton]
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 package io.mapsmessaging.security.jaas;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -51,25 +52,32 @@ class Auth0LoginTest {
   }
 
   @Test
-  void basicValidation() throws UnirestException, LoginException {
+  void basicValidation() throws IOException, InterruptedException, LoginException {
     if (properties.isEmpty()) {
       return;
     }
     String body = (String) properties.get("requestBody");
-    HttpResponse<String> response =
-        Unirest.post("https://" + domain + "/oauth/token")
-            .header("content-type", "application/json")
-            .body(body)
-            .asString();
-    JSONObject jsonObject = new JSONObject(response.getBody());
+
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("https://" + domain + "/oauth/token"))
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(body))
+        .build();
+
+    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+    JSONObject jsonObject = new JSONObject(response.body());
     char[] access_token = jsonObject.getString("access_token").toCharArray();
+
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("oNnOEXu8CsIYYxpu56ADpfm4Ma8Z1GNt", access_token, "");
     Subject subject = new Subject();
     LoginModule loginModule = new Auth0JwtLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
+
     Assertions.assertTrue(loginModule.login());
     Assertions.assertTrue(loginModule.commit());
-    Assertions.assertEquals("auth0",((Auth0JwtLoginModule)loginModule).getDomain());
+    Assertions.assertEquals("auth0", ((Auth0JwtLoginModule) loginModule).getDomain());
   }
 
   @Test
@@ -78,7 +86,7 @@ class Auth0LoginTest {
     Subject subject = new Subject();
     LoginModule loginModule = new Auth0JwtLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
+
     Assertions.assertThrowsExactly(JWTDecodeException.class, loginModule::login);
   }
-
 }

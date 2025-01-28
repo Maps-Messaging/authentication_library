@@ -296,8 +296,10 @@
         <version>11.1.1</version>
         <configuration>
           <nvdApiKey>${nvd.api.key}</nvdApiKey>
-          <failBuildOnAnyVulnerability>false</failBuildOnAnyVulnerability>
+          <failBuildOnCVSS>10</failBuildOnCVSS>
           <failOnError>false</failOnError>
+          <skipArtifactType>test-jar</skipArtifactType>
+          <skipTestScope>true</skipTestScope>
         </configuration>
         <executions>
           <execution>
@@ -424,13 +426,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java -->
-    <dependency>
-      <groupId>com.mashape.unirest</groupId>
-      <artifactId>unirest-java</artifactId>
-      <version>1.4.9</version>
-      <scope>test</scope>
-    </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/com.ongres.scram/client -->
     <dependency>
