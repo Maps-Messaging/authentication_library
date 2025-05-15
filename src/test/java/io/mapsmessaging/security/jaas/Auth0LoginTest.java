@@ -20,6 +20,8 @@
 package io.mapsmessaging.security.jaas;
 
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
 import java.net.URI;
@@ -32,7 +34,6 @@ import java.util.Properties;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -70,8 +71,9 @@ class Auth0LoginTest {
 
     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-    JSONObject jsonObject = new JSONObject(response.body());
-    char[] access_token = jsonObject.getString("access_token").toCharArray();
+    JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
+    char[] access_token = jsonObject.get("access_token").getAsString().toCharArray();
+
 
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("oNnOEXu8CsIYYxpu56ADpfm4Ma8Z1GNt", access_token, "");
     Subject subject = new Subject();
