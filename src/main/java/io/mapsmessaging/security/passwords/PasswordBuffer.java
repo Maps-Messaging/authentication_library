@@ -45,17 +45,16 @@ public class PasswordBuffer {
   }
 
   public void clear(){
-    byte[] buf = buffer.array();
+    byte[] buf  = new byte[end];
     ArrayHelper.clearByteArray(buf);
     buffer.clear();
-    buffer.put(buf);
   }
 
-  public synchronized byte[] getBytes(){
+  public byte[] getBytes(){
+    ByteBuffer dup = buffer.duplicate();
+    dup.position(0).limit(end);
     byte[] tmp = new byte[end];
-    buffer.position(0);
-    buffer.get(tmp);
-    buffer.flip();
+    dup.get(tmp);
     return tmp;
   }
 
