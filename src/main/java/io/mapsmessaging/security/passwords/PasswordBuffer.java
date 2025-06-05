@@ -25,12 +25,14 @@ import java.nio.ByteBuffer;
 
 public class PasswordBuffer {
   private final ByteBuffer buffer;
+  private int end =0;
 
   public PasswordBuffer(char[] hash) {
     byte[] buf = ArrayHelper.charArrayToByteArray(hash);
     ByteBuffer tmp = ByteBuffer.allocateDirect(buf.length);
     tmp.put(buf);
     tmp.flip();
+    end = buf.length;
     buffer = tmp.asReadOnlyBuffer();
   }
 
@@ -38,6 +40,7 @@ public class PasswordBuffer {
     ByteBuffer tmp = ByteBuffer.allocateDirect(buf.length);
     tmp.put(buf);
     tmp.flip();
+    end = buf.length;
     buffer = tmp.asReadOnlyBuffer();
   }
 
@@ -48,11 +51,12 @@ public class PasswordBuffer {
     buffer.put(buf);
   }
 
-  public byte[] getBytes(){
-    byte[] buf =new byte[buffer.remaining()];
-    buffer.get(buf);
+  public synchronized byte[] getBytes(){
+    byte[] tmp = new byte[end];
+    buffer.position(0);
+    buffer.get(tmp);
     buffer.flip();
-    return buf;
+    return tmp;
   }
 
   public char[] getHash() {

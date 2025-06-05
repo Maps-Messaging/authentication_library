@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.security.auth.Subject;
 import lombok.Getter;
 
@@ -69,7 +70,7 @@ import lombok.Getter;
  */
 public abstract class IdentityEntry {
 
-  protected final Map<String, GroupEntry> groupList = new LinkedHashMap<>();
+  protected final Map<String, GroupEntry> groupList = new ConcurrentHashMap<>();
   @Getter
   protected String username;
   @Getter
