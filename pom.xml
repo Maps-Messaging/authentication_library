@@ -346,7 +346,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-secretsmanager</artifactId>
-      <version>1.12.783</version>
+      <version>1.12.785</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/secretsmanager -->
     <dependency>
