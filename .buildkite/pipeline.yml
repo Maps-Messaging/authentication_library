@@ -1,0 +1,53 @@
+steps:
+  - label: ":maven: Build and Deploy"
+    command:
+      - echo "domain=$(buildkite-agent secret get auth0Identity_domain)" > Auth0Identity.properties
+      - echo "clientId=$(buildkite-agent secret get auth0Identity_clientId)" >> Auth0Identity.properties
+      - echo "clientSecret=$(buildkite-agent secret get auth0Identity_clientSecret)" >> Auth0Identity.properties
+      - echo "cacheTime=30000" >> Auth0Identity.properties
+
+      - echo "auth0Domain=$(buildkite-agent secret get auth0_domain)" > Auth0.properties
+      - echo "requestBody=$(buildkite-agent secret get auth0_requestBody)" >> Auth0.properties
+
+      - echo "region=ap-southeast-2" > cognito.properties
+      - echo "userPoolId=$(buildkite-agent secret get cognito_userPoolId)" >> cognito.properties
+      - echo "accessKeyId=$(buildkite-agent secret get cognito_accessKeyId)" >> cognito.properties
+      - echo "secretAccessKey=$(buildkite-agent secret get cognito_secretAccessKey)" >> cognito.properties
+      - echo "appClientId=$(buildkite-agent secret get cognito_appClientId)" >> cognito.properties
+      - echo "appClientSecret=$(buildkite-agent secret get cognito_appClientSecret)" >> cognito.properties
+      - echo "cacheTime=30000" >> cognito.properties
+
+      - echo "ldapUrl=ldap://10.140.62.27:389" > ldap.properties
+      - echo "ldapUser=cn=admin, DC=buckton, DC=org" >> ldap.properties
+      - echo "ldapPassword=$(buildkite-agent secret get ldapPassword)" >> ldap.properties
+      - echo "searchBase=OU=people,DC=buckton,DC=org" >> ldap.properties
+      - echo "searchFilter=(objectClass=person)" >> ldap.properties
+      - echo "groupSearchBase=OU=group,DC=buckton,DC=org" >> ldap.properties
+      - echo "groupSearchFilter=(objectClass=*)" >> ldap.properties
+      - echo "username=matthew" >> ldap.properties
+      - echo "hashedPassword=$(buildkite-agent secret get ldap_expectedHash)" >> ldap.properties
+
+      - echo "name=test" > softhsm.cfg
+      - echo "library=/usr/lib/softhsm/libsofthsm2.so" >> softhsm.cfg
+      - echo "slot="$$BUILDKITE_AGENT_META_DATA_SOFTHSM_SLOT >> softhsm.cfg
+      - echo "slot="$$BUILDKITE_AGENT_META_DATA_SOFTHSM_SLOT
+
+      - echo "vaultAddress=https://10.140.62.12:8200" > vault.properties
+      - echo "vaultToken=$(buildkite-agent secret get vaultToken)" >> vault.properties
+      - echo "secretEngine=cubbyhole" >> vault.properties
+      - echo "sslVerify=false" >> vault.properties
+
+      - export SOFTHSM2_CONF=/var/lib/buildkite-agent/lib/softhsm/softhsm2.conf
+      - export SONAR_TOKEN=$(buildkite-agent secret get SONAR_TOKEN)
+      - export NVD_API_KEY=$(buildkite-agent secret get nvd_api_key)
+      - mvn -Dgpg.skip=true clean deploy -Psnapshot
+      - mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}
+    plugins:
+      - test-collector#v1.0.0:
+          files: "target/surefire-reports/*.xml"
+          format: "junit"
+    env:
+      SONAR_TOKEN: "${SONAR_TOKEN}"
+      BUILDKITE_ANALYTICS_TOKEN: "TB4c1Dp2UgWDRHcyrbLizA2n"
+    agents:
+      queue: "java_build_queue"
