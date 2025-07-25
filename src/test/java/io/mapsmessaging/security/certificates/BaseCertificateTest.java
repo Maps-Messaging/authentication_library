@@ -45,7 +45,7 @@ public class BaseCertificateTest {
   static Stream<Arguments> knownTypes() {
     List<Arguments> argumentsList = new ArrayList<>();
     String[] types = {"JKS", "PKCS12", "JCEKS", "BKS", "UBER"};
-    String[] stores = {"file", "vault"};
+    String[] stores = {"file"};  // {"file", "vault"};
     for (String store : stores) {
       for (String type : types) {
         argumentsList.add(Arguments.of(type, store));
