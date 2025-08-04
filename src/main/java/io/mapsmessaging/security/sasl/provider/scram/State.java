@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
+@SuppressWarnings("javaarchitecture:S7027") // yes State needs the context to actually process
 public abstract class State {
 
   protected final Logger logger = LoggerFactory.getLogger(State.class);

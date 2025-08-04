@@ -40,6 +40,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@SuppressWarnings("javaarchitecture:S7027") // yes SessionContext uses state
 public class SessionContext {
 
   private static final String[] HMAC_NAMES = {"sha3", "sha"};
