@@ -29,6 +29,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@SuppressWarnings("javaarchitecture:S7027")
 public class CognitoIdentityEntry extends JwtIdentityEntry {
   private String uuid;
   private String email;

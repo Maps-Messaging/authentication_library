@@ -36,6 +36,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitia
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthenticationResultType;
 
+@SuppressWarnings("javaarchitecture:S7027")
 public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenProvider {
 
   private final CognitoAuth cognitoAuth;
