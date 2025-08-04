@@ -31,7 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 
 @SuppressWarnings("java:S2187") // Ignore the no test rule
 
-public class BaseSasl {
+class BaseSasl {
   protected static IdentityAccessManager identityAccessManager;
 
   protected SaslServer saslServer;
@@ -72,7 +72,7 @@ public class BaseSasl {
   }
 
   @AfterEach
-  public void tearDown() throws SaslException {
+  void tearDown() throws SaslException {
     if(saslClient != null) saslClient.dispose();
     if(saslServer != null) saslServer.dispose();
   }

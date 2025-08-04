@@ -37,6 +37,7 @@ import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
 import io.mapsmessaging.security.passwords.PasswordBuffer;
 
+@SuppressWarnings("javaarchitecture:S7027") // yes this uses the Auth0IdentityEntry
 public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvider {
 
   private static final Logger logger = LoggerFactory.getLogger(Auth0PasswordHasher.class);

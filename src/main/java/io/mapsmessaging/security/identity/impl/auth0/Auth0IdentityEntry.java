@@ -29,6 +29,7 @@ import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
+@SuppressWarnings("javaarchitecture:S7027") // yes this uses the Auth0PasswordHasher
 public class Auth0IdentityEntry extends JwtIdentityEntry {
 
   private static final Logger logger = LoggerFactory.getLogger(Auth0IdentityEntry.class);
