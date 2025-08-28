@@ -25,21 +25,20 @@ import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class BaseIdentityTest {
+class BaseIdentityTest {
 
   @Test
   void testAccessExceptions(){
     TestIdentityLookup testIdentityLookup= new TestIdentityLookup();
     Assertions.assertEquals(0, testIdentityLookup.getGroups().size());
-    Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.createGroup("fred"));
-    Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.deleteGroup("fred"));
-    Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.createUser("fred", new char[0], null));
-    Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.deleteUser("fred"));
-    Assertions.assertThrowsExactly(NotImplementedException.class, () -> testIdentityLookup.updateGroup(null));
+    Assertions.assertThrowsExactly(NoSuchMethodError.class, () -> testIdentityLookup.createGroup("fred"));
+    Assertions.assertThrowsExactly(NoSuchMethodError.class, () -> testIdentityLookup.deleteGroup("fred"));
+    Assertions.assertThrowsExactly(NoSuchMethodError.class, () -> testIdentityLookup.createUser("fred", new char[0], null));
+    Assertions.assertThrowsExactly(NoSuchMethodError.class, () -> testIdentityLookup.deleteUser("fred"));
+    Assertions.assertThrowsExactly(NoSuchMethodError.class, () -> testIdentityLookup.updateGroup(null));
 
   }
 
