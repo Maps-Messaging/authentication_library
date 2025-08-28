@@ -26,7 +26,6 @@ import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.List;
-import org.apache.commons.lang3.NotImplementedException;
 
 public interface IdentityLookup {
 
@@ -47,24 +46,24 @@ public interface IdentityLookup {
   IdentityLookup create(ConfigurationProperties config);
 
   default boolean createGroup(String groupName) throws IOException {
-    throw new NotImplementedException("Unable to add groups");
+    throw new NoSuchMethodError("Unable to add groups");
   }
 
   default boolean deleteGroup(String groupName) throws IOException {
-    throw new NotImplementedException("Unable to delete groups");
+    throw new NoSuchMethodError("Unable to delete groups");
   }
 
   default boolean createUser(String username, char[] passwordHash, PasswordHandler passwordHasher)
       throws IOException, GeneralSecurityException {
-    throw new NotImplementedException("Unable to add users to an LDAP server");
+    throw new NoSuchMethodError("Unable to add users to an LDAP server");
   }
 
   default boolean deleteUser(String username) throws IOException {
-    throw new NotImplementedException("Unable to delete users to an LDAP server");
+    throw new NoSuchMethodError("Unable to delete users to an LDAP server");
   }
 
   default void updateGroup(GroupEntry groupEntry) throws IOException {
-    throw new NotImplementedException("Unable to delete users to an LDAP server");
+    throw new NoSuchMethodError("Unable to delete users to an LDAP server");
   }
 
   default boolean canManage(){
