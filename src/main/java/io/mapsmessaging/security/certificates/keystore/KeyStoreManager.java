@@ -1,28 +1,30 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.certificates.keystore;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.security.certificates.BasKeyStoreManager;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
-import lombok.Getter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,23 +32,23 @@ import java.io.InputStream;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-public class KeyStoreManager implements CertificateManager {
+public class KeyStoreManager extends BasKeyStoreManager {
 
   protected static final String KEYSTORE_TYPE = "type";
   protected static final String KEYSTORE_PATH = "path";
-  protected static final String KEYSTORE_PASSWORD = "passphrase";
+  protected static final String KEYSTORE_PASSWORD = "store_passphrase";
+  protected static final String KEYSTORE_PASSWORD_ALT = "passphrase";
   protected static final String PROVIDER_NAME = "providerName";
 
-  @Getter
-  private final KeyStore keyStore;
   private final String keyStorePath;
   private final char[] keyStorePassword;
   private final boolean existed;
   private final Store storage;
 
   public KeyStoreManager() {
-    keyStore = null;
+    super();
     keyStorePath = "";
     keyStorePassword = new char[0];
     existed = true;
@@ -55,7 +57,7 @@ public class KeyStoreManager implements CertificateManager {
 
   public boolean isValid(ConfigurationProperties config) {
     return config.containsKey(KEYSTORE_TYPE) &&
-        config.containsKey(KEYSTORE_PASSWORD) &&
+        (config.containsKey(KEYSTORE_PASSWORD) || config.containsKey(KEYSTORE_PASSWORD_ALT)) &&
         config.containsKey(KEYSTORE_PATH);
   }
 
@@ -67,7 +69,7 @@ public class KeyStoreManager implements CertificateManager {
     storage = StorageFactory.getInstance().getStore(config.getMap());
 
     keyStorePath = config.getProperty(KEYSTORE_PATH);
-    String t = config.getProperty(KEYSTORE_PASSWORD);
+    String t = config.getProperty(KEYSTORE_PASSWORD, config.getProperty(KEYSTORE_PASSWORD_ALT));
     if (t == null) {
       t = "";
     }
@@ -97,20 +99,8 @@ public class KeyStoreManager implements CertificateManager {
         return store;
       }
     }
-    store.load(null, null);
+    store.load(null, password);
     return store;
-  }
-
-  @Override
-  public Certificate getCertificate(String alias) throws CertificateException {
-    try {
-      if (keyStore.containsAlias(alias)) {
-        return keyStore.getCertificate(alias);
-      }
-    } catch (KeyStoreException e) {
-      throw new CertificateException("Error retrieving certificate", e);
-    }
-    throw new CertificateException("Alias does not exist");
   }
 
   @Override
@@ -134,20 +124,6 @@ public class KeyStoreManager implements CertificateManager {
       }
     } catch (KeyStoreException e) {
       throw new CertificateException("Error deleting certificate", e);
-    }
-  }
-
-  @Override
-  public PrivateKey getKey(String alias, char[] keyPassword) throws CertificateException {
-    try {
-      Key key = keyStore.getKey(alias, keyPassword);
-      if (key instanceof PrivateKey) {
-        return (PrivateKey) key;
-      } else {
-        throw new KeyStoreException("No private key found for alias: " + alias);
-      }
-    } catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
-      throw new CertificateException(e);
     }
   }
 

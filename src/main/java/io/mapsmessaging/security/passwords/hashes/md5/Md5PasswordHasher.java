@@ -1,55 +1,66 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * You may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.passwords.hashes.md5;
 
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHasher;
+import io.mapsmessaging.security.util.ArrayHelper;
 import org.apache.commons.codec.digest.Md5Crypt;
 
-import java.nio.charset.StandardCharsets;
+public class Md5PasswordHasher extends PasswordHasher {
 
-public class Md5PasswordHasher implements PasswordHasher {
-
-  protected final byte[] password;
+  protected final PasswordBuffer password;
   protected final byte[] salt;
 
   public Md5PasswordHasher() {
-    password = new byte[0];
+    password = new PasswordBuffer(new char[0]);
     salt = new byte[0];
   }
 
-  protected Md5PasswordHasher(String password) {
-    if (password.isEmpty()) {
-      this.password = new byte[0];
-      salt = new byte[0];
+  protected Md5PasswordHasher(char[] password) {
+    if (password == null || password.length == 0) {
+      this.password = new PasswordBuffer(new char[0]);
+      this.salt = new byte[0];
     } else {
-      String sub = password.substring(getKey().length());
-      int split = sub.indexOf("$");
-      String pw = "";
-      String sl = "";
+      char[] sub = ArrayHelper.substring(password, getKey().length());
+      int split = ArrayHelper.indexOf(sub, '$');
+
+      char[] pw = new char[0];
+      char[] sl = new char[0];
+
       if (split != -1) {
-        sl = sub.substring(0, split);
-        pw = sub.substring(split + 1);
+        sl = ArrayHelper.substring(sub, 0, split);
+        pw = ArrayHelper.substring(sub, split + 1);
       }
-      this.password = pw.getBytes(StandardCharsets.UTF_8);
-      this.salt = sl.getBytes(StandardCharsets.UTF_8);
+
+      this.password = new PasswordBuffer(pw);
+      this.salt = ArrayHelper.charArrayToByteArray(sl);
+
+      // Clear temporary arrays to avoid sensitive data lingering in memory
+      ArrayHelper.clearCharArray(sub);
+      ArrayHelper.clearCharArray(sl);
     }
   }
 
-  public PasswordHasher create(String password) {
+  public PasswordHasher create(char[] password) {
     return new Md5PasswordHasher(password);
   }
 
@@ -64,8 +75,8 @@ public class Md5PasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
-    return Md5Crypt.apr1Crypt(password, new String(salt)).getBytes(StandardCharsets.UTF_8);
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
+    return Md5Crypt.apr1Crypt(ArrayHelper.charArrayToByteArray(password), new String(salt)).toCharArray();
   }
 
   @Override
@@ -74,13 +85,13 @@ public class Md5PasswordHasher implements PasswordHasher {
   }
 
   @Override
-  public byte[] getPassword() {
+  public PasswordBuffer getPassword() {
     return password;
   }
 
   @Override
   public char[] getFullPasswordHash() {
-    return (getKey() + new String(salt) + "$" + new String(password)).toCharArray();
+    return ArrayHelper.appendCharArrays(getKey().toCharArray(), ArrayHelper.byteArrayToCharArray(salt), "$".toCharArray(), password.getHash());
   }
 
   @Override

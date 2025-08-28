@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.passwords;
@@ -21,6 +25,7 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.PASSWORD_PARSER_
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
+import io.mapsmessaging.security.util.ArrayHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -64,29 +69,14 @@ public class PasswordHandlerFactory {
 
   public PasswordHandler parse(char[] password) {
     for (PasswordHandler handler : passwordHandlers) {
+      char[] key = handler.getKey().toCharArray();
       if (!handler.getName().equals("PLAIN")
-          && password.length >= handler.getKey().length()
-          && startWith(password, handler.getKey().toCharArray())) {
-        return handler.create(new String(password));
+          && password.length >= key.length
+          && ArrayHelper.startsWithIgnoreCase(password, key)) {
+        return handler.create(password);
       }
     }
-    return new PlainPasswordHasher(new String(password));
-  }
-
-  private boolean startWith(char[] longString, char[] start) {
-    if (start.length >= longString.length) {
-      return false;
-    }
-    for (int x = 0; x < start.length; x++) {
-      if (longString[x] != start[x]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public PasswordHandler parse(String password) {
-    return parse(password.toCharArray());
+    return new PlainPasswordHasher(password);
   }
 
 }

@@ -1,23 +1,31 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.jaas;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -28,7 +36,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 import org.junit.jupiter.api.*;
 
 public class Auth0IdentityLoginTest extends BaseIdentity {
@@ -72,14 +79,14 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
   }
 
   @Override
-  String getPassword() {
-    return "testPassword01!";
+  char[] getPassword() {
+    return "testPassword01!".toCharArray();
   }
 
   @Test
   void simpleJwtLoginTest() throws Exception {
     Auth0Client auth0Client = new Auth0Client();
-    String token = auth0Client.authenticateAndGetToken();
+    char[] token = auth0Client.authenticateAndGetToken().toCharArray();
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), token, "");
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
@@ -91,29 +98,37 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
   public class Auth0Client {
 
     public String authenticateAndGetToken() throws Exception {
+      Gson gson = new Gson();
       String url = "https://" + properties.get("domain") + "/oauth/token";
       try (CloseableHttpClient client = HttpClients.createDefault()) {
         HttpPost httpPost = new HttpPost(url);
 
-        String json =
-            new JSONObject()
-                .put("client_id", properties.get("clientId"))
-                .put("client_secret", properties.get("clientSecret"))
-                .put("grant_type", "client_credentials")
-                .put("grant_type", "password") // Note: using the Resource Owner Password Grant
-                .put("username", getUser())
-                .put("password", getPassword())
-                .toString();
+        JsonObject json = new JsonObject();
+        String clientId = properties.getProperty("clientId");
+        if (clientId != null) {
+          json.addProperty("client_id", clientId);
+        }
 
-        StringEntity entity = new StringEntity(json);
+        String clientSecret = properties.getProperty("clientSecret");
+        if (clientSecret != null) {
+          json.addProperty("client_secret", clientSecret);
+        }
+
+        json.addProperty("grant_type", "password"); // overwrites "client_credentials"
+        json.addProperty("username", getUser());
+        json.addProperty("password", new String(getPassword()));
+
+        StringEntity entity = new StringEntity(gson.toJson(json), StandardCharsets.UTF_8);
         httpPost.setEntity(entity);
         httpPost.setHeader("Accept", "application/json");
         httpPost.setHeader("Content-type", "application/json");
 
         var response = client.execute(httpPost);
         String result = EntityUtils.toString(response.getEntity());
-        JSONObject jsonObj = new JSONObject(result);
-        return jsonObj.getString("id_token");
+
+        JsonObject responseJson = JsonParser.parseString(result).getAsJsonObject();
+        return responseJson.get("id_token").getAsString();
+
       }
     }
   }

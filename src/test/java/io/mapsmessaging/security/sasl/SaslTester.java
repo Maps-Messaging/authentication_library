@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.sasl;
@@ -38,17 +42,16 @@ public class SaslTester extends BaseSasl {
   private static final String QOP_LEVEL = "auth";
 
   public void testMechanism(
-      IdentityLookup identityLookup, String mechanism, String user, String password)
+      IdentityLookup identityLookup, String mechanism, String user, char[] password)
       throws IOException {
     Map<String, String> props = new HashMap<>();
     props.put(Sasl.QOP, QOP_LEVEL);
     createServer(identityLookup, mechanism, PROTOCOL, SERVER_NAME, props);
-    createClient(
-        user, password, new String[] {mechanism}, PROTOCOL, AUTHORIZATION_ID, SERVER_NAME, props);
-    simpleValidation(user);
+    createClient(user, password, new String[] {mechanism}, PROTOCOL, AUTHORIZATION_ID, SERVER_NAME, props);
+    simpleValidation(user, mechanism);
   }
 
-  void simpleValidation(String user) throws IOException {
+  void simpleValidation(String user, String mechanism) throws IOException {
     assertNotNull(saslServer, "This should not be null");
     assertNotNull(saslClient, "This should not be null");
     runAuth();
@@ -72,6 +75,10 @@ public class SaslTester extends BaseSasl {
       byte[] unwrapped = writeInIncrements(serverWriter, wrapped, 43);
       Assertions.assertArrayEquals(testBuffer, unwrapped);
     }
+    Assertions.assertTrue(mechanism.startsWith(saslServer.getMechanismName()));
+    Assertions.assertTrue(mechanism.startsWith(saslClient.getMechanismName()));
+    saslServer.dispose();
+    saslClient.dispose();
   }
 
   private byte[] writeInIncrements(Writer writer, byte[] testBuffer, int inc) throws IOException {

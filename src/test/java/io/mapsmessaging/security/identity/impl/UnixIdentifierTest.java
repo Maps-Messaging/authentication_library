@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.identity.impl;
@@ -21,6 +25,7 @@ import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.unix.UnixAuth;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.UnixSha512PasswordHasher;
@@ -43,13 +48,16 @@ class UnixIdentifierTest {
     Assertions.assertNull(lookup.findGroup("admin"));
     Assertions.assertEquals(lookup.getDomain(), "unix");
     Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
-    char[] hash = lookup.getPasswordHash("test");
+    PasswordBuffer hash = lookup.getPasswordHash("test");
     Assertions.assertNotNull(hash);
-    Assertions.assertNotEquals(0, hash.length);
-    String pwd = new String(hash);
+    Assertions.assertNotEquals(0, hash.getHash().length);
+    String pwd = new String(hash.getHash());
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash.getHash());
     Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
+    Assertions.assertFalse(lookup.canManage());
+    Assertions.assertFalse(lookup.getGroups().isEmpty());
+
   }
 
   @Test
@@ -63,12 +71,12 @@ class UnixIdentifierTest {
     Assertions.assertNull(lookup.findGroup("admin"));
     Assertions.assertEquals(lookup.getDomain(), "unix");
     Assertions.assertEquals(lookup.getClass(), UnixAuth.class);
-    char[] hash = lookup.getPasswordHash("test");
+    char[] hash = lookup.getPasswordHash("test").getHash();
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.length);
     String pwd = new String(hash);
     Assertions.assertEquals("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", pwd);
-    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(pwd);
+    PasswordHandler passwordHasher = PasswordHandlerFactory.getInstance().parse(hash);
     Assertions.assertEquals(UnixSha512PasswordHasher.class, passwordHasher.getClass());
   }
 

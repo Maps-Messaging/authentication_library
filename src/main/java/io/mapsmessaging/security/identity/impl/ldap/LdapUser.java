@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.identity.impl.ldap;
@@ -19,9 +23,11 @@ package io.mapsmessaging.security.identity.impl.ldap;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.principals.FullNamePrincipal;
 import io.mapsmessaging.security.identity.principals.HomeDirectoryPrincipal;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.security.Principal;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.Set;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -40,8 +46,8 @@ public class LdapUser extends IdentityEntry {
 
   public LdapUser(String username, char[] password, Attributes attrs) {
     super.username = username;
-    super.password = new String(password);
-    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(new String(password));
+    super.password = new PasswordBuffer(password);
+    super.passwordHasher = PasswordHandlerFactory.getInstance().parse(password);
     this.attrs = attrs;
     NamingEnumeration<? extends Attribute> namingEnum = attrs.getAll();
     while (namingEnum.hasMoreElements()) {
@@ -79,6 +85,16 @@ public class LdapUser extends IdentityEntry {
     return principals;
   }
 
+  @Override
+  public void setAttributeMap(Map<String, String> attributeMap) {
+    attributeMap.put("homeDirectory", homeDirectory);
+    attributeMap.put("description", description);
+    NamingEnumeration<? extends Attribute> enumeration = attrs.getAll();
+    while (enumeration.hasMoreElements()) {
+      Attribute attribute = enumeration.nextElement();
+      attributeMap.put(attribute.getID(), attribute.toString());
+    }
+  }
 
   static class LdapPrincipal implements Principal {
     private final String name;

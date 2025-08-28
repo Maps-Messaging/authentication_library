@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.sasl.provider.scram;
@@ -36,6 +40,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@SuppressWarnings("javaarchitecture:S7027") // yes SessionContext uses state
 public class SessionContext {
 
   private static final String[] HMAC_NAMES = {"sha3", "sha"};
@@ -47,7 +52,7 @@ public class SessionContext {
   private String username;
   private State state;
   private int iterations;
-  private String prepPassword;
+  private char[] prepPassword;
   private Mac mac;
   private String algorithm;
   private int keySize;
@@ -74,7 +79,7 @@ public class SessionContext {
     initialServerChallenge = "";
     algorithm = "";
     keySize = 0;
-    prepPassword = "";
+    prepPassword = new char[0];
 
     Arrays.fill(clientKey, (byte) 0);
     Arrays.fill(clientSignature, (byte) 0);
@@ -143,9 +148,9 @@ public class SessionContext {
     clientSignature = computeHmac(storedKey, authString);
   }
 
-  public void computeClientHashes(String password, String authString)
+  public void computeClientHashes(byte[] password, String authString)
       throws InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException {
-    computeClientKey(password.getBytes(StandardCharsets.UTF_8));
+    computeClientKey(password);
     computeStoredKeyAndSignature(authString);
     clientProof = clientKey.clone();
     for (int i = 0; i < clientProof.length; i++) {

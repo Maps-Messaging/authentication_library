@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.access;
@@ -26,8 +30,7 @@ import io.mapsmessaging.security.access.mapping.store.MapStore;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import io.mapsmessaging.security.passwords.PasswordHasher;
-import io.mapsmessaging.security.passwords.hashes.bcrypt.BCrypt2YPasswordHasher;
+import io.mapsmessaging.security.passwords.PasswordHandler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -47,43 +50,46 @@ public class AccessControlListTest {
     MapStore<UserIdMap> userStore = new MapFileStore<>("./target/test/security/userMap");
     MapStore<GroupIdMap> groupStore = new MapFileStore<>("./target/test/security/groupMap");
 
+    Map<String, Object> config = new LinkedHashMap<>();
+    config.put("configDirectory", "./target/test/security");
+    config.put("passwordHandler", "BCrypt2YPasswordHasher");
+
     IdentityAccessManager identityAccessManager =
         new IdentityAccessManager(
             "Apache-Basic-Auth",
-            Collections.singletonMap("configDirectory", "./target/test/security"),
+            config,
             userStore,
             groupStore);
 
-    PasswordHasher passwordHasher = new BCrypt2YPasswordHasher();
-    identityAccessManager.setPasswordHandler(passwordHasher);
+    PasswordHandler passwordHasher = identityAccessManager.getUserManagement().passwordHandler;
 
-    byte[] hash =
+    char[] hash =
         passwordHasher.transformPassword(
-            "password1".getBytes(StandardCharsets.UTF_8),
+            "password1".toCharArray(),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
-    UserIdMap usernameId = identityAccessManager.createUser("username", new String(hash));
+    UserIdMap usernameId = identityAccessManager.getUserManagement().createUser("username", hash);
 
     hash =
         passwordHasher.transformPassword(
-            "password2".getBytes(StandardCharsets.UTF_8),
+            "password2".toCharArray(),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
-    UserIdMap username2Id = identityAccessManager.createUser("username2", new String(hash));
+    UserIdMap username2Id = identityAccessManager.getUserManagement().createUser("username2", hash);
 
     hash =
         passwordHasher.transformPassword(
-            "password3".getBytes(StandardCharsets.UTF_8),
+            "password3".toCharArray(),
             PasswordGenerator.generateSalt(16).getBytes(StandardCharsets.UTF_8),
             10);
-    UserIdMap fredId = identityAccessManager.createUser("fred", new String(hash));
+    UserIdMap fredId = identityAccessManager.getUserManagement().createUser("fred", hash);
 
-    GroupIdMap group1IdMap = identityAccessManager.createGroup("group1");
-    GroupIdMap group2IdMap = identityAccessManager.createGroup("group2");
+    GroupIdMap group1IdMap = identityAccessManager.getGroupManagement().createGroup("group1");
+    GroupIdMap group2IdMap = identityAccessManager.getGroupManagement().createGroup("group2");
 
-    identityAccessManager.addUserToGroup("username", "group1");
+    identityAccessManager.getGroupManagement().addUserToGroup("username", "group1");
     // identityAccessManager.addUserToGroup("username", "group2");
-    identityAccessManager.addUserToGroup("username2", "group2");
+    identityAccessManager.getGroupManagement().addUserToGroup("username2", "group2");
 
     // Create the AccessControlList
     List<String> aclEntries = new ArrayList<>();

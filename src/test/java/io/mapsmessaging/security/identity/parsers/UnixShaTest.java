@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.identity.parsers;
@@ -33,14 +37,14 @@ class UnixShaTest extends BaseHashFunctions {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
     PasswordHasher passwordHasher = new UnixSha512PasswordHasher();
-    byte[] hash =
+    char[] hash =
         passwordHasher.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 5000);
+            password.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), 5000);
 
-    PasswordHasher passwordCheck = new UnixSha512PasswordHasher(new String(hash));
-    byte[] check =
+    PasswordHasher passwordCheck = new UnixSha512PasswordHasher(hash);
+    char[] check =
         passwordCheck.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8), passwordCheck.getSalt(), 5000);
+            password.toCharArray(), passwordCheck.getSalt(), 5000);
     Assertions.assertArrayEquals(hash, check);
   }
 
@@ -49,29 +53,29 @@ class UnixShaTest extends BaseHashFunctions {
     String password = "This is a long password that needs to be hashed";
     String salt = PasswordGenerator.generateSalt(12);
     PasswordHasher passwordHasher = new UnixSha256PasswordHasher();
-    byte[] hash =
+    char[] hash =
         passwordHasher.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8), salt.getBytes(StandardCharsets.UTF_8), 5000);
+            password.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), 5000);
 
-    PasswordHasher passwordCheck = new UnixSha256PasswordHasher(new String(hash));
-    byte[] check =
+    PasswordHasher passwordCheck = new UnixSha256PasswordHasher(hash);
+    char[] check =
         passwordCheck.transformPassword(
-            password.getBytes(StandardCharsets.UTF_8), passwordCheck.getSalt(), 5000);
+            password.toCharArray(), passwordCheck.getSalt(), 5000);
     Assertions.assertArrayEquals(hash, check);
   }
 
   @Test
   void checkSha512Hash() throws GeneralSecurityException, IOException {
-    testHashing("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", "onewordpassword");
+    testHashing("$6$DVW4laGf$QwTuOOtd.1G3u2fs8d5/OtcQ73qTbwA.oAC1XWTmkkjrvDLEJ2WweTcBdxRkzfjQVfZCw3OVVBAMsIGMkH3On/", "onewordpassword".toCharArray());
   }
 
   @Test
   void checkSha512HashWithSpaces() throws GeneralSecurityException, IOException {
-    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "this has spaces");
+    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "this has spaces".toCharArray());
   }
 
   @Test
   void checkSha512HashBadPassword() throws GeneralSecurityException, IOException {
-    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "just wrong", false);
+    testHashing("$6$fiizFR2o$IQNwJXIXyQEL1ikJqvFrYGMBRiTBLnjY0OFfty9O472tWdJOY6czvUpuSDJQpzojQkLqNlP6devotoSBQCp//1", "just wrong".toCharArray(), false);
   }
 }

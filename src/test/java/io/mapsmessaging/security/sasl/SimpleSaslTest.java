@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.sasl;
@@ -26,7 +30,6 @@ import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Security;
 import java.util.LinkedHashMap;
@@ -51,7 +54,7 @@ class SimpleSaslTest extends BaseSasl {
     baseConfig.put("certificateStore", cipherConfig);
     baseConfig.put("passwordFile", "htpasswordFile-enc");
     baseConfig.put("groupFile", "htgroupFile-enc");
-    baseConfig.put("passwordHander", "EncryptedPasswordCipher");
+    baseConfig.put("passwordHandler", "EncryptedPasswordCipher");
 
     cipherConfig.put("alias", "alias");
     cipherConfig.put("privateKey.passphrase", "8 5tr0ng pr1v8t3 k3y p855w0rd!@#$%");
@@ -85,27 +88,27 @@ class SimpleSaslTest extends BaseSasl {
         "SCRAM-SHA3-512"
       })
   void validateSaslMechanisms(String mechanism) throws IOException, GeneralSecurityException {
-    testMechanism(mechanism, faker.backToTheFuture().character(), faker.backToTheFuture().quote());
+    testMechanism(mechanism, faker.backToTheFuture().character(), faker.backToTheFuture().quote().toCharArray());
   }
 
   void simpleWrongPasswordTest(String mechanism) {
     Sha1PasswordHasher passwordParser = new Sha1PasswordHasher();
-    byte[] password =
+    char[] password =
         passwordParser.transformPassword(
-            "This is a wrong password".getBytes(StandardCharsets.UTF_8), null, 0);
-    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", new String(password)));
+            "This is a wrong password".toCharArray(), null, 0);
+    Assertions.assertThrowsExactly(SaslException.class, () -> testMechanism(mechanism, "fred2@google.com", password));
   }
 
-  void testMechanism(String mechanism, String user, String password)
+  void testMechanism(String mechanism, String user, char[] password)
       throws IOException, GeneralSecurityException {
     user = user.replaceAll(" ", "_");
-    if (identityAccessManager.getUser(user) != null) {
-      identityAccessManager.deleteUser(user);
+    if (identityAccessManager.getUserManagement().getUser(user) != null) {
+      identityAccessManager.getUserManagement().deleteUser(user);
     }
-    identityAccessManager.createUser(user, password);
+    identityAccessManager.getUserManagement().createUser(user, password);
     SaslTester saslTester = new SaslTester();
     saslTester.testMechanism(identityAccessManager.getIdentityLookup(), mechanism, user, password);
-    identityAccessManager.deleteUser(user);
+    identityAccessManager.getUserManagement().deleteUser(user);
   }
 
 }

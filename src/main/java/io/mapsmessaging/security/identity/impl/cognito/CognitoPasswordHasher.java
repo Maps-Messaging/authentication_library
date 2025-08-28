@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.identity.impl.cognito;
@@ -24,29 +28,29 @@ import io.mapsmessaging.security.identity.impl.external.JwtPasswordHasher;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
 import io.mapsmessaging.security.jaas.aws.AwsAuthHelper;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Map;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AdminInitiateAuthResponse;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.AuthenticationResultType;
 
+@SuppressWarnings("javaarchitecture:S7027")
 public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenProvider {
 
   private final CognitoAuth cognitoAuth;
   private final String username;
   private final CognitoIdentityEntry identityEntry;
 
-  public CognitoPasswordHasher(
-      String username, CognitoAuth cognitoAuth, CognitoIdentityEntry identityEntry) {
+  public CognitoPasswordHasher(String username, CognitoAuth cognitoAuth, CognitoIdentityEntry identityEntry) {
     this.cognitoAuth = cognitoAuth;
     this.username = username;
     this.identityEntry = identityEntry;
   }
 
   @Override
-  public byte[] transformPassword(byte[] password, byte[] salt, int cost) {
+  public char[] transformPassword(char[] password, byte[] salt, int cost) {
     try {
       String passwordString = new String(password);
 
@@ -54,9 +58,9 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
       if (isJwt(passwordString)) {
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, passwordString);
-        computedPassword = password;
+        computedPassword = new PasswordBuffer(password);
         success();
-        return password;
+        return computedPassword.getHash();
       }
       // Login based on user/password
       String secretHash = generateSecretHash(username);
@@ -79,18 +83,19 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
       if (authResult != null) {
         JwtValidator validator = new JwtValidator(this);
         jwt = validator.validateJwt(username, authResult.idToken());
-        computedPassword = password;
+        computedPassword = new PasswordBuffer(password);
         success();
-        return password;
+        return computedPassword.getHash();
       }
     } catch (Exception ex) {
       // This is an invalid user, lets not log entries since DDOS lets just fail it
     }
     // If the above code executes without throwing an exception,
     // the JWT token is valid for the given user
-    computedPassword = new byte[10];
-    Arrays.fill(computedPassword, (byte) 0xff);
-    return new byte[0];
+    if(computedPassword != null){
+      computedPassword.clear();
+    }
+    return "Invalid username / password combination.".toCharArray();
   }
 
 

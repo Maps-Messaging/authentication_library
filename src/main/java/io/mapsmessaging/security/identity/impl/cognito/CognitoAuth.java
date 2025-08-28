@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.identity.impl.cognito;
@@ -22,15 +26,15 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.identity.impl.external.CachingIdentityLookup;
+import io.mapsmessaging.security.passwords.PasswordBuffer;
 import io.mapsmessaging.security.passwords.PasswordHandler;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
@@ -54,15 +58,15 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   public CognitoAuth(ConfigurationProperties config) {
-    userPoolId = (String) config.getProperty("userPoolId");
-    appClientId = (String) config.getProperty("appClientId");
-    appClientSecret = (String) config.getProperty("appClientSecret");
+    userPoolId = config.getProperty("userPoolId");
+    appClientId = config.getProperty("appClientId");
+    appClientSecret = config.getProperty("appClientSecret");
 
-    regionName = (String) config.getProperty("region");
-    String accesskeyId = (String) config.getProperty("accessKeyId");
-    String secretAccessKey = (String) config.getProperty("secretAccessKey");
+    regionName = config.getProperty("region");
+    String accesskeyId = config.getProperty("accessKeyId");
+    String secretAccessKey = config.getProperty("secretAccessKey");
 
-    String cacheTimeString = (String) config.getProperty("cacheTime");
+    String cacheTimeString = config.getProperty("cacheTime");
     if(cacheTimeString != null && !cacheTimeString.trim().isEmpty()){
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }
@@ -94,8 +98,8 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   @Override
-  public char[] getPasswordHash(String username) throws NoSuchUserFoundException {
-    return new char[0];
+  public PasswordBuffer getPasswordHash(String username) throws NoSuchUserFoundException {
+    return new PasswordBuffer(new char[0]);
   }
 
   @Override
@@ -186,7 +190,7 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
   }
 
   @Override
-  public boolean createUser(String username, String passwordHash, PasswordHandler passwordHasher) {
+  public boolean createUser(String username, char[] passwordHash, PasswordHandler passwordHasher) {
     List<AttributeType> userAttributes = new ArrayList<>();
     if (username.contains("@")) {
       userAttributes.add(AttributeType.builder().name("email_verified").value("true").build());

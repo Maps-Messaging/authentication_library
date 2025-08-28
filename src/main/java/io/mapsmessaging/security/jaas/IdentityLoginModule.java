@@ -1,17 +1,21 @@
 /*
- * Copyright [ 2020 - 2024 ] [Matthew Buckton]
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
  */
 
 package io.mapsmessaging.security.jaas;
@@ -22,12 +26,9 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-import io.mapsmessaging.security.passwords.PasswordCipher;
 import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
-import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Arrays;
@@ -68,27 +69,13 @@ public class IdentityLoginModule extends BaseLoginModule {
     if (identityEntry == null) {
       throw new LoginException("Login failed: No such user");
     }
-    byte[] actualPassword;
-    byte[] remotePassword = new String(password).getBytes(StandardCharsets.UTF_8);
-
     try {
       PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
       if (passwordHasher == null) {
-        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword());
+        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword().getHash());
       }
-
-      if (passwordHasher instanceof PasswordCipher
-          || passwordHasher instanceof PlainPasswordHasher) {
-        actualPassword = passwordHasher.getPassword();
-      } else {
-        remotePassword =
-            passwordHasher.transformPassword(
-                remotePassword, passwordHasher.getSalt(), passwordHasher.getCost());
-        actualPassword = new String(passwordHasher.getFullPasswordHash()).getBytes();
-      }
-      boolean result = Arrays.equals(actualPassword, remotePassword);
-      Arrays.fill(actualPassword, (byte) 0x0);
-      Arrays.fill(remotePassword, (byte) 0x0);
+      boolean result = passwordHasher.matches(password);
+      if(password != null) Arrays.fill(password, (char) 0x0);
       if (!result) {
         throw new LoginException("Invalid password");
       }

@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright [ 2020 - 2024 ] [Matthew Buckton]
+  ~ Copyright [ 2020 - 2024 ] Matthew Buckton
+  ~  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
   ~
-  ~  Licensed under the Apache License, Version 2.0 (the "License");
-  ~  you may not use this file except in compliance with the License.
-  ~  You may obtain a copy of the License at
+  ~  Licensed under the Apache License, Version 2.0 with the Commons Clause
+  ~  (the "License"); you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at:
   ~
   ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~      https://commonsclause.com/
   ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  ~
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -22,7 +26,7 @@
 
   <groupId>io.mapsmessaging</groupId>
   <artifactId>authentication_library</artifactId>
-  <version>1.0.5</version>
+  <version>1.0.6-SNAPSHOT</version>
 
   <packaging>jar</packaging>
 
@@ -32,25 +36,29 @@
 
   <developers>
     <developer>
-      <id>mbuckton</id>
-      <name>Matthew Buckton</name>
-      <organization>Maps Messaging</organization>
-      <organizationUrl>http://mapsmessaging.io/</organizationUrl>
+      <id>mapsmessaging</id>
+      <name>MapsMessaging B.V.</name>
+      <organization>MapsMessaging B.V.</organization>
+      <organizationUrl>https://mapsmessaging.io/</organizationUrl>
       <roles>
-        <role>founder</role>
+        <role>developer</role>
+        <role>maintainer</role>
       </roles>
-      <timezone>Australia/Sydney</timezone>
+      <timezone>Europe/Amsterdam</timezone>
+      <properties>
+        <location>Eindhoven, Netherlands</location>
+      </properties>
     </developer>
   </developers>
 
   <licenses>
     <license>
-      <name>Mozilla Public License Version 2.0</name>
-      <url>https://www.mozilla.org/en-US/MPL/2.0/</url>
+      <name>Apache License, Version 2.0 with Commons Clause</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
       <distribution>repo</distribution>
     </license>
     <license>
-      <name>CommonsClause</name>
+      <name>Commons Clause</name>
       <url>https://commonsclause.com/</url>
       <distribution>repo</distribution>
     </license>
@@ -58,11 +66,15 @@
 
   <scm>
     <url>https://github.com/Maps-Messaging/authentication_library.git</url>
+    <connection>scm:git:https://github.com/Maps-Messaging/authentication_library.git</connection>
+    <developerConnection>scm:git:git@github.com:Maps-Messaging/authentication_library.git</developerConnection>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
+    <nvd.api.key>${env.NVD_API_KEY}</nvd.api.key>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <gpg.keyname>matthew.buckton@mapsmessaging.io</gpg.keyname>
 
@@ -99,35 +111,35 @@
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>simple_logging</artifactId>
-          <version>2.0.12</version>
+          <version>2.1.0</version>
         </dependency>
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>configuration_library</artifactId>
-          <version>1.0.0</version>
+          <version>1.1.0</version>
         </dependency>
       </dependencies>
 
-      <distributionManagement>
-        <repository>
-          <id>ossrh</id>
-          <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
-      </distributionManagement>
       <build>
         <plugins>
           <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.13</version>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.8.0</version>
             <extensions>true</extensions>
             <configuration>
-              <serverId>mapsmessaging.io</serverId>
-              <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+            </configuration>
+          </plugin>
+
+          <!-- Disable default deploy for releases -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>3.1.1</version>
+            <configuration>
+              <skip>true</skip>
             </configuration>
           </plugin>
         </plugins>
@@ -140,7 +152,7 @@
         <repository>
           <id>maps_snapshots</id>
           <name>maps_snapshot_repository</name>
-          <url>https://repository.mapsmessaging.io:8081/repository/maps_snapshots/</url>
+          <url>https://repository.mapsmessaging.io/repository/maps_snapshots/</url>
           <snapshots>
             <enabled>true</enabled>
           </snapshots>
@@ -150,12 +162,12 @@
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>simple_logging</artifactId>
-          <version>2.0.13-SNAPSHOT</version>
+          <version>2.1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>configuration_library</artifactId>
-          <version>1.0.1-SNAPSHOT</version>
+          <version>1.1.1-SNAPSHOT</version>
         </dependency>
       </dependencies>
     </profile>
@@ -166,12 +178,8 @@
     <snapshotRepository>
       <id>maps_snapshots</id>
       <name>maps_snapshot_repository</name>
-      <url>https://repository.mapsmessaging.io:8081/repository/maps_snapshots/</url>
+      <url>https://repository.mapsmessaging.io/repository/maps_snapshots/</url>
     </snapshotRepository>
-    <repository>
-      <id>ossrh</id>
-      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
   </distributionManagement>
 
   <build>
@@ -179,7 +187,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.8</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -204,13 +212,27 @@
             <arg>src/main/cpp/</arg>
           </compilerArgs>
           <encoding>UTF-8</encoding>
-          <source>11</source>
-          <target>11</target>
+          <source>17</source>
+          <target>17</target>
         </configuration>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.12.1</version>
+        <version>3.14.0</version>
       </plugin>
 
+      <!-- sBOM  generator -->
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+        <version>2.9.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>makeAggregateBom</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <!-- Setup code coverage by jacoco for our tests -->
       <plugin>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -236,7 +258,7 @@
           </execution>
         </executions>
         <groupId>org.jacoco</groupId>
-        <version>0.8.11</version>
+        <version>0.8.13</version>
       </plugin>
 
       <!-- Setup the JUnit tests runner -->
@@ -250,14 +272,14 @@
           </includes>
         </configuration>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.2.5</version>
+        <version>3.5.3</version>
       </plugin>
 
       <!-- build the source jar as well -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.3.1</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -275,7 +297,7 @@
           <charset>UTF-8</charset>
           <encoding>UTF-8</encoding>
           <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
-          <reportOutputDirectory>${project.build.directory}/site/docs</reportOutputDirectory>
+          <outputDirectory>${project.build.directory}/site/docs</outputDirectory>
           <show>public</show>
         </configuration>
         <executions>
@@ -287,7 +309,26 @@
           </execution>
         </executions>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.6.3</version>
+        <version>3.11.3</version>
+      </plugin>
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId>
+        <version>12.1.3</version>
+        <configuration>
+          <nvdApiKey>${nvd.api.key}</nvdApiKey>
+          <failBuildOnCVSS>10</failBuildOnCVSS>
+          <failOnError>false</failOnError>
+          <skipArtifactType>test-jar</skipArtifactType>
+          <skipTestScope>true</skipTestScope>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -296,20 +337,21 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.30</version>
+      <version>1.18.38</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-secretsmanager -->
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-secretsmanager</artifactId>
-      <version>1.12.660</version>
+      <version>1.12.788</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/secretsmanager -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>secretsmanager</artifactId>
-      <version>2.24.4</version>
+      <version>2.32.31</version>
     </dependency>
 
     <dependency>
@@ -319,75 +361,81 @@
     </dependency>
 
 
-    <!-- https://mvnrepository.com/artifact/org.apache.nifi/nifi-security-utils -->
+    <!-- https://mvnrepository.com/artifact/at.favre.lib/bcrypt -->
     <dependency>
-      <groupId>org.apache.nifi</groupId>
-      <artifactId>nifi-security-utils</artifactId>
-      <version>1.25.0</version>
+      <groupId>at.favre.lib</groupId>
+      <artifactId>bcrypt</artifactId>
+      <version>0.10.2</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.16.0</version>
+      <version>1.19.0</version>
     </dependency>
 
     <dependency>
       <artifactId>saslprep</artifactId>
       <groupId>com.ongres.stringprep</groupId>
-      <version>2.0</version>
+      <version>2.2</version>
     </dependency>
 
     <dependency>
       <artifactId>nameprep</artifactId>
       <groupId>com.ongres.stringprep</groupId>
-      <version>2.0</version>
+      <version>2.2</version>
     </dependency>
 
     <dependency>
       <groupId>com.auth0</groupId>
       <artifactId>java-jwt</artifactId>
-      <version>4.4.0</version>
+      <version>4.5.0</version>
     </dependency>
 
     <dependency>
       <groupId>com.auth0</groupId>
       <artifactId>jwks-rsa</artifactId>
-      <version>0.22.1</version>
+      <version>0.23.0</version>
     </dependency>
 
     <dependency>
       <artifactId>cognitoidentityprovider</artifactId>
       <groupId>software.amazon.awssdk</groupId>
-      <version>2.25.1</version>
+      <version>2.32.31</version>
     </dependency>
 
     <dependency>
       <groupId>com.auth0</groupId>
       <artifactId>auth0</artifactId>
-      <version>2.10.1</version>
+      <version>2.24.0</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
-      <version>1.77</version>
+      <version>1.81</version>
     </dependency>
-
-      <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-      <dependency>
-          <groupId>com.google.code.gson</groupId>
-          <artifactId>gson</artifactId>
-          <version>2.10.1</version>
-      </dependency>
+    <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
+      <version>1.81</version>
+    </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.fasterxml.uuid/java-uuid-generator -->
     <dependency>
       <groupId>com.fasterxml.uuid</groupId>
       <artifactId>java-uuid-generator</artifactId>
-      <version>4.3.0</version>
+      <version>5.1.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.13.1</version>
     </dependency>
 
     <!-- TEST DEPENDENCIES -->
@@ -397,23 +445,17 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <groupId>org.junit.jupiter</groupId>
       <scope>test</scope>
-      <version>5.10.2</version>
+      <version>5.13.4</version>
     </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.10.2</version>
+      <version>5.13.4</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- https://mvnrepository.com/artifact/com.mashape.unirest/unirest-java -->
-    <dependency>
-      <groupId>com.mashape.unirest</groupId>
-      <artifactId>unirest-java</artifactId>
-      <version>1.4.9</version>
-      <scope>test</scope>
-    </dependency>
+
 
     <!-- https://mvnrepository.com/artifact/com.ongres.scram/client -->
     <dependency>
