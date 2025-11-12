@@ -26,7 +26,7 @@
 
   <groupId>io.mapsmessaging</groupId>
   <artifactId>authentication_library</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2-SNAPSHOT</version>
 
   <packaging>jar</packaging>
 
