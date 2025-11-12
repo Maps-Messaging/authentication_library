@@ -26,7 +26,7 @@
 
   <groupId>io.mapsmessaging</groupId>
   <artifactId>authentication_library</artifactId>
-  <version>2.0.0</version>
+  <version>2.0.1</version>
 
   <packaging>jar</packaging>
 
@@ -111,12 +111,12 @@
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>simple_logging</artifactId>
-          <version>2.1.0</version>
+          <version>2.1.1</version>
         </dependency>
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>configuration_library</artifactId>
-          <version>1.1.0</version>
+          <version>1.1.3</version>
         </dependency>
       </dependencies>
 
@@ -125,7 +125,7 @@
           <plugin>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.8.0</version>
+            <version>0.9.0</version>
             <extensions>true</extensions>
             <configuration>
               <publishingServerId>central</publishingServerId>
@@ -137,7 +137,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-deploy-plugin</artifactId>
-            <version>3.1.1</version>
+            <version>3.1.4</version>
             <configuration>
               <skip>true</skip>
             </configuration>
@@ -162,12 +162,12 @@
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>simple_logging</artifactId>
-          <version>2.1.1-SNAPSHOT</version>
+          <version>2.1.2-SNAPSHOT</version>
         </dependency>
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>configuration_library</artifactId>
-          <version>1.1.1-SNAPSHOT</version>
+          <version>1.1.4-SNAPSHOT</version>
         </dependency>
       </dependencies>
     </profile>
@@ -216,7 +216,7 @@
           <target>17</target>
         </configuration>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.14.0</version>
+        <version>3.14.1</version>
       </plugin>
 
       <!-- sBOM  generator -->
@@ -258,7 +258,7 @@
           </execution>
         </executions>
         <groupId>org.jacoco</groupId>
-        <version>0.8.13</version>
+        <version>0.8.14</version>
       </plugin>
 
       <!-- Setup the JUnit tests runner -->
@@ -272,7 +272,7 @@
           </includes>
         </configuration>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.5.3</version>
+        <version>3.5.4</version>
       </plugin>
 
       <!-- build the source jar as well -->
@@ -309,12 +309,12 @@
           </execution>
         </executions>
         <groupId>org.apache.maven.plugins</groupId>
-        <version>3.11.3</version>
+        <version>3.12.0</version>
       </plugin>
       <plugin>
         <groupId>org.owasp</groupId>
         <artifactId>dependency-check-maven</artifactId>
-        <version>12.1.3</version>
+        <version>12.1.8</version>
         <configuration>
           <nvdApiKey>${nvd.api.key}</nvdApiKey>
           <failBuildOnCVSS>10</failBuildOnCVSS>
@@ -337,7 +337,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.38</version>
+      <version>1.18.42</version>
       <scope>provided</scope>
     </dependency>
 
@@ -345,13 +345,13 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-secretsmanager</artifactId>
-      <version>1.12.788</version>
+      <version>1.12.793</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/secretsmanager -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>secretsmanager</artifactId>
-      <version>2.32.31</version>
+      <version>2.38.2</version>
     </dependency>
 
     <dependency>
@@ -372,7 +372,7 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.19.0</version>
+      <version>1.20.0</version>
     </dependency>
 
     <dependency>
@@ -402,40 +402,40 @@
     <dependency>
       <artifactId>cognitoidentityprovider</artifactId>
       <groupId>software.amazon.awssdk</groupId>
-      <version>2.32.31</version>
+      <version>2.38.2</version>
     </dependency>
 
     <dependency>
       <groupId>com.auth0</groupId>
       <artifactId>auth0</artifactId>
-      <version>2.24.0</version>
+      <version>2.26.0</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
-      <version>1.81</version>
+      <version>1.82</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk18on -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk18on</artifactId>
-      <version>1.81</version>
+      <version>1.82</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.fasterxml.uuid/java-uuid-generator -->
     <dependency>
       <groupId>com.fasterxml.uuid</groupId>
       <artifactId>java-uuid-generator</artifactId>
-      <version>5.1.0</version>
+      <version>5.1.1</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.13.1</version>
+      <version>2.13.2</version>
     </dependency>
 
     <!-- TEST DEPENDENCIES -->
@@ -445,13 +445,13 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <groupId>org.junit.jupiter</groupId>
       <scope>test</scope>
-      <version>5.13.4</version>
+      <version>6.0.1</version>
     </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.13.4</version>
+      <version>6.0.1</version>
       <scope>test</scope>
     </dependency>
 
