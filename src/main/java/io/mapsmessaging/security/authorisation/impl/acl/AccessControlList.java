@@ -18,18 +18,24 @@
  *
  */
 
-package io.mapsmessaging.security.access.expiry;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
-public class FixedExpiryPolicy extends AccessEntryExpiryPolicy {
 
-  private final long expiryTime;
+import java.util.List;
+import java.util.UUID;
+import javax.security.auth.Subject;
 
-  public FixedExpiryPolicy(long expiryTime) {
-    this.expiryTime = expiryTime;
-  }
+public interface AccessControlList {
 
-  @Override
-  public boolean hasExpired(long time) {
-    return (expiryTime < time);
-  }
+  String getName();
+
+  AccessControlList create(List<String> config);
+
+  long getSubjectAccess(Subject subject);
+
+  boolean canAccess(Subject subject, long requestedAccess);
+
+  boolean add(UUID uuid, long requestedAccess);
+
+  boolean remove(UUID uuid, long requestedAccess);
 }

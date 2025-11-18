@@ -18,7 +18,7 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
 import com.github.javafaker.Faker;
 import com.sun.security.auth.UserPrincipal;
@@ -31,8 +31,15 @@ import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import java.security.Principal;
 import java.util.*;
 import javax.security.auth.Subject;
+import org.junit.jupiter.api.BeforeAll;
 
 public class BaseSecurityTest {
+
+  @BeforeAll
+  static void setUp() {
+    PermissionRegistry.registerAll(TestPermissions.values());
+  }
+
 
   protected List<String> generateUserEntries(int numEntries, UserMapManagement userMapManagement, GroupMapManagement groupMapManagement) {
     List<String> aclEntries = new ArrayList<>();

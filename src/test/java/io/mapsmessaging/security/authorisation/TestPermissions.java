@@ -18,23 +18,25 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
-import java.util.List;
-import java.util.UUID;
-import javax.security.auth.Subject;
+import lombok.Getter;
 
-public interface AccessControlList {
+@Getter
+public enum TestPermissions implements Permission {
 
-  String getName();
+  READ("Read", "Allows Read access to the resource", 0),
+  WRITE("Write", "Allows Write access to the resource", 1),
+  DELETE("Delete", "Allows Delete access to the resource", 2),
+  CREATE("Create", "Allows Create access to the resource", 3),;
 
-  AccessControlList create(AccessControlMapping accessControlMapping, List<String> config);
+  private final String name;
+  private final String description;
+  private final long mask;
 
-  long getSubjectAccess(Subject subject);
-
-  boolean canAccess(Subject subject, long requestedAccess);
-
-  boolean add(UUID uuid, long requestedAccess);
-
-  boolean remove(UUID uuid, long requestedAccess);
+  TestPermissions(final String name, final String description, final long mask) {
+    this.name = name;
+    this.description = description;
+    this.mask = 1L <<mask;
+  }
 }

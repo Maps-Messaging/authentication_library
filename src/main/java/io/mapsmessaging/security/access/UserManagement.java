@@ -36,12 +36,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
+import lombok.Getter;
 
 public class UserManagement {
 
   private final IdentityLookup identityLookup;
   private final UserMapManagement userMapManagement;
   private final GroupManagement groupManagement;
+  @Getter
   protected final PasswordHandler passwordHandler;
 
   public UserManagement(IdentityLookup identityLookup, UserMapManagement userMapManagement, GroupManagement groupManagement, PasswordHandler passwordHandler) {

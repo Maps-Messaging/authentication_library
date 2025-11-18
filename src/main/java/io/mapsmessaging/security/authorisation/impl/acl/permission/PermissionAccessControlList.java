@@ -18,14 +18,13 @@
  *
  */
 
-package io.mapsmessaging.security.access.permission;
+package io.mapsmessaging.security.authorisation.impl.acl.permission;
 
 import io.mapsmessaging.security.SubjectHelper;
-import io.mapsmessaging.security.access.AccessControlList;
-import io.mapsmessaging.security.access.AccessControlListParser;
-import io.mapsmessaging.security.access.AccessControlMapping;
-import io.mapsmessaging.security.access.AclEntry;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlListParser;
+import io.mapsmessaging.security.authorisation.impl.acl.AclEntry;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import java.util.*;
 import javax.security.auth.Subject;
@@ -48,9 +47,9 @@ public class PermissionAccessControlList implements AccessControlList {
   }
 
   @Override
-  public AccessControlList create(AccessControlMapping accessControlMapping, List<String> config) {
+  public AccessControlList create(List<String> config) {
     AccessControlListParser parser = new AccessControlListParser();
-    return new PermissionAccessControlList(parser.createList(accessControlMapping, config));
+    return new PermissionAccessControlList( parser.createList(config));
   }
 
   public long getSubjectAccess(Subject subject) {

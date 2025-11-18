@@ -18,10 +18,12 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
 import io.mapsmessaging.security.uuid.UuidGenerator;
@@ -42,7 +44,7 @@ class PermissiveAccessTest extends BaseSecurityTest {
 
   @Test
   void validate(){
-    AccessControlList accessControlList = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(),createList());
+    AccessControlList accessControlList = AccessControlFactory.getInstance().get("Permission", createList());
     Assertions.assertEquals("permission", accessControlList.getName());
     Assertions.assertEquals(4, userUUIDMap.size());
     buildUser("user4");
@@ -51,8 +53,8 @@ class PermissiveAccessTest extends BaseSecurityTest {
     Assertions.assertTrue(accessControlList.canAccess(subjectMap.get("user4"), 1) );
     Assertions.assertTrue(accessControlList.remove(userUUIDMap.get("user4"), 3));
     Assertions.assertTrue(accessControlList.canAccess(subjectMap.get("user4"), 1) ); // Groups should allow access
-    Assertions.assertEquals(3, accessControlList.getSubjectAccess(subjectMap.get("user1")));
-    Assertions.assertEquals(3, accessControlList.getSubjectAccess(subjectMap.get("user2")));
+    Assertions.assertEquals(1, accessControlList.getSubjectAccess(subjectMap.get("user1")));
+    Assertions.assertEquals(1, accessControlList.getSubjectAccess(subjectMap.get("user2")));
   }
 
 

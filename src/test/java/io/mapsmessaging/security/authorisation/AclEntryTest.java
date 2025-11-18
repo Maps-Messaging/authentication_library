@@ -18,14 +18,15 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.mapsmessaging.security.access.expiry.AccessEntryExpiryPolicy;
-import io.mapsmessaging.security.access.expiry.FixedExpiryPolicy;
-import io.mapsmessaging.security.access.expiry.IdleAccessExpiryPolicy;
-import io.mapsmessaging.security.access.expiry.NoExpiryPolicy;
+import io.mapsmessaging.security.authorisation.impl.acl.AclEntry;
+import io.mapsmessaging.security.authorisation.impl.acl.expiry.AccessEntryExpiryPolicy;
+import io.mapsmessaging.security.authorisation.impl.acl.expiry.FixedExpiryPolicy;
+import io.mapsmessaging.security.authorisation.impl.acl.expiry.IdleAccessExpiryPolicy;
+import io.mapsmessaging.security.authorisation.impl.acl.expiry.NoExpiryPolicy;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 

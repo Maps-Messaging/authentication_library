@@ -18,9 +18,11 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
 import java.security.Principal;
@@ -62,7 +64,7 @@ public class AccessControlJHMTest {
     List<String> aclEntries = generateAclEntries(numEntries);
 
     // Create the AccessControlList
-    acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
+    acl = AccessControlFactory.getInstance().get("Permission", aclEntries);
 
     // Create the subjects for testing
     subjects = new Subject[numIterations];
@@ -74,7 +76,7 @@ public class AccessControlJHMTest {
   @Benchmark
   public void testAccessControlListPerformance() {
     for (int i = 0; i < numIterations; i++) {
-      boolean hasAccess = acl.canAccess(subjects[i], CustomAccessControlMapping.READ_VALUE);
+      boolean hasAccess = acl.canAccess(subjects[i], TestPermissions.READ.getMask());
       // Optionally, perform assertions or logging based on the hasAccess result
     }
   }
@@ -82,7 +84,7 @@ public class AccessControlJHMTest {
   private List<String> generateAclEntries(int numEntries) {
     List<String> aclEntries = new ArrayList<>();
     for (int i = 0; i < numEntries; i++) {
-      String entry = "group" + i + " = Read|Write";
+      String entry = UUID.randomUUID() + " = Read|Write";
       aclEntries.add(entry);
     }
     return aclEntries;
@@ -109,30 +111,4 @@ public class AccessControlJHMTest {
     return new Subject(true, principals, new HashSet<>(), new HashSet<>());
   }
 
-  // Custom AccessControlMapping implementation
-  public static class CustomAccessControlMapping implements AccessControlMapping {
-    // Access control keywords and corresponding bitset values
-    public static final String READ = "Read";
-    public static final String WRITE = "Write";
-
-    public static final long READ_VALUE = 1L;
-    public static final long WRITE_VALUE = 2L;
-
-    @Override
-    public Long getAccessValue(String accessControl) {
-      switch (accessControl) {
-        case READ:
-          return READ_VALUE;
-        case WRITE:
-          return WRITE_VALUE;
-        default:
-          return null;
-      }
-    }
-
-    @Override
-    public String getAccessName(long value) {
-      return null;
-    }
-  }
 }

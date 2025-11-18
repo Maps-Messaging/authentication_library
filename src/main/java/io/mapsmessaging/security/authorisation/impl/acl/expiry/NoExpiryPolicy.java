@@ -18,24 +18,12 @@
  *
  */
 
-package io.mapsmessaging.security.access.expiry;
+package io.mapsmessaging.security.authorisation.impl.acl.expiry;
 
-public class IdleAccessExpiryPolicy extends AccessEntryExpiryPolicy {
-
-  private final long idleTime;
-  private long expiryTime;
-
-  public IdleAccessExpiryPolicy(long idleTime) {
-    this.idleTime = idleTime;
-    this.expiryTime = System.currentTimeMillis() + idleTime;
-  }
+public class NoExpiryPolicy extends AccessEntryExpiryPolicy {
 
   @Override
   public boolean hasExpired(long time) {
-    if (expiryTime > time) {
-      expiryTime = time + idleTime;
-      return false;
-    }
-    return true;
+    return false;
   }
 }

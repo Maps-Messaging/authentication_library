@@ -18,15 +18,18 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.IdentityAccessManager;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
@@ -39,9 +42,15 @@ import java.security.Principal;
 import java.util.*;
 import javax.security.auth.Subject;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class AccessControlListTest {
+
+  @BeforeAll
+  static void setUp() {
+    PermissionRegistry.registerAll(TestPermissions.values());
+  }
 
   @Test
   public void testAccessControlListCreation() throws IOException, GeneralSecurityException {
@@ -61,7 +70,7 @@ public class AccessControlListTest {
             userStore,
             groupStore);
 
-    PasswordHandler passwordHasher = identityAccessManager.getUserManagement().passwordHandler;
+    PasswordHandler passwordHasher = identityAccessManager.getUserManagement().getPasswordHandler();
 
     char[] hash =
         passwordHasher.transformPassword(
@@ -99,7 +108,7 @@ public class AccessControlListTest {
     aclEntries.add(group1IdMap.getAuthId() + " = Delete");
     aclEntries.add(fredId.getAuthId() + " = Write|Read|Delete");
 
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission",  aclEntries);
 
     // Create a Subject with remote host
     Subject subjectWithRemoteHost = createSubject(usernameId);
@@ -113,24 +122,24 @@ public class AccessControlListTest {
     subjectWithAuthDomain = identityAccessManager.updateSubject(subjectWithAuthDomain);
 
     long test = acl.getSubjectAccess(subjectWithRemoteHost);
-    Assertions.assertTrue((test & CustomAccessControlMapping.READ_VALUE) != 0);
-    Assertions.assertTrue((test & CustomAccessControlMapping.WRITE_VALUE) != 0);
-    Assertions.assertTrue((test & CustomAccessControlMapping.DELETE_VALUE) != 0);
-    Assertions.assertEquals(11, test);
+    Assertions.assertTrue((test & TestPermissions.READ.getMask()) != 0);
+    Assertions.assertTrue((test & TestPermissions.WRITE.getMask()) != 0);
+    Assertions.assertTrue((test & TestPermissions.DELETE.getMask()) != 0);
+    Assertions.assertEquals(7, test);
 
     // Test the ACL functionality
-    Assertions.assertTrue(acl.canAccess(subjectWithAuthDomain, CustomAccessControlMapping.READ_VALUE));
-    Assertions.assertFalse(acl.canAccess(subjectWithAuthDomain, CustomAccessControlMapping.DELETE_VALUE));
+    Assertions.assertTrue(acl.canAccess(subjectWithAuthDomain, TestPermissions.READ.getMask()));
+    Assertions.assertFalse(acl.canAccess(subjectWithAuthDomain, TestPermissions.DELETE.getMask()));
 
-    Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.READ_VALUE));
-    Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.WRITE_VALUE));
-    Assertions.assertFalse(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.CREATE_VALUE));
-    Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, CustomAccessControlMapping.DELETE_VALUE));
+    Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, TestPermissions.READ.getMask()));
+    Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, TestPermissions.WRITE.getMask()));
+    Assertions.assertFalse(acl.canAccess(subjectWithRemoteHost, TestPermissions.CREATE.getMask()));
+    Assertions.assertTrue(acl.canAccess(subjectWithRemoteHost, TestPermissions.DELETE.getMask()));
 
-    Assertions.assertTrue(acl.canAccess(subjectWithoutRemoteHost, CustomAccessControlMapping.READ_VALUE));
-    Assertions.assertTrue(acl.canAccess(subjectWithoutRemoteHost, CustomAccessControlMapping.WRITE_VALUE));
-    Assertions.assertFalse(acl.canAccess(subjectWithoutRemoteHost, CustomAccessControlMapping.CREATE_VALUE));
-    Assertions.assertFalse(acl.canAccess(subjectWithoutRemoteHost, CustomAccessControlMapping.DELETE_VALUE));
+    Assertions.assertTrue(acl.canAccess(subjectWithoutRemoteHost, TestPermissions.READ.getMask()));
+    Assertions.assertTrue(acl.canAccess(subjectWithoutRemoteHost, TestPermissions.WRITE.getMask()));
+    Assertions.assertFalse(acl.canAccess(subjectWithoutRemoteHost, TestPermissions.CREATE.getMask()));
+    Assertions.assertFalse(acl.canAccess(subjectWithoutRemoteHost, TestPermissions.DELETE.getMask()));
   }
 
   @Test
@@ -155,13 +164,7 @@ public class AccessControlListTest {
     // Set up the access control list with the necessary ACL entries
     List<String> aclEntries = Collections.singletonList(userIdMap.getAuthId() + " = Read|Write");
 
-    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
-    // Requested access that should be allowed
-    long requestedAccess = accessControlMapping.getAccessValue("Read");
-
-    // Verify that the subject can access with the requested access
-    Assertions.assertTrue(acl.canAccess(subject, requestedAccess));
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission",  aclEntries);
 
     userMapManagement.clearAll();
     Assertions.assertEquals(0, userMapManagement.size());
@@ -174,14 +177,10 @@ public class AccessControlListTest {
   void testCanAccess_NullSubject_ReturnsFalse() {
     // Null subject
     Subject subject = null;
-    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), new ArrayList<>());
-
-    // Requested access
-    long requestedAccess = accessControlMapping.getAccessValue("Read");
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new ArrayList<>());
 
     // Verify that the null subject is not allowed to access
-    Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
+    Assertions.assertFalse(acl.canAccess(subject, TestPermissions.READ.getMask()));
   }
 
   @Test
@@ -193,14 +192,11 @@ public class AccessControlListTest {
 
     // Set up the access control list with the necessary ACL entries
     List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
-    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), new ArrayList<>());
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new ArrayList<>());
 
-    // Null requested access
-    long requestedAccess = accessControlMapping.getAccessValue(null);
 
     // Verify that the subject is not allowed to access with null access
-    Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
+    Assertions.assertFalse(acl.canAccess(subject, 0L));
   }
 
   @Test
@@ -212,58 +208,17 @@ public class AccessControlListTest {
 
     // Set up the access control list with invalid ACL entry
     List<String> aclEntries = Collections.singletonList("invalidEntry");
-    AccessControlMapping accessControlMapping = new CustomAccessControlMapping();
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), new ArrayList<>());
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new ArrayList<>());
 
 
-    // Requested access
-    long requestedAccess = accessControlMapping.getAccessValue("Read");
 
     // Verify that the subject is not allowed to access with invalid ACL entry
-    Assertions.assertFalse(acl.canAccess(subject, requestedAccess));
+    Assertions.assertFalse(acl.canAccess(subject, TestPermissions.READ.getMask()));
   }
 
   private Subject createSubject(UserIdMap user) {
     Set<Principal> principals = new HashSet<>();
     principals.add(new UserPrincipal(user.getUsername()));
     return new Subject(false, principals, new HashSet<>(), new HashSet<>());
-  }
-
-  // Custom AccessControlMapping implementation
-  public static class CustomAccessControlMapping implements AccessControlMapping {
-    // Access control keywords and corresponding bitset values
-    public static final String READ = "read";
-    public static final String WRITE = "write";
-    public static final String CREATE = "create";
-    public static final String DELETE = "delete";
-
-    public static final long READ_VALUE = 1L;
-    public static final long WRITE_VALUE = 2L;
-    public static final long CREATE_VALUE = 4L;
-    public static final long DELETE_VALUE = 8L;
-
-    @Override
-    public Long getAccessValue(String accessControl) {
-      if(accessControl == null){
-        return 0L;
-      }
-      switch (accessControl.toLowerCase()) {
-        case READ:
-          return READ_VALUE;
-        case WRITE:
-          return WRITE_VALUE;
-        case CREATE:
-          return CREATE_VALUE;
-        case DELETE:
-          return DELETE_VALUE;
-        default:
-          return null;
-      }
-    }
-
-    @Override
-    public String getAccessName(long value) {
-      return null;
-    }
   }
 }

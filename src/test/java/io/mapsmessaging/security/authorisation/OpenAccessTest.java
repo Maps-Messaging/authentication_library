@@ -18,9 +18,11 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
-import io.mapsmessaging.security.access.open.OpenAccessControlList;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
+import io.mapsmessaging.security.authorisation.impl.acl.open.OpenAccessControlList;
 import io.mapsmessaging.security.uuid.UuidGenerator;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -32,9 +34,9 @@ public class OpenAccessTest {
 
   @Test
   void ensureOpenWorks(){
-    AccessControlList openAccessControlList = AccessControlFactory.getInstance().get("Open", null,null);
+    AccessControlList openAccessControlList = AccessControlFactory.getInstance().get("Open", null);
     Assertions.assertEquals("Open", openAccessControlList.getName());
-    Assertions.assertEquals(OpenAccessControlList.class, openAccessControlList.create(null, null).getClass());
+    Assertions.assertEquals(OpenAccessControlList.class, openAccessControlList.create(null).getClass());
     Assertions.assertTrue(openAccessControlList.add(UuidGenerator.getInstance().generate(), 2));
     Assertions.assertTrue(openAccessControlList.remove(UuidGenerator.getInstance().generate(), 2));
   }

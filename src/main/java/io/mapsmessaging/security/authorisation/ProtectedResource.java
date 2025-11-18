@@ -18,9 +18,13 @@
  *
  */
 
-package io.mapsmessaging.security.access.expiry;
+package io.mapsmessaging.security.authorisation;
 
-public abstract class AccessEntryExpiryPolicy {
+import lombok.Value;
 
-  public abstract boolean hasExpired(long time);
+@Value
+public class ProtectedResource {
+  String resourceType;  // e.g. "namespace", "tenant", "topic", "server"
+  String resourceId;    // e.g. "demo/foo", "tenant:acme", "server:maps-01"
+  String tenant;        // optional tenant name
 }

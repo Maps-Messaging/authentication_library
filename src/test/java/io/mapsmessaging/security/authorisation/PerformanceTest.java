@@ -18,12 +18,14 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation;
 
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import java.util.List;
 import javax.security.auth.Subject;
 import org.junit.jupiter.api.Test;
@@ -39,13 +41,13 @@ public class PerformanceTest extends BaseSecurityTest {
     List<String> aclEntries = generateGroupEntries(1000, groupMapManagement);
 
     // Create an instance of AccessControlListManager
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new CustomAccessControlMapping(), aclEntries);
+    AccessControlList acl = AccessControlFactory.getInstance().get("Permission",  aclEntries);
 
     // Perform the performance test
     long startTime = System.currentTimeMillis();
     for (int i = 0; i < iterations; i++) {
       Subject subject = createRandomSubject(groupMapManagement);
-      boolean hasAccess = acl.canAccess(subject, CustomAccessControlMapping.READ_VALUE);
+      boolean hasAccess = acl.canAccess(subject, TestPermissions.READ.getMask());
       // Optionally, perform assertions or logging based on the hasAccess result
     }
     long endTime = System.currentTimeMillis();

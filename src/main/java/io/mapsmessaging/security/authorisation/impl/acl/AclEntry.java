@@ -18,10 +18,10 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
-import io.mapsmessaging.security.access.expiry.AccessEntryExpiryPolicy;
-import io.mapsmessaging.security.access.expiry.NoExpiryPolicy;
+import io.mapsmessaging.security.authorisation.impl.acl.expiry.AccessEntryExpiryPolicy;
+import io.mapsmessaging.security.authorisation.impl.acl.expiry.NoExpiryPolicy;
 import java.util.UUID;
 import lombok.Getter;
 

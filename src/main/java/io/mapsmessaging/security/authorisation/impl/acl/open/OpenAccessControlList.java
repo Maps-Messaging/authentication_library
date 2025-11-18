@@ -18,10 +18,9 @@
  *
  */
 
-package io.mapsmessaging.security.access.open;
+package io.mapsmessaging.security.authorisation.impl.acl.open;
 
-import io.mapsmessaging.security.access.AccessControlList;
-import io.mapsmessaging.security.access.AccessControlMapping;
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import java.util.List;
 import java.util.UUID;
 import javax.security.auth.Subject;
@@ -34,7 +33,7 @@ public class OpenAccessControlList implements AccessControlList {
   }
 
   @Override
-  public AccessControlList create(AccessControlMapping accessControlMapping, List<String> config) {
+  public AccessControlList create(List<String> config) {
     return new OpenAccessControlList();
   }
 

@@ -18,12 +18,13 @@
  *
  */
 
-package io.mapsmessaging.security.access.expiry;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
-public class NoExpiryPolicy extends AccessEntryExpiryPolicy {
+import lombok.Value;
 
-  @Override
-  public boolean hasExpired(long time) {
-    return false;
-  }
+@Value
+public class ResourceKey {
+  String type;
+  String name;
+  String tenant;
 }

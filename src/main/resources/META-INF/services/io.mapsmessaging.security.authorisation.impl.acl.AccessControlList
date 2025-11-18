@@ -18,5 +18,5 @@
 #
 #
 
-io.mapsmessaging.security.access.permission.PermissionAccessControlList
-io.mapsmessaging.security.access.open.OpenAccessControlList
+io.mapsmessaging.security.authorisation.impl.acl.permission.PermissionAccessControlList
+io.mapsmessaging.security.authorisation.impl.acl.open.OpenAccessControlList

@@ -18,8 +18,10 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
+import io.mapsmessaging.security.authorisation.Permission;
+import io.mapsmessaging.security.authorisation.PermissionRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,11 +51,11 @@ public class AccessControlListParser {
    * @param aclEntries the list of ACL entries in the format "identifier = access"
    * @return the created AccessControlList object
    */
-  public List<AclEntry> createList(AccessControlMapping accessControlMapping, List<String> aclEntries) {
+  public List<AclEntry> createList(List<String> aclEntries) {
     List<AclEntry> aclEntryList = new ArrayList<>();
 
     for (String aclEntry : aclEntries) {
-      AclEntry entry = parseUserMap(accessControlMapping, aclEntry);
+      AclEntry entry = parseUserMap(aclEntry);
       if (entry != null) {
         aclEntryList.add(entry);
       }
@@ -61,24 +63,24 @@ public class AccessControlListParser {
     return aclEntryList;
   }
 
-  private AclEntry parseUserMap(AccessControlMapping accessControlMapping, String aclEntry) {
+  private AclEntry parseUserMap(String aclEntry) {
     String[] parts = aclEntry.split("=");
     if (parts.length == 2) {
       String identifier = parts[0].trim();
-      long accessBitset = parseAccessBitset(accessControlMapping, parts[1].trim());
+      long accessBitset = parseAccessBitset(parts[1].trim());
       return new AclEntry(UUID.fromString(identifier), accessBitset);
     }
     return null;
   }
 
-  private long parseAccessBitset(AccessControlMapping accessControlMapping, String accessControl) {
+  private long parseAccessBitset(String accessControl) {
     long accessBitset = 0;
     String[] accessControls = accessControl.split("\\|");
     for (String access : accessControls) {
       access = access.trim().toLowerCase();
-      Long accessValue = accessControlMapping.getAccessValue(access);
-      if (accessValue != null) {
-        accessBitset |= accessValue;
+      Permission loaded = PermissionRegistry.find(access);
+      if (loaded != null) {
+        accessBitset |= loaded.getMask();
       }
     }
     return accessBitset;

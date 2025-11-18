@@ -18,7 +18,8 @@
  *
  */
 
-package io.mapsmessaging.security.access;
+package io.mapsmessaging.security.authorisation.impl.acl;
+
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -40,10 +41,10 @@ public class AccessControlFactory {
     accessControlLists = ServiceLoader.load(AccessControlList.class);
   }
 
-  public AccessControlList get(String name, AccessControlMapping accessControlMapping, List<String> config) {
+  public AccessControlList get(String name, List<String> config) {
     for (AccessControlList accessControlList : accessControlLists) {
       if (accessControlList.getName().equalsIgnoreCase(name)) {
-        return accessControlList.create(accessControlMapping, config);
+        return accessControlList.create(config);
       }
     }
     return null;
