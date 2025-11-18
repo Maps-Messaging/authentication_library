@@ -20,23 +20,85 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import javax.security.auth.Subject;
+import io.mapsmessaging.security.access.Group;
+import io.mapsmessaging.security.access.Identity;
 
 public interface AuthorizationProvider {
 
-  boolean canAccess(Subject subject,
+  // ==== Runtime check ====
+
+  boolean canAccess(Identity identity,
                     Permission permission,
                     ProtectedResource protectedResource);
 
-  default void grantAccess(Subject subject,
+
+  // ==== Policy management (grants) ====
+
+  /**
+   * Grant access to a user or group (grantee) for a given permission on a resource.
+   * Implementations decide how to persist/propagate this (ACL, OpenFGA, etc.).
+   */
+  default void grantAccess(Grantee grantee,
                            Permission permission,
                            ProtectedResource protectedResource) {
     throw new UnsupportedOperationException("Grant not supported by this provider");
   }
 
-  default void revokeAccess(Subject subject,
+  /**
+   * Revoke access from a user or group (grantee).
+   */
+  default void revokeAccess(Grantee grantee,
                             Permission permission,
                             ProtectedResource protectedResource) {
     throw new UnsupportedOperationException("Revoke not supported by this provider");
   }
+
+
+  // ==== Identity / group lifecycle sync ====
+  // Default no-ops so ACL-only providers don’t care; OpenFGA-backed ones override.
+
+  /**
+   * Called when a new identity is created in the authentication system.
+   */
+  default void registerIdentity(Identity identity) {
+    // default: no-op
+  }
+
+  /**
+   * Called when an identity is deleted. Implementations should remove any
+   * grants / tuples associated with this identity.
+   */
+  default void deleteIdentity(Identity identity) {
+    // default: no-op
+  }
+
+  /**
+   * Called when a new group is created in the authentication system.
+   */
+  default void registerGroup(Group group) {
+    // default: no-op
+  }
+
+  /**
+   * Called when a group is deleted. Implementations should remove any
+   * grants / tuples associated with this group.
+   */
+  default void deleteGroup(Group group) {
+    // default: no-op
+  }
+
+  /**
+   * Called when an identity is added to a group.
+   */
+  default void addGroupMember(Group group, Identity identity) {
+    // default: no-op
+  }
+
+  /**
+   * Called when an identity is removed from a group.
+   */
+  default void removeGroupMember(Group group, Identity identity) {
+    // default: no-op
+  }
+
 }

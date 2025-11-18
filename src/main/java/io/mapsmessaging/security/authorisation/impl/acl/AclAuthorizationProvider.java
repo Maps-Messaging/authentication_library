@@ -20,15 +20,15 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
-import io.mapsmessaging.security.SubjectHelper;
+import io.mapsmessaging.security.access.Group;
+import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.Grantee;
 import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.authorisation.ProtectedResource;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.security.auth.Subject;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
 
@@ -44,7 +44,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public boolean canAccess(Subject subject,
+  public boolean canAccess(Identity identity,
                            Permission permission,
                            ProtectedResource protectedResource) {
 
@@ -56,33 +56,44 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     }
 
     long requestedAccess = permission.getMask();
-    return accessControlList.canAccess(subject, requestedAccess);
+    return accessControlList.canAccess(identity, requestedAccess);
   }
 
   @Override
-  public void grantAccess(Subject subject,
+  public void grantAccess(Grantee grantee,
                           Permission permission,
-                          ProtectedResource protectedResource) {
-
+                          ProtectedResource protectedResource){
     AccessControlList accessControlList = getOrCreateAccessControlList(protectedResource);
     long requestedAccess = permission.getMask();
-    UUID subjectId = SubjectHelper.getUniqueId(subject);
-    accessControlList.add(subjectId, requestedAccess);
+    accessControlList.add(grantee.id(), requestedAccess);
   }
 
+
   @Override
-  public void revokeAccess(Subject subject,
+  public void revokeAccess(Grantee grantee,
                            Permission permission,
                            ProtectedResource protectedResource) {
-
     AccessControlList accessControlList = accessControlListMap.get(toResourceKey(protectedResource));
     if (accessControlList == null) {
       return;
     }
 
     long requestedAccess = permission.getMask();
-    UUID subjectId = SubjectHelper.getUniqueId(subject);
-    accessControlList.remove(subjectId, requestedAccess);
+    accessControlList.remove(grantee.id(), requestedAccess);
+  }
+
+  @Override
+  public void deleteIdentity(Identity identity) {
+    for(AccessControlList accessControlList : accessControlListMap.values()) {
+      accessControlList.remove(identity.getId(), -1); // remove all
+    }
+  }
+
+  @Override
+  public void deleteGroup(Group group) {
+    for(AccessControlList accessControlList : accessControlListMap.values()) {
+      accessControlList.remove(group.getId(), -1); // remove all
+    }
   }
 
   private AccessControlList getOrCreateAccessControlList(ProtectedResource protectedResource) {
@@ -100,4 +111,6 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
         protectedResource.getTenant()
     );
   }
+
+
 }

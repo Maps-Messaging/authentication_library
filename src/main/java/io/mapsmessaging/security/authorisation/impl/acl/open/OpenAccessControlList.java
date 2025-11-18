@@ -20,10 +20,10 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl.open;
 
+import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import java.util.List;
 import java.util.UUID;
-import javax.security.auth.Subject;
 
 public class OpenAccessControlList implements AccessControlList {
 
@@ -38,12 +38,12 @@ public class OpenAccessControlList implements AccessControlList {
   }
 
   @Override
-  public long getSubjectAccess(Subject subject) {
+  public long getSubjectAccess(Identity identity) {
     return 0xffffffffffffffffL;
   }
 
   @Override
-  public boolean canAccess(Subject subject, long requestedAccess) {
+  public boolean canAccess(Identity identity, long requestedAccess) {
     return true;
   }
 

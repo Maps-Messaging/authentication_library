@@ -18,24 +18,9 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation.impl.acl;
+package io.mapsmessaging.security.authorisation;
 
-
-import io.mapsmessaging.security.access.Identity;
-import java.util.List;
-import java.util.UUID;
-
-public interface AccessControlList {
-
-  String getName();
-
-  AccessControlList create(List<String> config);
-
-  long getSubjectAccess(Identity identity);
-
-  boolean canAccess(Identity identity, long requestedAccess);
-
-  boolean add(UUID uuid, long requestedAccess);
-
-  boolean remove(UUID uuid, long requestedAccess);
+public enum GranteeType {
+  USER,
+  GROUP
 }

@@ -21,7 +21,10 @@
 package io.mapsmessaging.security.authorisation.impl.caching;
 
 
+import io.mapsmessaging.security.access.Group;
+import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.Grantee;
 import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.authorisation.ProtectedResource;
 import java.time.Duration;
@@ -29,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.security.auth.Subject;
 
 public class CachingAuthorizationProvider implements AuthorizationProvider {
 
@@ -65,12 +67,12 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public boolean canAccess(Subject subject,
+  public boolean canAccess(Identity identity,
                            Permission permission,
                            ProtectedResource protectedResource) {
 
     long now = System.currentTimeMillis();
-    CacheKey cacheKey = new CacheKey(subject, permission, protectedResource);
+    CacheKey cacheKey = new CacheKey(identity, permission, protectedResource);
     CacheEntry cacheEntry = cache.get(cacheKey);
 
     if (cacheEntry != null && now < cacheEntry.expiresAtMillis) {
@@ -82,29 +84,59 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
       return cacheEntry.allowed;
     }
 
-    boolean allowed = delegate.canAccess(subject, permission, protectedResource);
+    boolean allowed = delegate.canAccess(identity, permission, protectedResource);
     CacheEntry newEntry = new CacheEntry(allowed, now + ttlMillis);
     cache.put(cacheKey, newEntry);
     return allowed;
   }
 
   @Override
-  public void grantAccess(Subject subject,
+  public void grantAccess(Grantee grantee,
                           Permission permission,
                           ProtectedResource protectedResource) {
-    delegate.grantAccess(subject, permission, protectedResource);
+    delegate.grantAccess(grantee, permission, protectedResource);
     cache.clear();
   }
 
   @Override
-  public void revokeAccess(Subject subject,
+  public void revokeAccess(Grantee grantee,
                            Permission permission,
                            ProtectedResource protectedResource) {
-    delegate.revokeAccess(subject, permission, protectedResource);
+    delegate.revokeAccess(grantee, permission, protectedResource);
     cache.clear();
   }
 
-  public void shutdown() {
+  public void registerIdentity(Identity identity) {
+    delegate.registerIdentity(identity);
+    cache.clear();
+  }
+
+  public void deleteIdentity(Identity identity) {
+    delegate.deleteIdentity(identity);
+    cache.clear();
+  }
+
+  public void registerGroup(Group group) {
+    delegate.registerGroup(group);
+    cache.clear();
+  }
+
+  public void deleteGroup(Group group) {
+    delegate.deleteGroup(group);
+    cache.clear();
+  }
+
+  public void addGroupMember(Group group, Identity identity) {
+    delegate.addGroupMember(group, identity);
+    cache.clear();
+  }
+
+  public void removeGroupMember(Group group, Identity identity) {
+    delegate.removeGroupMember(group, identity);
+    cache.clear();
+  }
+
+    public void shutdown() {
     executorService.shutdown();
   }
 
@@ -112,7 +144,7 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
     executorService.submit(() -> {
       try {
         long now = System.currentTimeMillis();
-        boolean allowed = delegate.canAccess(cacheKey.subject, cacheKey.permission, cacheKey.protectedResource);
+        boolean allowed = delegate.canAccess(cacheKey.identity, cacheKey.permission, cacheKey.protectedResource);
         CacheEntry newEntry = new CacheEntry(allowed, now + ttlMillis);
         cache.put(cacheKey, newEntry);
       } finally {
@@ -123,15 +155,15 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
 
   private static final class CacheKey {
 
-    private final Subject subject;
+    private final Identity identity;
     private final Permission permission;
     private final ProtectedResource protectedResource;
     private final int hashCode;
 
-    private CacheKey(Subject subject,
+    private CacheKey(Identity identity,
                      Permission permission,
                      ProtectedResource protectedResource) {
-      this.subject = subject;
+      this.identity = identity;
       this.permission = permission;
       this.protectedResource = protectedResource;
       this.hashCode = computeHashCode();
@@ -139,7 +171,7 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
 
     private int computeHashCode() {
       int result = 17;
-      result = 31 * result + (subject != null ? subject.hashCode() : 0);
+      result = 31 * result + (identity != null ? identity.hashCode() : 0);
       result = 31 * result + (permission != null ? permission.getName().hashCode() : 0);
       result = 31 * result + (protectedResource != null ? protectedResource.hashCode() : 0);
       return result;
@@ -154,7 +186,7 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
         return false;
       }
       CacheKey other = (CacheKey) obj;
-      if (!Objects.equals(subject, other.subject)) {
+      if (!Objects.equals(identity, other.identity)) {
         return false;
       }
       if (permission == null || other.permission == null) {

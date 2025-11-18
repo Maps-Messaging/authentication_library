@@ -20,17 +20,19 @@
 
 package io.mapsmessaging.security.authorisation;
 
+import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import io.mapsmessaging.security.authorisation.impl.acl.open.OpenAccessControlList;
+import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
 import io.mapsmessaging.security.uuid.UuidGenerator;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import javax.security.auth.Subject;
+import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class OpenAccessTest {
+class OpenAccessTest {
 
   @Test
   void ensureOpenWorks(){
@@ -43,12 +45,13 @@ public class OpenAccessTest {
 
 
   @Test
-  public void testAccessControlListCreation() throws IOException, GeneralSecurityException {
+  void testAccessControlListCreation() {
     OpenAccessControlList identityAccessManager = new OpenAccessControlList();
-    Subject subject = new Subject();
+    IdentityEntry identityEntry = new HtPasswdEntry("username", new char[0]);
+    Identity identity = new Identity(UUID.randomUUID(), identityEntry, new ArrayList<>());
     for (int x = 0; x < 100; x++) {
-      Assertions.assertTrue(identityAccessManager.canAccess(subject, 0));
-      Assertions.assertTrue(identityAccessManager.getSubjectAccess(subject)  != 0);
+      Assertions.assertTrue(identityAccessManager.canAccess(identity, 0));
+      Assertions.assertNotEquals(0, identityAccessManager.getSubjectAccess(identity));
     }
   }
 

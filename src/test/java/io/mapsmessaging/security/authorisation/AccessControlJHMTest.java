@@ -20,15 +20,11 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
-import io.mapsmessaging.security.identity.principals.GroupPrincipal;
-import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
-import java.security.Principal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import javax.security.auth.Subject;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -47,7 +43,7 @@ public class AccessControlJHMTest {
   private int numIterations;
 
   private AccessControlList acl;
-  private Subject[] subjects;
+  private Identity[] identities;
 
   public static void main(String[] args) throws RunnerException {
     Options options = new OptionsBuilder()
@@ -67,16 +63,16 @@ public class AccessControlJHMTest {
     acl = AccessControlFactory.getInstance().get("Permission", aclEntries);
 
     // Create the subjects for testing
-    subjects = new Subject[numIterations];
+    identities = new Identity[numIterations];
     for (int i = 0; i < numIterations; i++) {
-      subjects[i] = createRandomSubject();
+      identities[i] = BaseSecurityTest.createRandomIdenties(null);
     }
   }
 
   @Benchmark
   public void testAccessControlListPerformance() {
     for (int i = 0; i < numIterations; i++) {
-      boolean hasAccess = acl.canAccess(subjects[i], TestPermissions.READ.getMask());
+      boolean hasAccess = acl.canAccess(identities[i], TestPermissions.READ.getMask());
       // Optionally, perform assertions or logging based on the hasAccess result
     }
   }
@@ -88,27 +84,6 @@ public class AccessControlJHMTest {
       aclEntries.add(entry);
     }
     return aclEntries;
-  }
-
-  private Subject createRandomSubject() {
-    // Create a random subject for testing purposes
-    Random random = new Random();
-    String username = "user" + random.nextInt(100);
-    String groupName = "group" + random.nextInt(100);
-    String remoteHost = "remotehost" + random.nextInt(10);
-
-    return createSubject(username, groupName, remoteHost);
-  }
-
-  private Subject createSubject(String username, String groupName, String remoteHost) {
-    Set<Principal> principals = new HashSet<>();
-    principals.add(new UserPrincipal(username));
-    principals.add(new GroupPrincipal(groupName));
-    if (remoteHost != null) {
-      principals.add(new RemoteHostPrincipal(remoteHost));
-    }
-
-    return new Subject(true, principals, new HashSet<>(), new HashSet<>());
   }
 
 }

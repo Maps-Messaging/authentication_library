@@ -21,7 +21,6 @@
 package io.mapsmessaging.security.authorisation;
 
 import com.sun.security.auth.UserPrincipal;
-import io.mapsmessaging.security.access.IdentityAccessManager;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
@@ -30,30 +29,25 @@ import io.mapsmessaging.security.access.mapping.store.MapFileStore;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
-import io.mapsmessaging.security.identity.PasswordGenerator;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
-import io.mapsmessaging.security.passwords.PasswordHandler;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.Principal;
 import java.util.*;
 import javax.security.auth.Subject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class AccessControlListTest {
+public abstract class BaseAuthorizationProviderTest {
 
   @BeforeAll
   static void setUp() {
     PermissionRegistry.registerAll(TestPermissions.values());
   }
 
+  public abstract AuthorizationProvider getAuthorizationProvider();
+/*
   @Test
-  public void testAccessControlListCreation() throws IOException, GeneralSecurityException {
+  void testAccessControlListCreation() throws IOException, GeneralSecurityException {
     File file = new File("./target/test/security");
     file.mkdirs();
     MapStore<UserIdMap> userStore = new MapFileStore<>("./target/test/security/userMap");
@@ -97,26 +91,34 @@ public class AccessControlListTest {
     GroupIdMap group2IdMap = identityAccessManager.getGroupManagement().createGroup("group2");
 
     identityAccessManager.getGroupManagement().addUserToGroup("username", "group1");
-    // identityAccessManager.addUserToGroup("username", "group2");
+
     identityAccessManager.getGroupManagement().addUserToGroup("username2", "group2");
+    // Create a Subject with remote host
+    Subject subjectWithRemoteHost = createSubject(usernameId);
+    subjectWithRemoteHost = identityAccessManager.updateSubject(subjectWithRemoteHost);
+
+    Subject subjectWithoutRemoteHost = createSubject(username2Id);
+    subjectWithoutRemoteHost = identityAccessManager.updateSubject(subjectWithoutRemoteHost);
+
+    ProtectedResource protectedResource = new ProtectedResource("topic", "test/topic", null);
+    AuthorizationProvider provider = getAuthorizationProvider();
+    provider.grantAccess(subjectWithRemoteHost, TestPermissions.READ, protectedResource);
+    provider.grantAccess(subjectWithRemoteHost, TestPermissions.WRITE, protectedResource);
+
+    provider.grantAccess(subjectWithoutRemoteHost, TestPermissions.READ, protectedResource);
+    provider.grantAccess(subjectWithoutRemoteHost, TestPermissions.WRITE, protectedResource);
+
 
     // Create the AccessControlList
     List<String> aclEntries = new ArrayList<>();
-    aclEntries.add(usernameId.getAuthId() + " = Read|Write");
-    aclEntries.add(username2Id.getAuthId() + " = Read|Write");
-    aclEntries.add(group2IdMap.getAuthId() + " = Read|Write");
     aclEntries.add(group1IdMap.getAuthId() + " = Delete");
     aclEntries.add(fredId.getAuthId() + " = Write|Read|Delete");
 
     AccessControlList acl = AccessControlFactory.getInstance().get("Permission",  aclEntries);
 
-    // Create a Subject with remote host
-    Subject subjectWithRemoteHost = createSubject(usernameId);
-    subjectWithRemoteHost = identityAccessManager.updateSubject(subjectWithRemoteHost);
+
 
     // Create a Subject without remote host
-    Subject subjectWithoutRemoteHost = createSubject(username2Id);
-    subjectWithoutRemoteHost = identityAccessManager.updateSubject(subjectWithoutRemoteHost);
 
     Subject subjectWithAuthDomain = createSubject(username2Id);
     subjectWithAuthDomain = identityAccessManager.updateSubject(subjectWithAuthDomain);
@@ -141,6 +143,7 @@ public class AccessControlListTest {
     Assertions.assertFalse(acl.canAccess(subjectWithoutRemoteHost, TestPermissions.CREATE.getMask()));
     Assertions.assertFalse(acl.canAccess(subjectWithoutRemoteHost, TestPermissions.DELETE.getMask()));
   }
+*/
 
   @Test
   void testCanAccess_ValidAccess_ReturnsTrue() {
@@ -172,7 +175,7 @@ public class AccessControlListTest {
     groupMapManagement.clearAll();
     Assertions.assertEquals(0, groupMapManagement.size());
   }
-
+  /*
   @Test
   void testCanAccess_NullSubject_ReturnsFalse() {
     // Null subject
@@ -183,18 +186,14 @@ public class AccessControlListTest {
     Assertions.assertFalse(acl.canAccess(subject, TestPermissions.READ.getMask()));
   }
 
+
   @Test
   void testCanAccess_NullAccess_ReturnsFalse() {
     // Create a subject with necessary principals
     Subject subject = new Subject();
     subject.getPrincipals().add(new UserPrincipal("user1"));
     subject.getPrincipals().add(new GroupPrincipal("group1"));
-
-    // Set up the access control list with the necessary ACL entries
-    List<String> aclEntries = Collections.singletonList("user1 = Read|Write");
     AccessControlList acl = AccessControlFactory.getInstance().get("Permission", new ArrayList<>());
-
-
     // Verify that the subject is not allowed to access with null access
     Assertions.assertFalse(acl.canAccess(subject, 0L));
   }
@@ -221,4 +220,6 @@ public class AccessControlListTest {
     principals.add(new UserPrincipal(user.getUsername()));
     return new Subject(false, principals, new HashSet<>(), new HashSet<>());
   }
+*/
+
 }

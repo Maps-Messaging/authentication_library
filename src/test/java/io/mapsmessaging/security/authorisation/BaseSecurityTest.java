@@ -21,41 +21,26 @@
 package io.mapsmessaging.security.authorisation;
 
 import com.github.javafaker.Faker;
-import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.Group;
+import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
-import io.mapsmessaging.security.access.mapping.UserIdMap;
-import io.mapsmessaging.security.access.mapping.UserMapManagement;
-import io.mapsmessaging.security.identity.principals.GroupPrincipal;
-import io.mapsmessaging.security.identity.principals.RemoteHostPrincipal;
-import java.security.Principal;
+import io.mapsmessaging.security.identity.GroupEntry;
+import io.mapsmessaging.security.identity.IdentityEntry;
+import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
 import java.util.*;
-import javax.security.auth.Subject;
 import org.junit.jupiter.api.BeforeAll;
 
 public class BaseSecurityTest {
+  private static final Faker faker = new Faker();
 
   @BeforeAll
   static void setUp() {
     PermissionRegistry.registerAll(TestPermissions.values());
   }
 
-
-  protected List<String> generateUserEntries(int numEntries, UserMapManagement userMapManagement, GroupMapManagement groupMapManagement) {
-    List<String> aclEntries = new ArrayList<>();
-    Faker faker = new Faker();
-    for (int i = 0; i < numEntries; i++) {
-      UserIdMap userIdMap = new UserIdMap(UUID.randomUUID(), faker.name().username(), "test");
-      userMapManagement.add(userIdMap);
-      String entry = userIdMap.getAuthId() + " = Read|Write|Delete";
-      aclEntries.add(entry);
-    }
-    return aclEntries;
-  }
-
   protected List<String> generateGroupEntries(int numEntries, GroupMapManagement groupMapManagement) {
     List<String> aclEntries = new ArrayList<>();
-    Faker faker = new Faker();
     for (int i = 0; i < numEntries; i++) {
       String groupName = faker.space().nebula() + "-" + faker.space().galaxy();
       GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), groupName, "test");
@@ -66,30 +51,26 @@ public class BaseSecurityTest {
     return aclEntries;
   }
 
-
-  protected Subject createRandomSubject(GroupMapManagement groupMapManagement) {
-    // Create a random subject for testing purposes
+  public static Identity createRandomIdenties(GroupMapManagement groupMapManagement) {
     Random random = new Random();
-    String username = "user" + random.nextInt(100);
+    String username = faker.name().firstName();
     String groupName = "group" + random.nextInt(100);
-    String remoteHost = "remotehost" + random.nextInt(10);
-
-    return createSubject(groupMapManagement, username, groupName, remoteHost);
+    return createIdentity(groupMapManagement,username,  groupName);
   }
 
-  protected Subject createSubject(GroupMapManagement groupMapManagement,
-                                  String username,
-                                  String groupName,
-                                  String remoteHost) {
-    Set<Principal> principals = new HashSet<>();
-    principals.add(new UserPrincipal(username));
-    GroupIdMap groupIdMap = groupMapManagement.get("test:" + groupName);
-    if (groupIdMap != null) {
-      principals.add(new GroupPrincipal(groupName));
+  public static Identity createIdentity(GroupMapManagement groupMapManagement, String username, String groupName) {
+    List<Group> groups = new ArrayList<>();
+    if (groupMapManagement != null) {
+      GroupIdMap groupIdMap = groupMapManagement.get("test:" + groupName);
+      if (groupIdMap != null) {
+        GroupEntry entry = new GroupEntry(groupIdMap.getGroupName(), new HashSet<>());
+
+        Group group = new Group(groupIdMap.getAuthId(), entry);
+        groups.add(group);
+      }
     }
-    if (remoteHost != null) {
-      principals.add(new RemoteHostPrincipal(remoteHost));
-    }
-    return new Subject(true, principals, new HashSet<>(), new HashSet<>());
+    IdentityEntry identityEntry = new HtPasswdEntry(username, new char[0]);
+    return new Identity(UUID.randomUUID(), identityEntry, groups);
   }
+
 }

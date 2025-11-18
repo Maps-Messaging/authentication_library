@@ -20,14 +20,12 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl.permission;
 
-import io.mapsmessaging.security.SubjectHelper;
-import io.mapsmessaging.security.access.mapping.GroupIdMap;
+import io.mapsmessaging.security.access.Group;
+import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlListParser;
 import io.mapsmessaging.security.authorisation.impl.acl.AclEntry;
-import io.mapsmessaging.security.identity.principals.GroupIdPrincipal;
 import java.util.*;
-import javax.security.auth.Subject;
 
 public class PermissionAccessControlList implements AccessControlList {
 
@@ -52,36 +50,33 @@ public class PermissionAccessControlList implements AccessControlList {
     return new PermissionAccessControlList( parser.createList(config));
   }
 
-  public long getSubjectAccess(Subject subject) {
+  public long getSubjectAccess(Identity identity) {
     long mask = 0;
-    if (subject != null) {
+    if (identity != null) {
       long time = System.currentTimeMillis();
-      mask = processAclEntriesForSubject(subject, time);
-
-      Set<GroupIdPrincipal> groups = subject.getPrincipals(GroupIdPrincipal.class);
-      mask |= processGroups(groups, time);
+      mask = processAclEntriesForSubject(identity, time);
+      mask |= processGroups(identity.getGroupList(), time);
     }
     return mask;
   }
 
-  private long processAclEntriesForSubject(Subject subject, long time) {
-    UUID authId = SubjectHelper.getUniqueId(subject);
+  private long processAclEntriesForSubject(Identity identity, long time) {
+    UUID authId = identity.getId();
     return aclEntries.stream()
         .filter(aclEntry -> isValidAclEntry(aclEntry, time, authId))
         .mapToLong(AclEntry::getPermissions)
         .reduce(0, (a, b) -> a | b);
   }
 
-  private long processGroups(Set<GroupIdPrincipal> groups, long time) {
+  private long processGroups(List<Group> groups, long time) {
     return groups.stream()
-        .flatMap(group -> group.getGroupIds().stream())
         .mapToLong(groupIdMap -> processAclEntriesForGroupId(groupIdMap, time))
         .reduce(0, (a, b) -> a | b);
   }
 
-  private long processAclEntriesForGroupId(GroupIdMap groupIdMap, long time) {
+  private long processAclEntriesForGroupId(Group group, long time) {
     return aclEntries.stream()
-        .filter(aclEntry -> isValidAclEntry(aclEntry, time, groupIdMap.getAuthId()))
+        .filter(aclEntry -> isValidAclEntry(aclEntry, time, group.getId()))
         .mapToLong(AclEntry::getPermissions)
         .reduce(0, (a, b) -> a | b);
   }
@@ -92,22 +87,20 @@ public class PermissionAccessControlList implements AccessControlList {
 
   // We are exiting early here because we want to fast exit once we found access is allowed
   @SuppressWarnings("java:S3516")
-  public boolean canAccess(Subject subject, long requestedAccess) {
-    if (subject == null || requestedAccess == 0) {
+  public boolean canAccess(Identity identity, long requestedAccess) {
+    if (identity == null || requestedAccess == 0) {
       return false;
     }
 
-    UUID authId = SubjectHelper.getUniqueId(subject);
+    UUID authId = identity.getId();
     if (checkAccessForId(authId, requestedAccess)) {
       return true;
     }
 
-    if (!subject.getPrincipals(GroupIdPrincipal.class).isEmpty()) {
-      for (GroupIdPrincipal group : subject.getPrincipals(GroupIdPrincipal.class)) {
-        for (GroupIdMap groupIdMap : group.getGroupIds()) {
-          if (checkAccessForId(groupIdMap.getAuthId(), requestedAccess)) {
-            return true;
-          }
+    if (!identity.getGroupList().isEmpty()) {
+      for (Group group : identity.getGroupList()) {
+        if (checkAccessForId(group.getId(), requestedAccess)) {
+          return true;
         }
       }
     }

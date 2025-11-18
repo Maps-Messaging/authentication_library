@@ -20,208 +20,242 @@
 
 package io.mapsmessaging.security.authorisation.impl.openfga;
 
-
-import io.mapsmessaging.security.SubjectHelper;
-import io.mapsmessaging.security.authorisation.AuthorizationProvider;
-import io.mapsmessaging.security.authorisation.Permission;
-import io.mapsmessaging.security.authorisation.ProtectedResource;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import javax.security.auth.Subject;
+import dev.openfga.sdk.api.client.OpenFgaClient;
+import dev.openfga.sdk.api.client.model.ClientCheckRequest;
+import dev.openfga.sdk.api.client.model.ClientTupleKey;
+import dev.openfga.sdk.api.client.model.ClientWriteRequest;
+import dev.openfga.sdk.api.configuration.ClientCheckOptions;
+import dev.openfga.sdk.api.configuration.ClientWriteOptions;
+import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import io.mapsmessaging.security.access.Group;
+import io.mapsmessaging.security.access.Identity;
+import io.mapsmessaging.security.authorisation.*;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import lombok.Builder;
+import lombok.NonNull;
 
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
-  private final HttpClient httpClient;
-  private final URI baseUri;
-  private final String storeId;
-  private final String authorizationModelId;
-  private final String apiToken;
-  private final Duration timeout;
+  private final OpenFgaClient openFgaClient;
+  private final String userType;
+  private final String groupType;
+  private final String tenantSeparator;
+  private final String groupMemberRelation;
+  private final String defaultAuthorizationModelId;
 
   @Builder
-  public OpenFGAAuthorizationProvider(String baseUrl,
-                                      String storeId,
-                                      String authorizationModelId,
-                                      String apiToken,
-                                      Duration timeout) {
-    this.baseUri = URI.create(baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl);
-    this.storeId = storeId;
-    this.authorizationModelId = authorizationModelId;
-    this.apiToken = apiToken;
-    this.timeout = timeout != null ? timeout : Duration.ofSeconds(2);
-    this.httpClient = HttpClient.newBuilder()
-        .connectTimeout(this.timeout)
-        .build();
+  public OpenFGAAuthorizationProvider(@NonNull OpenFgaClient openFgaClient,
+                                      String userType,
+                                      String groupType,
+                                      String tenantSeparator,
+                                      String groupMemberRelation,
+                                      String defaultAuthorizationModelId) {
+    this.openFgaClient = openFgaClient;
+    this.userType = userType != null ? userType : "user";
+    this.groupType = groupType != null ? groupType : "group";
+    this.tenantSeparator = tenantSeparator != null ? tenantSeparator : "/";
+    this.groupMemberRelation = groupMemberRelation != null ? groupMemberRelation : "member";
+    this.defaultAuthorizationModelId = defaultAuthorizationModelId;
   }
 
-
   @Override
-  public boolean canAccess(Subject subject,
+  public boolean canAccess(Identity identity,
                            Permission permission,
                            ProtectedResource protectedResource) {
 
-    String path = "/stores/" + storeId + "/check";
-    URI uri = baseUri.resolve(path);
-
-    String user = toFgaUser(subject);
-    String relation = permission.getName();
-    String object = toFgaObject(protectedResource);
-
-    String requestBody = """
-        {
-          "tuple_key": {
-            "user": "%s",
-            "relation": "%s",
-            "object": "%s"
-          }%s
-        }
-        """.formatted(
-        escapeJson(user),
-        escapeJson(relation),
-        escapeJson(object),
-        authorizationModelId != null && !authorizationModelId.isEmpty()
-            ? ",\"authorization_model_id\":\"" + escapeJson(authorizationModelId) + "\""
-            : ""
-    );
-
-    HttpRequest.Builder builder = HttpRequest.newBuilder()
-        .uri(uri)
-        .timeout(timeout)
-        .header("Content-Type", "application/json")
-        .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8));
-
-    if (apiToken != null && !apiToken.isEmpty()) {
-      builder.header("Authorization", "Bearer " + apiToken);
+    if (identity == null || permission == null || protectedResource == null) {
+      return false;
     }
 
-    HttpRequest request = builder.build();
+    String user = identity.getId().toString();
+    String relation = permission.getName();
+    String object = toObject(protectedResource);
+
+    ClientCheckRequest clientCheckRequest = new ClientCheckRequest()
+        .user(user)
+        .relation(relation)
+        ._object(object);
+
+    ClientCheckOptions clientCheckOptions = new ClientCheckOptions();
+    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
+      clientCheckOptions.authorizationModelId(defaultAuthorizationModelId);
+    }
 
     try {
-      HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      if (response.statusCode() / 100 != 2) {
-        return false;
-      }
-      return parseAllowed(response.body());
-    } catch (IOException | InterruptedException e) {
+      CompletableFuture<dev.openfga.sdk.api.client.model.ClientCheckResponse> future =
+          openFgaClient.check(clientCheckRequest, clientCheckOptions);
+      dev.openfga.sdk.api.client.model.ClientCheckResponse response = future.get();
+      return Boolean.TRUE.equals(response.getAllowed());
+    } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
+      return false;
+    } catch (ExecutionException | FgaInvalidParameterException executionException) {
       return false;
     }
   }
 
   @Override
-  public void grantAccess(Subject subject,
+  public void grantAccess(Grantee grantee,
                           Permission permission,
                           ProtectedResource protectedResource) {
 
-    writeTuple(subject, permission, protectedResource, true);
+    if (grantee == null || permission == null || protectedResource == null) {
+      return;
+    }
+
+    ClientTupleKey tupleKey = new ClientTupleKey()
+        .user(toGranteeUser(grantee))
+        .relation(permission.getName())
+        ._object(toObject(protectedResource));
+
+    ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
+        .writes(Collections.singletonList(tupleKey));
+
+    ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
+    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
+      clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
+    }
+
+    try {
+      openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
+    } catch (InterruptedException interruptedException) {
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException executionException) {
+      // swallow or log via your logging framework
+    } catch (FgaInvalidParameterException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
-  public void revokeAccess(Subject subject,
+  public void revokeAccess(Grantee grantee,
                            Permission permission,
                            ProtectedResource protectedResource) {
 
-    writeTuple(subject, permission, protectedResource, false);
-  }
-
-  private void writeTuple(Subject subject,
-                          Permission permission,
-                          ProtectedResource protectedResource,
-                          boolean add) {
-
-    String path = "/stores/" + storeId + "/write";
-    URI uri = baseUri.resolve(path);
-
-    String user = toFgaUser(subject);
-    String relation = permission.getName();
-    String object = toFgaObject(protectedResource);
-
-    String tupleJson = """
-        {
-          "user": "%s",
-          "relation": "%s",
-          "object": "%s"
-        }
-        """.formatted(
-        escapeJson(user),
-        escapeJson(relation),
-        escapeJson(object)
-    );
-
-    String sectionName = add ? "writes" : "deletes";
-
-    String requestBody = """
-        {
-          "%s": {
-            "tuple_keys": [
-              %s
-            ]
-          }%s
-        }
-        """.formatted(
-        sectionName,
-        tupleJson,
-        authorizationModelId != null && !authorizationModelId.isEmpty()
-            ? ",\"authorization_model_id\":\"" + escapeJson(authorizationModelId) + "\""
-            : ""
-    );
-
-    HttpRequest.Builder builder = HttpRequest.newBuilder()
-        .uri(uri)
-        .timeout(timeout)
-        .header("Content-Type", "application/json")
-        .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8));
-
-    if (apiToken != null && !apiToken.isEmpty()) {
-      builder.header("Authorization", "Bearer " + apiToken);
+    if (grantee == null || permission == null || protectedResource == null) {
+      return;
     }
 
-    HttpRequest request = builder.build();
+    ClientTupleKey tupleKey = new ClientTupleKey()
+        .user(toGranteeUser(grantee))
+        .relation(permission.getName())
+        ._object(toObject(protectedResource));
+
+    ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
+        .deletes(Collections.singletonList(tupleKey));
+
+    ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
+    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
+      clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
+    }
 
     try {
-      httpClient.send(request, HttpResponse.BodyHandlers.discarding());
-    } catch (IOException | InterruptedException e) {
+      openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
+    } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
+    } catch (ExecutionException | FgaInvalidParameterException executionException) {
+      // swallow or log via your logging framework
     }
   }
 
-  private String toFgaUser(Subject subject) {
-    // Adapt this to your Subject model (id/username/etc)
-    return "user:" + SubjectHelper.getUniqueId(subject);
+  @Override
+  public void deleteIdentity(Identity identity) {
+    // Optional: clean up identity-related tuples if you want stricter hygiene.
   }
 
-  private String toFgaObject(ProtectedResource protectedResource) {
-    // type:id form
-    String type = protectedResource.getResourceType();
-    String name = protectedResource.getResourceId();
-    return type + ":" + name;
+  @Override
+  public void registerGroup(Group group) {
+    // Typically nothing to do: group is just a type/id in OpenFGA.
   }
 
-  private boolean parseAllowed(String body) {
-    int idx = body.indexOf("\"allowed\"");
-    if (idx < 0) {
-      return false;
-    }
-    int colon = body.indexOf(':', idx);
-    if (colon < 0) {
-      return false;
-    }
-    String tail = body.substring(colon + 1).trim();
-    return tail.startsWith("true");
+  @Override
+  public void deleteGroup(Group group) {
+    // Optional: clean up group-related tuples.
   }
 
-  private String escapeJson(String value) {
-    if (value == null) {
-      return "";
+  @Override
+  public void addGroupMember(Group group, Identity identity) {
+
+    if (group == null || identity == null) {
+      return;
     }
-    return value
-        .replace("\\", "\\\\")
-        .replace("\"", "\\\"");
+
+    ClientTupleKey tupleKey = new ClientTupleKey()
+        .user(identity.getId().toString())
+        .relation(groupMemberRelation)
+        ._object(group.getId().toString());
+
+    ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
+        .writes(Collections.singletonList(tupleKey));
+
+    ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
+    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
+      clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
+    }
+
+    try {
+      openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
+    } catch (InterruptedException interruptedException) {
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException | FgaInvalidParameterException executionException) {
+      // swallow or log
+    }
+  }
+
+  @Override
+  public void removeGroupMember(Group group, Identity identity) {
+
+    if (group == null || identity == null) {
+      return;
+    }
+
+    ClientTupleKey tupleKey = new ClientTupleKey()
+        .user(identity.getId().toString())
+        .relation(groupMemberRelation)
+        ._object(group.getId().toString());
+
+    ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
+        .deletes(Collections.singletonList(tupleKey));
+
+    ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
+    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
+      clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
+    }
+
+    try {
+      openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
+    } catch (InterruptedException interruptedException) {
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException | FgaInvalidParameterException executionException) {
+      // swallow or log
+    }
+  }
+
+  private String toUser(UUID id) {
+    return userType + ":" + id.toString();
+  }
+
+  private String toGroupObject(UUID id) {
+    return groupType + ":" + id.toString();
+  }
+
+  private String toGranteeUser(Grantee grantee) {
+    if (grantee.type() == GranteeType.USER) {
+      return toUser(grantee.id());
+    }
+    return toGroupObject(grantee.id());
+  }
+  private String toObject(ProtectedResource protectedResource) {
+    String resourceType = protectedResource.getResourceType();
+    String resourceId = protectedResource.getResourceId();
+    String tenant = protectedResource.getTenant();
+
+    if (tenant != null && !tenant.isEmpty()) {
+      return resourceType + ":" + tenant + tenantSeparator + resourceId;
+    }
+    return resourceType + ":" + resourceId;
   }
 }

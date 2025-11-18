@@ -18,24 +18,18 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation.impl.acl;
+package io.mapsmessaging.security.authorisation;
 
 
-import io.mapsmessaging.security.access.Identity;
-import java.util.List;
 import java.util.UUID;
 
-public interface AccessControlList {
+public record Grantee(GranteeType type, UUID id) {
 
-  String getName();
+  public static Grantee forIdentity(io.mapsmessaging.security.access.Identity identity) {
+    return new Grantee(GranteeType.USER, identity.getId());
+  }
 
-  AccessControlList create(List<String> config);
-
-  long getSubjectAccess(Identity identity);
-
-  boolean canAccess(Identity identity, long requestedAccess);
-
-  boolean add(UUID uuid, long requestedAccess);
-
-  boolean remove(UUID uuid, long requestedAccess);
+  public static Grantee forGroup(io.mapsmessaging.security.access.Group group) {
+    return new Grantee(GranteeType.GROUP, group.getId());
+  }
 }

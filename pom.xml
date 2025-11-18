@@ -438,6 +438,13 @@
       <version>2.13.2</version>
     </dependency>
 
+    <!-- https://mvnrepository.com/artifact/dev.openfga/openfga-sdk -->
+    <dependency>
+      <groupId>dev.openfga</groupId>
+      <artifactId>openfga-sdk</artifactId>
+      <version>0.9.3</version>
+    </dependency>
+
     <!-- TEST DEPENDENCIES -->
 
     <!-- Junit5 -->
