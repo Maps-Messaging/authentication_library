@@ -25,6 +25,7 @@ import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.authorisation.ProtectedResource;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,7 +34,7 @@ import javax.security.auth.Subject;
 public class CachingAuthorizationProvider implements AuthorizationProvider {
 
   private final AuthorizationProvider delegate;
-  private final ConcurrentMap<CacheKey, CacheEntry> cache;
+  private final Map<CacheKey, CacheEntry> cache;
   private final long ttlMillis;
   private final long refreshAheadMillis;
   private final ExecutorService executorService;
