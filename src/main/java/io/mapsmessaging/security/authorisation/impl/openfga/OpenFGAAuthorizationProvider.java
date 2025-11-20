@@ -48,17 +48,18 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
   @Builder
   public OpenFGAAuthorizationProvider(@NonNull OpenFgaClient openFgaClient,
+                                      String defaultAuthorizationModelId,
                                       String userType,
                                       String groupType,
                                       String tenantSeparator,
-                                      String groupMemberRelation,
-                                      String defaultAuthorizationModelId) {
+                                      String groupMemberRelation
+                                      ) {
     this.openFgaClient = openFgaClient;
+    this.defaultAuthorizationModelId = defaultAuthorizationModelId;
     this.userType = userType != null ? userType : "user";
     this.groupType = groupType != null ? groupType : "group";
     this.tenantSeparator = tenantSeparator != null ? tenantSeparator : "/";
     this.groupMemberRelation = groupMemberRelation != null ? groupMemberRelation : "member";
-    this.defaultAuthorizationModelId = defaultAuthorizationModelId;
   }
 
   @Override
@@ -75,7 +76,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     String object = toObject(protectedResource);
 
     ClientCheckRequest clientCheckRequest = new ClientCheckRequest()
-        .user(user)
+        .user("user:"+user)
         .relation(relation)
         ._object(object);
 
@@ -108,7 +109,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
     ClientTupleKey tupleKey = new ClientTupleKey()
         .user(toGranteeUser(grantee))
-        .relation(permission.getName())
+        .relation(permission.getName().toLowerCase())
         ._object(toObject(protectedResource));
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
@@ -124,8 +125,10 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException executionException) {
+      executionException.printStackTrace();
       // swallow or log via your logging framework
     } catch (FgaInvalidParameterException e) {
+      e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
@@ -184,7 +187,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
 
     ClientTupleKey tupleKey = new ClientTupleKey()
-        .user(identity.getId().toString())
+        .user("user:"+identity.getId().toString())
         .relation(groupMemberRelation)
         ._object(group.getId().toString());
 
@@ -213,7 +216,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
 
     ClientTupleKey tupleKey = new ClientTupleKey()
-        .user(identity.getId().toString())
+        .user("user:"+identity.getId().toString())
         .relation(groupMemberRelation)
         ._object(group.getId().toString());
 

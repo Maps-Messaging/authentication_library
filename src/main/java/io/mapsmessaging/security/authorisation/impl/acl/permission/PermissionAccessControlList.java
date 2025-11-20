@@ -116,7 +116,7 @@ public class PermissionAccessControlList implements AccessControlList {
 
   @Override
   public boolean remove(UUID uuid, long requestedAccess) {
-    aclEntries.removeIf(entry -> entry.matches(uuid));
+    aclEntries.removeIf(entry -> entry.matches(uuid) && entry.getPermissions() == requestedAccess);
     return true;
   }
 
