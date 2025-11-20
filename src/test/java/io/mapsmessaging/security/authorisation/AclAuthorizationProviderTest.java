@@ -24,11 +24,11 @@ import io.mapsmessaging.security.authorisation.impl.acl.AclAuthorizationProvider
 import io.mapsmessaging.security.authorisation.impl.acl.permission.PermissionAccessControlList;
 import java.util.LinkedList;
 
-public class AclAuthorizationProviderTest extends BaseAuthorizationProviderTest{
+public class AclAuthorizationProviderTest extends AbstractAuthorizationProviderTest{
 
 
   @Override
-  public AuthorizationProvider getAuthorizationProvider() {
+  protected AuthorizationProvider createAuthorizationProvider(){
     return new AclAuthorizationProvider(new PermissionAccessControlList(), new LinkedList<>());
   }
 }

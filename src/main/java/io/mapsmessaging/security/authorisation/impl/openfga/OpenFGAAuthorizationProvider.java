@@ -189,7 +189,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     ClientTupleKey tupleKey = new ClientTupleKey()
         .user("user:"+identity.getId().toString())
         .relation(groupMemberRelation)
-        ._object(group.getId().toString());
+        ._object("group:"+group.getId().toString());
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
         .writes(Collections.singletonList(tupleKey));
@@ -204,7 +204,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      // swallow or log
+      executionException.printStackTrace();
     }
   }
 

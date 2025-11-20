@@ -25,10 +25,10 @@ import lombok.Getter;
 @Getter
 public enum TestPermissions implements Permission {
 
-  READ("Read", "Allows Read access to the resource", 0),
-  WRITE("Write", "Allows Write access to the resource", 1),
-  DELETE("Delete", "Allows Delete access to the resource", 2),
-  CREATE("Create", "Allows Create access to the resource", 3),;
+  READ("read", "Allows Read access to the resource", 0),
+  WRITE("write", "Allows Write access to the resource", 1),
+  DELETE("delete", "Allows Delete access to the resource", 2),
+  CREATE("create", "Allows Create access to the resource", 3),;
 
   private final String name;
   private final String description;
