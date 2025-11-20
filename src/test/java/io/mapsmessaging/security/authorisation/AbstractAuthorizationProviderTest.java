@@ -368,13 +368,14 @@ public abstract class AbstractAuthorizationProviderTest {
         "Bob should have READ via admins before deletion"
     );
 
-    authorizationProvider.deleteGroup(groupAdmins);
     removeIdentityFromGroup(identityBob, groupAdmins);
 
     assertFalse(
         authorizationProvider.canAccess(identityBob, TestPermissions.READ, protectedResource),
         "Bob should not have READ after group deletion"
     );
+    authorizationProvider.deleteGroup(groupAdmins);
+
   }
 
   // ===== Helpers for membership sync in tests =====

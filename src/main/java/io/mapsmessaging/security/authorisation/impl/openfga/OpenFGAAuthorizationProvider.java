@@ -106,11 +106,16 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
+    ClientTupleKey tupleKey = new ClientTupleKey();
 
-    ClientTupleKey tupleKey = new ClientTupleKey()
-        .user(toGranteeUser(grantee))
-        .relation(permission.getName().toLowerCase())
-        ._object(toObject(protectedResource));
+    if(grantee.type() == GranteeType.GROUP){
+      tupleKey.user(toGranteeUser(grantee)+"#member");
+    }
+    else{
+      tupleKey.user(toGranteeUser(grantee));
+    }
+    tupleKey.relation(permission.getName().toLowerCase());
+    tupleKey._object(toObject(protectedResource));
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
         .writes(Collections.singletonList(tupleKey));
@@ -141,11 +146,15 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
-
-    ClientTupleKey tupleKey = new ClientTupleKey()
-        .user(toGranteeUser(grantee))
-        .relation(permission.getName())
-        ._object(toObject(protectedResource));
+      ClientTupleKey tupleKey = new ClientTupleKey();
+      if(grantee.type() == GranteeType.GROUP){
+          tupleKey.user(toGranteeUser(grantee)+"#member");
+      }
+      else{
+          tupleKey.user(toGranteeUser(grantee));
+      }
+      tupleKey.relation(permission.getName().toLowerCase());
+      tupleKey._object(toObject(protectedResource));
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
         .deletes(Collections.singletonList(tupleKey));
@@ -218,7 +227,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     ClientTupleKey tupleKey = new ClientTupleKey()
         .user("user:"+identity.getId().toString())
         .relation(groupMemberRelation)
-        ._object(group.getId().toString());
+        ._object("group:"+group.getId().toString());
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
         .deletes(Collections.singletonList(tupleKey));
