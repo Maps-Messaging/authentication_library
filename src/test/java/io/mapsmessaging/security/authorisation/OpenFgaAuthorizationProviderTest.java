@@ -46,14 +46,7 @@ public class OpenFgaAuthorizationProviderTest extends AbstractAuthorizationProvi
     OpenFgaClient client = new OpenFgaClient(clientConfiguration);
 
     List<TupleKey> tuplets = getAllTuples(client);
-    for(TupleKey tupleKey : tuplets){
-      System.out.println(tupleKey);
-    }
     deleteAllTuples(client, tuplets, "01KAF6SSMG4T5WZY47FS12QZ0C");
-    tuplets = getAllTuples(client);
-    for(TupleKey tupleKey : tuplets){
-      System.out.println(tupleKey);
-    }
     return new OpenFGAAuthorizationProvider(client, "01KAF6SSMG4T5WZY47FS12QZ0C", null, null, null, null);
   }
 

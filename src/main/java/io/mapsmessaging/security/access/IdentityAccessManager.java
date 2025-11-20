@@ -27,6 +27,8 @@ import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
 import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.Permission;
+import io.mapsmessaging.security.authorisation.ProtectedResource;
 import io.mapsmessaging.security.authorisation.impl.acl.AclAuthorizationProvider;
 import io.mapsmessaging.security.authorisation.impl.acl.open.OpenAccessControlList;
 import io.mapsmessaging.security.authorisation.impl.acl.permission.PermissionAccessControlList;
@@ -88,6 +90,10 @@ public class IdentityAccessManager {
       subject = null;
     }
     return subject;
+  }
+
+  public boolean canAccess(Identity identity, Permission permission, ProtectedResource resource) {
+    return authorizationProvider.canAccess(identity, permission, resource);
   }
 
   public boolean validateUser(String username, char[] passwordHash) throws IOException{

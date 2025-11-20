@@ -36,14 +36,14 @@ public abstract class AbstractAuthorizationProviderTest {
 
   private final Map<String, UUID> UUIDMap = new LinkedHashMap<>();
 
-  private AuthorizationProvider authorizationProvider;
+  protected AuthorizationProvider authorizationProvider;
 
-  private Identity identityAlice;
+  protected Identity identityAlice;
   private Identity identityBob;
   private Identity identityCharlie;
   private Group groupAdmins;
   private Group groupGuests;
-  private ProtectedResource protectedResource;
+  protected ProtectedResource protectedResource;
 
   private Permission readPermission;
 
