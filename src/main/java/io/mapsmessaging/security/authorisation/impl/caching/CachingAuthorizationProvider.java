@@ -30,6 +30,7 @@ import io.mapsmessaging.security.authorisation.ProtectedResource;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -106,33 +107,33 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
     cache.clear();
   }
 
-  public void registerIdentity(Identity identity) {
-    delegate.registerIdentity(identity);
+  public void registerIdentity(UUID identityId) {
+    delegate.registerIdentity(identityId);
     cache.clear();
   }
 
-  public void deleteIdentity(Identity identity) {
-    delegate.deleteIdentity(identity);
+  public void deleteIdentity(UUID identityId) {
+    delegate.deleteIdentity(identityId);
     cache.clear();
   }
 
-  public void registerGroup(Group group) {
-    delegate.registerGroup(group);
+  public void registerGroup(UUID groupId) {
+    delegate.registerGroup(groupId);
     cache.clear();
   }
 
-  public void deleteGroup(Group group) {
-    delegate.deleteGroup(group);
+  public void deleteGroup(UUID groupId) {
+    delegate.deleteGroup(groupId);
     cache.clear();
   }
 
-  public void addGroupMember(Group group, Identity identity) {
-    delegate.addGroupMember(group, identity);
+  public void addGroupMember(UUID groupId, UUID identityId) {
+    delegate.addGroupMember(groupId, identityId);
     cache.clear();
   }
 
-  public void removeGroupMember(Group group, Identity identity) {
-    delegate.removeGroupMember(group, identity);
+  public void removeGroupMember(UUID groupId, UUID identityId) {
+    delegate.removeGroupMember(groupId, identityId);
     cache.clear();
   }
 

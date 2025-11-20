@@ -23,6 +23,8 @@ package io.mapsmessaging.security.authorisation;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 
+import java.util.UUID;
+
 public interface AuthorizationProvider {
 
   // ==== Runtime check ====
@@ -60,7 +62,7 @@ public interface AuthorizationProvider {
   /**
    * Called when a new identity is created in the authentication system.
    */
-  default void registerIdentity(Identity identity) {
+  default void registerIdentity(UUID identityId) {
     // default: no-op
   }
 
@@ -68,14 +70,14 @@ public interface AuthorizationProvider {
    * Called when an identity is deleted. Implementations should remove any
    * grants / tuples associated with this identity.
    */
-  default void deleteIdentity(Identity identity) {
+  default void deleteIdentity(UUID identityId) {
     // default: no-op
   }
 
   /**
    * Called when a new group is created in the authentication system.
    */
-  default void registerGroup(Group group) {
+  default void registerGroup(UUID groupId) {
     // default: no-op
   }
 
@@ -83,21 +85,21 @@ public interface AuthorizationProvider {
    * Called when a group is deleted. Implementations should remove any
    * grants / tuples associated with this group.
    */
-  default void deleteGroup(Group group) {
+  default void deleteGroup(UUID groupId) {
     // default: no-op
   }
 
   /**
    * Called when an identity is added to a group.
    */
-  default void addGroupMember(Group group, Identity identity) {
+  default void addGroupMember(UUID groupId, UUID identityId) {
     // default: no-op
   }
 
   /**
    * Called when an identity is removed from a group.
    */
-  default void removeGroupMember(Group group, Identity identity) {
+  default void removeGroupMember(UUID groupId, UUID identityId) {
     // default: no-op
   }
 

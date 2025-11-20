@@ -20,7 +20,6 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
-import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 import io.mapsmessaging.security.authorisation.Grantee;
@@ -28,6 +27,7 @@ import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.authorisation.ProtectedResource;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
@@ -83,16 +83,16 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public void deleteIdentity(Identity identity) {
+  public void deleteIdentity(UUID identityId) {
     for(AccessControlList accessControlList : accessControlListMap.values()) {
-      accessControlList.remove(identity.getId(), -1); // remove all
+      accessControlList.remove(identityId, -1); // remove all
     }
   }
 
   @Override
-  public void deleteGroup(Group group) {
+  public void deleteGroup(UUID groupId) {
     for(AccessControlList accessControlList : accessControlListMap.values()) {
-      accessControlList.remove(group.getId(), -1); // remove all
+      accessControlList.remove(groupId, -1); // remove all
     }
   }
 

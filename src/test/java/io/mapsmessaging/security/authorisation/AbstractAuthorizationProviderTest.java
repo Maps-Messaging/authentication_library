@@ -61,12 +61,12 @@ public abstract class AbstractAuthorizationProviderTest {
     protectedResource = createProtectedResource("resource-1");
     readPermission = TestPermissions.READ;
 
-    authorizationProvider.registerIdentity(identityAlice);
-    authorizationProvider.registerIdentity(identityBob);
-    authorizationProvider.registerIdentity(identityCharlie);
+    authorizationProvider.registerIdentity(identityAlice.getId());
+    authorizationProvider.registerIdentity(identityBob.getId());
+    authorizationProvider.registerIdentity(identityCharlie.getId());
 
-    authorizationProvider.registerGroup(groupAdmins);
-    authorizationProvider.registerGroup(groupGuests);
+    authorizationProvider.registerGroup(groupAdmins.getId());
+    authorizationProvider.registerGroup(groupGuests.getId());
   }
 
   // a) Grant access to users
@@ -101,7 +101,7 @@ public abstract class AbstractAuthorizationProviderTest {
         "Alice should not have access after revoke"
     );
 
-    authorizationProvider.deleteIdentity(identityAlice);
+    authorizationProvider.deleteIdentity(identityAlice.getId());
 
     assertFalse(
         authorizationProvider.canAccess(identityAlice, readPermission, protectedResource),
@@ -374,19 +374,19 @@ public abstract class AbstractAuthorizationProviderTest {
         authorizationProvider.canAccess(identityBob, TestPermissions.READ, protectedResource),
         "Bob should not have READ after group deletion"
     );
-    authorizationProvider.deleteGroup(groupAdmins);
+    authorizationProvider.deleteGroup(groupAdmins.getId());
 
   }
 
   // ===== Helpers for membership sync in tests =====
 
   private void addIdentityToGroup(Identity identity, Group group) {
-    authorizationProvider.addGroupMember(group, identity);
+    authorizationProvider.addGroupMember(group.getId(), identity.getId());
     identity.getGroupList().add(group);
   }
 
   private void removeIdentityFromGroup(Identity identity, Group group) {
-    authorizationProvider.removeGroupMember(group, identity);
+    authorizationProvider.removeGroupMember(group.getId(), identity.getId());
     identity.getGroupList().remove(group);
   }
 

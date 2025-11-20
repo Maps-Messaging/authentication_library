@@ -26,6 +26,10 @@ import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.impl.acl.AclAuthorizationProvider;
+import io.mapsmessaging.security.authorisation.impl.acl.open.OpenAccessControlList;
+import io.mapsmessaging.security.authorisation.impl.acl.permission.PermissionAccessControlList;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
@@ -44,6 +48,7 @@ public class IdentityAccessManager {
   private final IdentityLookup identityLookup;
   private final UserManagement userManagement;
   private final GroupManagement groupManagement;
+  private final AuthorizationProvider authorizationProvider;
 
   public IdentityAccessManager(
       String identity,
@@ -51,6 +56,7 @@ public class IdentityAccessManager {
       MapStore<UserIdMap> userStore,
       MapStore<GroupIdMap> groupStore) {
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
+    authorizationProvider = new AclAuthorizationProvider(new OpenAccessControlList(), new ArrayList<>());
     GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
     UserMapManagement userMapManagement = new UserMapManagement(userStore);
 
@@ -65,8 +71,8 @@ public class IdentityAccessManager {
     } else {
       passwordHandler = baseHandler;
     }
-    groupManagement = new GroupManagement(identityLookup, groupMapManagement);
-    userManagement = new UserManagement(identityLookup, userMapManagement, groupManagement, passwordHandler);
+    groupManagement = new GroupManagement(identityLookup, userMapManagement, groupMapManagement, authorizationProvider);
+    userManagement = new UserManagement(identityLookup, userMapManagement, groupManagement, passwordHandler, authorizationProvider);
 
     userMapManagement.save();
     groupMapManagement.save();

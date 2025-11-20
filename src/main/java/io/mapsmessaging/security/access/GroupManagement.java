@@ -22,6 +22,9 @@ package io.mapsmessaging.security.access;
 
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -38,10 +41,14 @@ public class GroupManagement {
 
   private final IdentityLookup identityLookup;
   private final GroupMapManagement groupMapManagement;
+  private final AuthorizationProvider authorizationProvider;
+  private final UserMapManagement userMapManagement;
 
-  public GroupManagement(final IdentityLookup identityLookup, final GroupMapManagement groupMapManagement) {
+  public GroupManagement(final IdentityLookup identityLookup, final UserMapManagement userMapManagement, final GroupMapManagement groupMapManagement, AuthorizationProvider authorizationProvider) {
     this.identityLookup = identityLookup;
+    this.userMapManagement = userMapManagement;
     this.groupMapManagement = groupMapManagement;
+    this.authorizationProvider = authorizationProvider;
   }
 
   protected Subject updateSubject(Subject subject, IdentityEntry identityEntry) {
@@ -72,6 +79,7 @@ public class GroupManagement {
       groupMapManagement.add(groupIdMap);
       groupMapManagement.save();
     }
+    authorizationProvider.registerGroup(groupIdMap.getAuthId());
     return groupIdMap;
   }
 
@@ -79,8 +87,12 @@ public class GroupManagement {
     GroupEntry groupEntry = identityLookup.findGroup(groupName);
     if (groupEntry != null) {
       identityLookup.deleteGroup(groupName);
-      groupMapManagement.delete(identityLookup.getDomain() + ":" + groupName);
-      groupMapManagement.save();
+      GroupIdMap groupIdMap = groupMapManagement.get(identityLookup.getDomain() + ":" + groupName);
+      if (groupIdMap != null) {
+        groupMapManagement.delete(identityLookup.getDomain() + ":" + groupName);
+        groupMapManagement.save();
+        authorizationProvider.deleteGroup(groupIdMap.getAuthId());
+      }
       return true;
     }
     return false;
@@ -118,6 +130,11 @@ public class GroupManagement {
     identityEntry.addGroup(groupEntry);
     groupEntry.addUser(username);
     identityLookup.updateGroup(groupEntry);
+    GroupIdMap groupIdMap = groupMapManagement.get(identityLookup.getDomain() + ":" + group);
+    UserIdMap userIdMap = userMapManagement.get(username);
+    if (groupIdMap != null && userIdMap != null) {
+      authorizationProvider.addGroupMember(groupIdMap.getAuthId(),userIdMap.getAuthId());
+    }
     return true;
   }
 
@@ -132,6 +149,11 @@ public class GroupManagement {
     }
     if (!identityEntry.isInGroup(groupEntry.getName())) {
       return false;
+    }
+    GroupIdMap groupIdMap = groupMapManagement.get(identityLookup.getDomain() + ":" + group);
+    UserIdMap userIdMap = userMapManagement.get(username);
+    if (groupIdMap != null && userIdMap != null) {
+      authorizationProvider.removeGroupMember(groupIdMap.getAuthId(),userIdMap.getAuthId());
     }
     identityEntry.removeGroup(groupEntry);
     groupEntry.removeUser(username);
@@ -156,12 +178,7 @@ public class GroupManagement {
   public void deleteUserFromAllGroups(String username) throws IOException {
     for (GroupEntry groupEntry : identityLookup.getGroups()) {
       if (groupEntry.isInGroup(username)) {
-        groupEntry.removeUser(username);
-        if (groupEntry.getUserCount() == 0) {
-          identityLookup.deleteGroup(groupEntry.getName());
-          groupMapManagement.delete(groupEntry.getName());
-        }
-        identityLookup.updateGroup(groupEntry);
+        this.removeUserFromGroup(username,groupEntry.getName());
       }
     }
     groupMapManagement.save();

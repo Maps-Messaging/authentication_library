@@ -27,7 +27,6 @@ import dev.openfga.sdk.api.client.model.ClientWriteRequest;
 import dev.openfga.sdk.api.configuration.ClientCheckOptions;
 import dev.openfga.sdk.api.configuration.ClientWriteOptions;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
 import java.util.Collections;
@@ -174,31 +173,16 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public void deleteIdentity(Identity identity) {
-    // Optional: clean up identity-related tuples if you want stricter hygiene.
-  }
+  public void addGroupMember(UUID groupId, UUID identityId) {
 
-  @Override
-  public void registerGroup(Group group) {
-    // Typically nothing to do: group is just a type/id in OpenFGA.
-  }
-
-  @Override
-  public void deleteGroup(Group group) {
-    // Optional: clean up group-related tuples.
-  }
-
-  @Override
-  public void addGroupMember(Group group, Identity identity) {
-
-    if (group == null || identity == null) {
+    if (groupId == null || identityId == null) {
       return;
     }
 
     ClientTupleKey tupleKey = new ClientTupleKey()
-        .user("user:"+identity.getId().toString())
+        .user("user:"+identityId.toString())
         .relation(groupMemberRelation)
-        ._object("group:"+group.getId().toString());
+        ._object("group:"+groupId.toString());
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
         .writes(Collections.singletonList(tupleKey));
@@ -218,16 +202,16 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public void removeGroupMember(Group group, Identity identity) {
+  public void removeGroupMember(UUID groupId, UUID identityId) {
 
-    if (group == null || identity == null) {
+    if (groupId == null || identityId == null) {
       return;
     }
 
     ClientTupleKey tupleKey = new ClientTupleKey()
-        .user("user:"+identity.getId().toString())
+        .user("user:"+identityId.toString())
         .relation(groupMemberRelation)
-        ._object("group:"+group.getId().toString());
+        ._object("group:"+groupId.toString());
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
         .deletes(Collections.singletonList(tupleKey));
