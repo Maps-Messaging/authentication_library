@@ -29,6 +29,6 @@ public class AclAuthorizationProviderTest extends AbstractAuthorizationProviderT
 
   @Override
   protected AuthorizationProvider createAuthorizationProvider(){
-    return new AclAuthorizationProvider(new PermissionAccessControlList(), new LinkedList<>());
+    return new AclAuthorizationProvider(new PermissionAccessControlList(), TestPermissions.values(), new LinkedList<>());
   }
 }

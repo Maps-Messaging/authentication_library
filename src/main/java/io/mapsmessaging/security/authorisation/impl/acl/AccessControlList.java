@@ -21,6 +21,7 @@
 package io.mapsmessaging.security.authorisation.impl.acl;
 
 
+import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import java.util.List;
 import java.util.UUID;
@@ -33,9 +34,17 @@ public interface AccessControlList {
 
   long getSubjectAccess(Identity identity);
 
+  long getGroupAccess(Group group);
+
+  long getRawAccess(UUID uuid);
+
   boolean canAccess(Identity identity, long requestedAccess);
 
-  boolean add(UUID uuid, long requestedAccess);
+  boolean addUser(UUID uuid, long requestedAccess);
+
+  boolean addGroup(UUID uuid, long requestedAccess);
 
   boolean remove(UUID uuid, long requestedAccess);
+
+  List<AclEntry> getAclEntries();
 }

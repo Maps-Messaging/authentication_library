@@ -21,45 +21,68 @@
 package io.mapsmessaging.security.authorisation.impl.openfga;
 
 import dev.openfga.sdk.api.client.OpenFgaClient;
-import dev.openfga.sdk.api.client.model.ClientCheckRequest;
-import dev.openfga.sdk.api.client.model.ClientTupleKey;
-import dev.openfga.sdk.api.client.model.ClientWriteRequest;
+import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.ClientCheckOptions;
+import dev.openfga.sdk.api.configuration.ClientReadOptions;
 import dev.openfga.sdk.api.configuration.ClientWriteOptions;
+import dev.openfga.sdk.api.model.TupleKey;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
-import io.mapsmessaging.security.authorisation.*;
-import java.util.Collections;
-import java.util.UUID;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.Grant;
+import io.mapsmessaging.security.authorisation.Grantee;
+import io.mapsmessaging.security.authorisation.GranteeType;
+import io.mapsmessaging.security.authorisation.Permission;
+import io.mapsmessaging.security.authorisation.ProtectedResource;
+import io.mapsmessaging.security.authorisation.ResourceCreationContext;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
   private final OpenFgaClient openFgaClient;
+  @Getter
   private final String userType;
+  @Getter
   private final String groupType;
+  @Getter
   private final String tenantSeparator;
   private final String groupMemberRelation;
   private final String defaultAuthorizationModelId;
+  private final ReadHelper readHelper;
+  @Getter
+  private final Map<String, Permission> permissions;
 
   @Builder
   public OpenFGAAuthorizationProvider(@NonNull OpenFgaClient openFgaClient,
                                       String defaultAuthorizationModelId,
+                                      Permission[] permission,
                                       String userType,
                                       String groupType,
                                       String tenantSeparator,
-                                      String groupMemberRelation
-                                      ) {
+                                      String groupMemberRelation) {
     this.openFgaClient = openFgaClient;
     this.defaultAuthorizationModelId = defaultAuthorizationModelId;
     this.userType = userType != null ? userType : "user";
     this.groupType = groupType != null ? groupType : "group";
     this.tenantSeparator = tenantSeparator != null ? tenantSeparator : "/";
     this.groupMemberRelation = groupMemberRelation != null ? groupMemberRelation : "member";
+    this.permissions = new ConcurrentHashMap<>();
+    for (Permission permissionPrototype : permission) {
+      permissions.put(permissionPrototype.getName().toLowerCase(),  permissionPrototype);
+    }
+    readHelper = new ReadHelper(this);
   }
+
+  // =============================================================================================
+  // Runtime check
+  // =============================================================================================
 
   @Override
   public boolean canAccess(Identity identity,
@@ -75,7 +98,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     String object = toObject(protectedResource);
 
     ClientCheckRequest clientCheckRequest = new ClientCheckRequest()
-        .user("user:"+user)
+        .user(userType + ":" + user)
         .relation(relation)
         ._object(object);
 
@@ -97,6 +120,10 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
   }
 
+  // =============================================================================================
+  // Grants
+  // =============================================================================================
+
   @Override
   public void grantAccess(Grantee grantee,
                           Permission permission,
@@ -107,34 +134,18 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
     ClientTupleKey tupleKey = new ClientTupleKey();
 
-    if(grantee.type() == GranteeType.GROUP){
-      tupleKey.user(toGranteeUser(grantee)+"#member");
-    }
-    else{
+    if (grantee.type() == GranteeType.GROUP) {
+      tupleKey.user(toGranteeUser(grantee) + "#member");
+    } else {
       tupleKey.user(toGranteeUser(grantee));
     }
     tupleKey.relation(permission.getName().toLowerCase());
     tupleKey._object(toObject(protectedResource));
 
-    ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
-        .writes(Collections.singletonList(tupleKey));
+    ClientWriteRequest clientWriteRequest =
+        new ClientWriteRequest().writes(Collections.singletonList(tupleKey));
 
-    ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
-    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
-      clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
-    }
-
-    try {
-      openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
-    } catch (InterruptedException interruptedException) {
-      Thread.currentThread().interrupt();
-    } catch (ExecutionException executionException) {
-      executionException.printStackTrace();
-      // swallow or log via your logging framework
-    } catch (FgaInvalidParameterException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
-    }
+    handleRequest(clientWriteRequest);
   }
 
   @Override
@@ -145,32 +156,25 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
-      ClientTupleKey tupleKey = new ClientTupleKey();
-      if(grantee.type() == GranteeType.GROUP){
-          tupleKey.user(toGranteeUser(grantee)+"#member");
-      }
-      else{
-          tupleKey.user(toGranteeUser(grantee));
-      }
-      tupleKey.relation(permission.getName().toLowerCase());
-      tupleKey._object(toObject(protectedResource));
 
-    ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
-        .deletes(Collections.singletonList(tupleKey));
-
-    ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
-    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
-      clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
+    ClientTupleKey tupleKey = new ClientTupleKey();
+    if (grantee.type() == GranteeType.GROUP) {
+      tupleKey.user(toGranteeUser(grantee) + "#member");
+    } else {
+      tupleKey.user(toGranteeUser(grantee));
     }
+    tupleKey.relation(permission.getName().toLowerCase());
+    tupleKey._object(toObject(protectedResource));
 
-    try {
-      openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
-    } catch (InterruptedException interruptedException) {
-      Thread.currentThread().interrupt();
-    } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      // swallow or log via your logging framework
-    }
+    ClientWriteRequest clientWriteRequest =
+        new ClientWriteRequest().deletes(Collections.singletonList(tupleKey));
+
+    handleRequest(clientWriteRequest);
   }
+
+  // =============================================================================================
+  // Identity / group lifecycle
+  // =============================================================================================
 
   @Override
   public void addGroupMember(UUID groupId, UUID identityId) {
@@ -180,25 +184,13 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
 
     ClientTupleKey tupleKey = new ClientTupleKey()
-        .user("user:"+identityId.toString())
+        .user(toUser(identityId))
         .relation(groupMemberRelation)
-        ._object("group:"+groupId.toString());
+        ._object(toGroupObject(groupId));
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
         .writes(Collections.singletonList(tupleKey));
-
-    ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
-    if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
-      clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
-    }
-
-    try {
-      openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
-    } catch (InterruptedException interruptedException) {
-      Thread.currentThread().interrupt();
-    } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      executionException.printStackTrace();
-    }
+    handleRequest(clientWriteRequest);
   }
 
   @Override
@@ -209,24 +201,142 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
 
     ClientTupleKey tupleKey = new ClientTupleKey()
-        .user("user:"+identityId.toString())
+        .user(toUser(identityId))
         .relation(groupMemberRelation)
-        ._object("group:"+groupId.toString());
+        ._object(toGroupObject(groupId));
 
-    ClientWriteRequest clientWriteRequest = new ClientWriteRequest()
-        .deletes(Collections.singletonList(tupleKey));
+    ClientWriteRequest clientWriteRequest =
+        new ClientWriteRequest().deletes(Collections.singletonList(tupleKey));
+    handleRequest(clientWriteRequest);
+  }
 
+  // =============================================================================================
+  // Resource lifecycle
+  // =============================================================================================
+
+  @Override
+  public void registerResource(ProtectedResource protectedResource,
+                               ResourceCreationContext resourceCreationContext) {
+
+    if (protectedResource == null || resourceCreationContext == null) {
+    }
+
+   }
+
+  @Override
+  public void deleteResource(ProtectedResource protectedResource) {
+    if (protectedResource == null) {
+    }
+  }
+
+  // =============================================================================================
+  // Grant introspection
+  // =============================================================================================
+  @Override
+  public Collection<Grant> getGrantsForIdentity(Identity identity) {
+    if (identity == null) {
+      return Collections.emptyList();
+    }
+
+    ClientReadRequest request = new ClientReadRequest()
+        .user(toUser(identity.getId()))
+        ._object("resource:");
+
+    return readGrants(request);
+  }
+
+  @Override
+  public Collection<Grant> getGrantsForGroup(Group group) {
+    if (group == null) {
+      return Collections.emptyList();
+    }
+
+    // We stored group grants as "group:<id>#member"
+    String user = groupType + ":" + group.getId() + "#" + groupMemberRelation;
+
+    ClientReadRequest request = new ClientReadRequest()
+        .user(user)
+        ._object("resource:");
+
+    return readGrants(request);
+  }
+
+  @Override
+  public Collection<Grant> getGrantsForResource(ProtectedResource protectedResource) {
+    if (protectedResource == null) {
+      return Collections.emptyList();
+    }
+
+    ClientReadRequest request = new ClientReadRequest()
+        ._object(toObject(protectedResource));
+
+    return readGrants(request);
+  }
+
+
+  public Collection<Grant> readGrants(ClientReadRequest request) {
+    List<Grant> result = new ArrayList<>();
+    String continuationToken = null;
+
+    do {
+      ClientReadOptions options = new ClientReadOptions();
+      if (continuationToken != null && !continuationToken.isEmpty()) {
+        options.continuationToken(continuationToken);
+      }
+
+      ClientReadResponse response;
+      try {
+        response = openFgaClient.read(request, options).get();
+      } catch (InterruptedException interruptedException) {
+        Thread.currentThread().interrupt();
+        break;
+      } catch (ExecutionException | FgaInvalidParameterException executionException) {
+        executionException.printStackTrace();
+        // TODO: log if you care
+        break;
+      }
+
+      for (var tuple : response.getTuples()) {
+        TupleKey key = tuple.getKey();
+        Grantee grantee = readHelper.parseUserToGrantee(key.getUser());
+        if (grantee == null) {
+          continue;
+        }
+
+        Permission permission = readHelper.toPermission(key.getRelation());
+        if (permission == null) {
+          continue;
+        }
+
+        ProtectedResource resource = readHelper.fromObject(key.getObject());
+        if (resource == null) {
+          continue;
+        }
+
+        result.add(new Grant(grantee, permission, resource));
+      }
+
+      continuationToken = response.getContinuationToken();
+    } while (continuationToken != null && !continuationToken.isEmpty());
+
+    return result;
+  }
+
+  // =============================================================================================
+  // Helpers
+  // =============================================================================================
+
+  private void handleRequest(ClientWriteRequest clientWriteRequest) {
     ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
     if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
       clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
     }
-
     try {
       openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      // swallow or log
+      // ToDo: log this or surface upstream when you care
     }
   }
 
@@ -244,6 +354,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
     return toGroupObject(grantee.id());
   }
+
   private String toObject(ProtectedResource protectedResource) {
     String resourceType = protectedResource.getResourceType();
     String resourceId = protectedResource.getResourceId();

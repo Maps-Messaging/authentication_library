@@ -58,7 +58,7 @@ public class IdentityAccessManager {
       MapStore<UserIdMap> userStore,
       MapStore<GroupIdMap> groupStore) {
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
-    authorizationProvider = new AclAuthorizationProvider(new OpenAccessControlList(), new ArrayList<>());
+    authorizationProvider = new AclAuthorizationProvider(new OpenAccessControlList(), new Permission[0], new ArrayList<>());
     GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
     UserMapManagement userMapManagement = new UserMapManagement(userStore);
 

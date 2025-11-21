@@ -47,10 +47,10 @@ public class OpenFgaAuthorizationProviderTest extends AbstractAuthorizationProvi
 
     List<TupleKey> tuplets = getAllTuples(client);
     deleteAllTuples(client, tuplets, "01KAF6SSMG4T5WZY47FS12QZ0C");
-    return new OpenFGAAuthorizationProvider(client, "01KAF6SSMG4T5WZY47FS12QZ0C", null, null, null, null);
+    return new OpenFGAAuthorizationProvider(client, "01KAF6SSMG4T5WZY47FS12QZ0C",  TestPermissions.values(),null, null, null, null);
   }
 
-  public List<TupleKey> getAllTuples(OpenFgaClient openFgaClient) throws FgaInvalidParameterException {
+  public static List<TupleKey> getAllTuples(OpenFgaClient openFgaClient) throws FgaInvalidParameterException {
     List<TupleKey> result = new ArrayList<>();
     String continuationToken = null;
 
@@ -83,7 +83,7 @@ public class OpenFgaAuthorizationProviderTest extends AbstractAuthorizationProvi
     return result;
   }
 
-  public void deleteAllTuples(OpenFgaClient openFgaClient, List<TupleKey> allTuples, String defaultId) throws FgaInvalidParameterException {
+  public static void deleteAllTuples(OpenFgaClient openFgaClient, List<TupleKey> allTuples, String defaultId) throws FgaInvalidParameterException {
     if (allTuples.isEmpty()) {
       return;
     }

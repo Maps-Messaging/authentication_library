@@ -20,18 +20,13 @@
 
 package io.mapsmessaging.security.authorisation;
 
+import io.mapsmessaging.security.authorisation.impl.acl.AclAuthorizationProvider;
+import io.mapsmessaging.security.authorisation.impl.acl.permission.PermissionAccessControlList;
+import java.util.LinkedList;
 
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
-import java.util.UUID;
-
-public record Grantee(GranteeType type, UUID id) {
-
-  public static Grantee forIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
-  }
-
-  public static Grantee forGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
+public class AclAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest {
+  @Override
+  protected AuthorizationProvider createAuthorizationProvider(){
+    return new AclAuthorizationProvider(new PermissionAccessControlList(), TestPermissions.values(), new LinkedList<>());
   }
 }

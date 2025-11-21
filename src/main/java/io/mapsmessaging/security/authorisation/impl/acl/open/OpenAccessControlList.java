@@ -20,8 +20,11 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl.open;
 
+import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
+import io.mapsmessaging.security.authorisation.impl.acl.AclEntry;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,13 +45,27 @@ public class OpenAccessControlList implements AccessControlList {
     return 0xffffffffffffffffL;
   }
 
+  public long getGroupAccess(Group group){
+    return 0xffffffffffffffffL;
+  }
+
+  @Override
+  public long getRawAccess(UUID uuid) {
+    return 0xffffffffffffffffL;
+  }
+
   @Override
   public boolean canAccess(Identity identity, long requestedAccess) {
     return true;
   }
 
   @Override
-  public boolean add(UUID uuid, long requestedAccess) {
+  public boolean addUser(UUID uuid, long requestedAccess) {
+    return true;
+  }
+
+  @Override
+  public boolean addGroup(UUID uuid, long requestedAccess) {
     return true;
   }
 
@@ -56,4 +73,9 @@ public class OpenAccessControlList implements AccessControlList {
   public boolean remove(UUID uuid, long requestedAccess) {
     return true;
   }
+
+  public List<AclEntry> getAclEntries() {
+    return new ArrayList<>();
+  }
+
 }

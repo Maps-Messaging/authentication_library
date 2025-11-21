@@ -20,18 +20,9 @@
 
 package io.mapsmessaging.security.authorisation;
 
-
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
-import java.util.UUID;
-
-public record Grantee(GranteeType type, UUID id) {
-
-  public static Grantee forIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
-  }
-
-  public static Grantee forGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
-  }
+public enum ResourceInitialGrantPolicy {
+  NONE,                 // no automatic grants
+  OWNER_MANAGE,         // owner gets MANAGE
+  OWNER_FULL,           // owner gets all permissions
+  INHERIT_FROM_PARENT   // mirror parent’s grants if parent exists
 }

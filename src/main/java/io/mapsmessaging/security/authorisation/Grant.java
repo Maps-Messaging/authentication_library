@@ -20,18 +20,29 @@
 
 package io.mapsmessaging.security.authorisation;
 
+public final class Grant {
 
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
-import java.util.UUID;
+  private final Grantee grantee;
+  private final Permission permission;
+  private final ProtectedResource protectedResource;
 
-public record Grantee(GranteeType type, UUID id) {
-
-  public static Grantee forIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
+  public Grant(Grantee grantee,
+               Permission permission,
+               ProtectedResource protectedResource) {
+    this.grantee = grantee;
+    this.permission = permission;
+    this.protectedResource = protectedResource;
   }
 
-  public static Grantee forGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
+  public Grantee getGrantee() {
+    return grantee;
+  }
+
+  public Permission getPermission() {
+    return permission;
+  }
+
+  public ProtectedResource getProtectedResource() {
+    return protectedResource;
   }
 }

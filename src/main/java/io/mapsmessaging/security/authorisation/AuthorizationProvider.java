@@ -22,7 +22,6 @@ package io.mapsmessaging.security.authorisation;
 
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
-
 import java.util.UUID;
 
 public interface AuthorizationProvider {
@@ -101,6 +100,49 @@ public interface AuthorizationProvider {
    */
   default void removeGroupMember(UUID groupId, UUID identityId) {
     // default: no-op
+  }
+
+  // ==== Resource lifecycle ====
+
+  /**
+   * Called when a new resource is created.
+   * Implementations may install initial grants based on the creation context.
+   */
+  default void registerResource(ProtectedResource protectedResource,
+                                ResourceCreationContext resourceCreationContext) {
+    // default: no-op
+  }
+
+  /**
+   * Called when a resource is deleted.
+   * Implementations should remove any grants / tuples associated with this resource.
+   */
+  default void deleteResource(ProtectedResource protectedResource) {
+    // default: no-op
+  }
+
+
+  // ==== Grant introspection ====
+
+  /**
+   * List all grants where the given identity is the grantee.
+   */
+  default java.util.Collection<Grant> getGrantsForIdentity(Identity identity) {
+    throw new UnsupportedOperationException("Grant introspection not supported by this provider");
+  }
+
+  /**
+   * List all grants where the given group is the grantee.
+   */
+  default java.util.Collection<Grant> getGrantsForGroup(Group group) {
+    throw new UnsupportedOperationException("Grant introspection not supported by this provider");
+  }
+
+  /**
+   * List all grants that apply to the given resource (any grantee).
+   */
+  default java.util.Collection<Grant> getGrantsForResource(ProtectedResource protectedResource) {
+    throw new UnsupportedOperationException("Grant introspection not supported by this provider");
   }
 
 }

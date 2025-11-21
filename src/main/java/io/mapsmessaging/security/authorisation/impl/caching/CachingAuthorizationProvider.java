@@ -23,11 +23,9 @@ package io.mapsmessaging.security.authorisation.impl.caching;
 
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
-import io.mapsmessaging.security.authorisation.AuthorizationProvider;
-import io.mapsmessaging.security.authorisation.Grantee;
-import io.mapsmessaging.security.authorisation.Permission;
-import io.mapsmessaging.security.authorisation.ProtectedResource;
+import io.mapsmessaging.security.authorisation.*;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -107,37 +105,66 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
     cache.clear();
   }
 
+  @Override
   public void registerIdentity(UUID identityId) {
     delegate.registerIdentity(identityId);
     cache.clear();
   }
 
+  @Override
   public void deleteIdentity(UUID identityId) {
     delegate.deleteIdentity(identityId);
     cache.clear();
   }
 
+  @Override
   public void registerGroup(UUID groupId) {
     delegate.registerGroup(groupId);
     cache.clear();
   }
 
+  @Override
   public void deleteGroup(UUID groupId) {
     delegate.deleteGroup(groupId);
     cache.clear();
   }
 
+  @Override
   public void addGroupMember(UUID groupId, UUID identityId) {
     delegate.addGroupMember(groupId, identityId);
     cache.clear();
   }
 
+  @Override
   public void removeGroupMember(UUID groupId, UUID identityId) {
     delegate.removeGroupMember(groupId, identityId);
     cache.clear();
   }
 
-    public void shutdown() {
+  public void registerResource(ProtectedResource protectedResource, ResourceCreationContext resourceCreationContext) {
+    delegate.registerResource(protectedResource, resourceCreationContext);
+  }
+
+  public void deleteResource(ProtectedResource protectedResource) {
+    delegate.deleteResource(protectedResource);
+  }
+
+  @Override
+  public Collection<Grant> getGrantsForIdentity(Identity identity) {
+    return delegate.getGrantsForIdentity(identity);
+  }
+
+  @Override
+  public Collection<Grant> getGrantsForGroup(Group group) {
+    return delegate.getGrantsForGroup(group);
+  }
+
+  @Override
+  public Collection<Grant> getGrantsForResource(ProtectedResource protectedResource) {
+    return delegate.getGrantsForResource(protectedResource);
+  }
+
+  public void shutdown() {
     executorService.shutdown();
   }
 

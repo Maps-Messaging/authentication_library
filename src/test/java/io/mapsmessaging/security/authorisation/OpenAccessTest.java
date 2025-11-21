@@ -39,7 +39,7 @@ class OpenAccessTest {
     AccessControlList openAccessControlList = AccessControlFactory.getInstance().get("Open", null);
     Assertions.assertEquals("Open", openAccessControlList.getName());
     Assertions.assertEquals(OpenAccessControlList.class, openAccessControlList.create(null).getClass());
-    Assertions.assertTrue(openAccessControlList.add(UuidGenerator.getInstance().generate(), 2));
+    Assertions.assertTrue(openAccessControlList.addUser(UuidGenerator.getInstance().generate(), 2));
     Assertions.assertTrue(openAccessControlList.remove(UuidGenerator.getInstance().generate(), 2));
   }
 

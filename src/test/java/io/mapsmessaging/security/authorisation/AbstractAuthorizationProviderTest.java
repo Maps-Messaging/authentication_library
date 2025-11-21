@@ -25,16 +25,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
-import io.mapsmessaging.security.identity.GroupEntry;
-import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public abstract class AbstractAuthorizationProviderTest {
+public abstract class AbstractAuthorizationProviderTest extends BaseAuthorisationTest {
 
-  private final Map<String, UUID> UUIDMap = new LinkedHashMap<>();
+
 
   protected AuthorizationProvider authorizationProvider;
 
@@ -394,28 +391,4 @@ public abstract class AbstractAuthorizationProviderTest {
 
   protected abstract AuthorizationProvider createAuthorizationProvider() throws Exception;
 
-  protected Identity createIdentity(String username) {
-    UUID uuid = UUIDMap.computeIfAbsent(username, k -> UUID.randomUUID());
-    IdentityEntry identityEntry = new HtPasswdEntry(username, new char[0]);
-    List<Group> groupList = new ArrayList<>();
-    return new Identity(uuid, identityEntry, groupList);
-  }
-
-  protected Group createGroup(String groupName) {
-    UUID uuid = UUIDMap.computeIfAbsent(groupName, k -> UUID.randomUUID());
-    GroupEntry groupEntry = new GroupEntry(groupName, new HashSet<>());
-    return new Group(uuid, groupEntry);
-  }
-
-  protected ProtectedResource createProtectedResource(String resourceName) {
-    return new ProtectedResource("resource", resourceName, "");
-  }
-
-  protected Grantee createGranteeForIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
-  }
-
-  protected Grantee createGranteeForGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
-  }
 }

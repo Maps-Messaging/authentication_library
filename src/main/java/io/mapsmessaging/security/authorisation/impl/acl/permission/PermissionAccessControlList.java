@@ -54,14 +54,22 @@ public class PermissionAccessControlList implements AccessControlList {
     long mask = 0;
     if (identity != null) {
       long time = System.currentTimeMillis();
-      mask = processAclEntriesForSubject(identity, time);
+      mask = processAclEntriesForSubject(identity.getId(), time);
       mask |= processGroups(identity.getGroupList(), time);
     }
     return mask;
   }
 
-  private long processAclEntriesForSubject(Identity identity, long time) {
-    UUID authId = identity.getId();
+  public long getGroupAccess(Group group){
+    long time = System.currentTimeMillis();
+    return processGroups(List.of(group), time);
+  }
+
+  public long getRawAccess(UUID uuid){
+    return processAclEntriesForSubject(uuid, System.currentTimeMillis());
+  }
+
+  private long processAclEntriesForSubject(UUID authId, long time) {
     return aclEntries.stream()
         .filter(aclEntry -> isValidAclEntry(aclEntry, time, authId))
         .mapToLong(AclEntry::getPermissions)
@@ -108,8 +116,15 @@ public class PermissionAccessControlList implements AccessControlList {
   }
 
   @Override
-  public boolean add(UUID uuid, long requestedAccess) {
-    AclEntry entry = new AclEntry(uuid, requestedAccess);
+  public boolean addUser(UUID uuid, long requestedAccess) {
+    AclEntry entry = new AclEntry(uuid, false, requestedAccess);
+    aclEntries.add(entry);
+    return true;
+  }
+
+  @Override
+  public boolean addGroup(UUID uuid, long requestedAccess) {
+    AclEntry entry = new AclEntry(uuid, true, requestedAccess);
     aclEntries.add(entry);
     return true;
   }
@@ -120,6 +135,9 @@ public class PermissionAccessControlList implements AccessControlList {
     return true;
   }
 
+  public List<AclEntry> getAclEntries() {
+    return new ArrayList<>(aclEntries);
+  }
 
   // We are exiting early here because we want to fast exit once we found access is allowed
   @SuppressWarnings("java:S3516")

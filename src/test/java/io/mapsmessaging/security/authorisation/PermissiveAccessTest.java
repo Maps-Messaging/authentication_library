@@ -52,7 +52,7 @@ class PermissiveAccessTest extends BaseSecurityTest {
     Assertions.assertEquals("permission", accessControlList.getName());
     Assertions.assertEquals(4, userUUIDMap.size());
     buildUser("user4");
-    accessControlList.add(userUUIDMap.get("user4"), 3);
+    accessControlList.addUser(userUUIDMap.get("user4"), 3);
     Assertions.assertTrue(accessControlList.canAccess(subjectMap.get("user1"), 1) );
     Assertions.assertTrue(accessControlList.canAccess(subjectMap.get("user4"), 1) );
     Assertions.assertTrue(accessControlList.remove(userUUIDMap.get("user4"), 3));
