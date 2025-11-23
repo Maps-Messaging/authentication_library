@@ -20,11 +20,19 @@
 
 package io.mapsmessaging.security.authorisation;
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
+
+import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 public interface AuthorizationProvider {
+
+  String getName();
+
+  AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions) throws IOException;
 
   // ==== Runtime check ====
 

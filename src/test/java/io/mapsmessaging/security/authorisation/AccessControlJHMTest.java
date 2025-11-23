@@ -21,10 +21,11 @@
 package io.mapsmessaging.security.authorisation;
 
 import io.mapsmessaging.security.access.Identity;
-import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
-import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -60,7 +61,7 @@ public class AccessControlJHMTest {
     List<String> aclEntries = generateAclEntries(numEntries);
 
     // Create the AccessControlList
-    acl = AccessControlFactory.getInstance().get("Permission", aclEntries);
+    acl = new AccessControlList(aclEntries);
 
     // Create the subjects for testing
     identities = new Identity[numIterations];

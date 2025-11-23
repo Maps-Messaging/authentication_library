@@ -21,6 +21,7 @@
 package io.mapsmessaging.security.authorisation.impl.caching;
 
 
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
@@ -63,6 +64,16 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
 
   public CachingAuthorizationProvider(AuthorizationProvider delegate, Duration ttl) {
     this(delegate, ttl, Duration.ofMillis(500), null);
+  }
+
+  @Override
+  public String getName() {
+    return "Caching";
+  }
+
+  @Override
+  public AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions) {
+    return null;
   }
 
   @Override

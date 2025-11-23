@@ -24,7 +24,6 @@ import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
-import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
@@ -48,7 +47,7 @@ class PermissiveAccessTest extends BaseSecurityTest {
 
   @Test
   void validate(){
-    AccessControlList accessControlList = AccessControlFactory.getInstance().get("Permission", createList());
+    AccessControlList accessControlList = new AccessControlList(createList());
     Assertions.assertEquals("permission", accessControlList.getName());
     Assertions.assertEquals(4, userUUIDMap.size());
     buildUser("user4");

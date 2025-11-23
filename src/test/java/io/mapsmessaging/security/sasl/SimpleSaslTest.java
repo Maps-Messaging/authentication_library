@@ -26,6 +26,7 @@ import io.mapsmessaging.security.access.IdentityAccessManager;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.authorisation.TestPermissions;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
 import java.io.File;
@@ -45,7 +46,7 @@ class SimpleSaslTest extends BaseSasl {
   private static final Faker faker = new Faker();
 
   @BeforeAll
-  static void register() {
+  static void register() throws IOException {
     System.setProperty("sasl.test", "true");
     Security.insertProviderAt(new MapsSecurityProvider(), 1);
 
@@ -71,7 +72,7 @@ class SimpleSaslTest extends BaseSasl {
     MapFileStore<UserIdMap> users = new MapFileStore<>("userMap");
     MapFileStore<GroupIdMap> groups = new MapFileStore<>("groupMap");
 
-    identityAccessManager = new IdentityAccessManager("Encrypted-Auth", baseConfig, users, groups);
+    identityAccessManager = new IdentityAccessManager("Encrypted-Auth", baseConfig, users, groups, TestPermissions.values());
     IdentityLookupFactory.getInstance()
         .registerSiteIdentityLookup("Encrypted-Auth", identityAccessManager.getIdentityLookup());
   }

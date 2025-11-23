@@ -22,29 +22,34 @@ package io.mapsmessaging.security.authorisation.impl.acl;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
 
   private final Map<ResourceKey, AccessControlList> accessControlListMap;
-  private final AccessControlList accessControlListPrototype;
-  private final List<String> configuration;
   private final Map<Long, Permission> permissions;
 
-  public AclAuthorizationProvider(AccessControlList accessControlListPrototype,
-                                  Permission[] permission,
-                                  List<String> configuration) {
-    this.accessControlListPrototype = accessControlListPrototype;
+  public AclAuthorizationProvider(Permission[] permission) {
     this.permissions = new  ConcurrentHashMap<>();
-    this.configuration = configuration;
     this.accessControlListMap = new ConcurrentHashMap<>();
     for (Permission permissionPrototype : permission) {
       permissions.put(permissionPrototype.getMask(),  permissionPrototype);
     }
+  }
+
+  public String  getName() {
+    return "ACL";
+  }
+
+  @Override
+  public AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions) {
+    return new AclAuthorizationProvider(permissions);
   }
 
   @Override
@@ -87,6 +92,11 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
+  public void registerIdentity(UUID identityId) {
+    AuthorizationProvider.super.registerIdentity(identityId);
+  }
+
+  @Override
   public void deleteIdentity(UUID identityId) {
     for(AccessControlList accessControlList : accessControlListMap.values()) {
       accessControlList.remove(identityId, -1); // remove all
@@ -96,11 +106,26 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
+  public void registerGroup(UUID groupId) {
+    AuthorizationProvider.super.registerGroup(groupId);
+  }
+
+  @Override
   public void deleteGroup(UUID groupId) {
     for(AccessControlList accessControlList : accessControlListMap.values()) {
       accessControlList.remove(groupId, -1); // remove all
     }
     writeState();
+  }
+
+  @Override
+  public void addGroupMember(UUID groupId, UUID identityId) {
+    AuthorizationProvider.super.addGroupMember(groupId, identityId);
+  }
+
+  @Override
+  public void removeGroupMember(UUID groupId, UUID identityId) {
+    AuthorizationProvider.super.removeGroupMember(groupId, identityId);
   }
 
   @Override
@@ -132,7 +157,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     ResourceKey resourceKey = toResourceKey(protectedResource);
     return accessControlListMap.computeIfAbsent(
         resourceKey,
-        key -> accessControlListPrototype.create(configuration)
+        key -> new AccessControlList()
     );
   }
 

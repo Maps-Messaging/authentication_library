@@ -25,9 +25,10 @@ import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
-import io.mapsmessaging.security.authorisation.impl.acl.AccessControlFactory;
-import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
+
 import java.util.List;
+
+import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import org.junit.jupiter.api.Test;
 
 public class PerformanceTest extends BaseSecurityTest {
@@ -41,7 +42,7 @@ public class PerformanceTest extends BaseSecurityTest {
     List<String> aclEntries = generateGroupEntries(1000, groupMapManagement);
 
     // Create an instance of AccessControlListManager
-    AccessControlList acl = AccessControlFactory.getInstance().get("Permission",  aclEntries);
+    AccessControlList acl = new AccessControlList(aclEntries);
 
     // Perform the performance test
     long startTime = System.currentTimeMillis();
