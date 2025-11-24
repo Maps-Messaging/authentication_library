@@ -151,4 +151,25 @@ public interface AuthorizationProvider {
     throw new UnsupportedOperationException("Grant introspection not supported by this provider");
   }
 
+
+  default void grant(Identity identity, Permission permission, ProtectedResource resource) {
+    Grantee grantee = Grantee.forIdentity(identity);
+    grantAccess(grantee, permission, resource);
+  }
+
+  default void grant(Group group, Permission permission, ProtectedResource resource) {
+    Grantee grantee = Grantee.forGroup(group);
+    grantAccess(grantee, permission, resource);
+  }
+
+  default void revoke(Identity identity, Permission permission, ProtectedResource resource) {
+    Grantee grantee = Grantee.forIdentity(identity);
+    revokeAccess(grantee, permission, resource);
+  }
+
+  default void revoke(Group group, Permission permission, ProtectedResource resource) {
+    Grantee grantee = Grantee.forGroup(group);
+    revokeAccess(grantee, permission, resource);
+  }
+
 }

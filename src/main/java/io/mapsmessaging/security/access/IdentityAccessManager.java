@@ -65,7 +65,6 @@ public class IdentityAccessManager {
       authorizationProvider = new OpenAuthorizationProvider();
     }
 
-
     GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
     UserMapManagement userMapManagement = new UserMapManagement(userStore);
 
@@ -101,30 +100,6 @@ public class IdentityAccessManager {
 
   public boolean validateUser(String username, char[] passwordHash) throws IOException{
     return userManagement.validateUser(username, passwordHash);
-  }
-
-  public boolean canAccess(Identity identity, Permission permission, ProtectedResource resource) {
-    return authorizationProvider.canAccess(identity, permission, resource);
-  }
-
-  public void grant(Identity identity, Permission permission, ProtectedResource resource) {
-    Grantee grantee = Grantee.forIdentity(identity);
-    authorizationProvider.grantAccess(grantee, permission, resource);
-  }
-
-  public void grant(Group group, Permission permission, ProtectedResource resource) {
-    Grantee grantee = Grantee.forGroup(group);
-    authorizationProvider.grantAccess(grantee, permission, resource);
-  }
-
-  public void revoke(Identity identity, Permission permission, ProtectedResource resource) {
-    Grantee grantee = Grantee.forIdentity(identity);
-    authorizationProvider.revokeAccess(grantee, permission, resource);
-  }
-
-  public void revoke(Group group, Permission permission, ProtectedResource resource) {
-    Grantee grantee = Grantee.forGroup(group);
-    authorizationProvider.revokeAccess(grantee, permission, resource);
   }
 
   public void setAsSystemIdentityLookup(){
