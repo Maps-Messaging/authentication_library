@@ -20,8 +20,6 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
-import io.mapsmessaging.security.authorisation.impl.acl.expiry.AccessEntryExpiryPolicy;
-import io.mapsmessaging.security.authorisation.impl.acl.expiry.NoExpiryPolicy;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -31,17 +29,11 @@ public class AclEntry {
   private final UUID authId;
   private final boolean isGroup;
   private final long permissions;
-  private final AccessEntryExpiryPolicy expiryPolicy;
 
   public AclEntry(UUID authId, boolean isGroup, long permissions) {
-    this(authId, permissions, isGroup, new NoExpiryPolicy());
-  }
-
-  public AclEntry(UUID authId, long permissions, boolean isGroup, AccessEntryExpiryPolicy expiryPolicy) {
     this.authId = authId;
     this.permissions = permissions;
     this.isGroup = isGroup;
-    this.expiryPolicy = expiryPolicy;
   }
 
   public boolean matches(UUID authId) {

@@ -38,7 +38,6 @@ import io.mapsmessaging.security.authorisation.GranteeType;
 import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.authorisation.ProtectedResource;
 import io.mapsmessaging.security.authorisation.ResourceCreationContext;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
@@ -85,6 +84,17 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     readHelper = new ReadHelper(this);
   }
 
+  public OpenFGAAuthorizationProvider(){
+    this.openFgaClient = null;
+    this.defaultAuthorizationModelId = null;
+    this.userType = null;
+    this.groupType = null;
+    this.tenantSeparator = null;
+    this.groupMemberRelation = null;
+    this.permissions = new ConcurrentHashMap<>();
+    this.readHelper = new ReadHelper(this);
+  }
+
   // =============================================================================================
   // Runtime check
   // =============================================================================================
@@ -96,14 +106,17 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
   @Override
   public   AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions)throws IOException{
-    String uris = config.getProperty("openfga.uris");
-    String storeId = config.getProperty("openfga.storeId");
-    String modelId = config.getProperty("openfga.modelId");
-    String userType = config.getProperty("openfga.userType");
-    String groupType = config.getProperty("openfga.groupType");
-    String tenantSeparator = config.getProperty("openfga.tenantSeparator");
-    String groupMemberRelation = config.getProperty("openfga.groupMemberRelation");
-    long connectionTimeout = config.getLongProperty("openfga.connectionTimeout", 10);
+    ConfigurationProperties authorisation = (ConfigurationProperties) config.get("authorisation");
+
+    ConfigurationProperties fgaProperties = (ConfigurationProperties) authorisation.get("openfga");
+    String uris = fgaProperties.getProperty("uris");
+    String storeId = fgaProperties.getProperty("storeId");
+    String modelId = fgaProperties.getProperty("modelId");
+    String uType = fgaProperties.getProperty("userType");
+    String gType = fgaProperties.getProperty("groupType");
+    String tSeparator = fgaProperties.getProperty("tenantSeparator");
+    String gMemberRelation = fgaProperties.getProperty("groupMemberRelation");
+    long connectionTimeout = fgaProperties.getLongProperty("connectionTimeout", 10);
 
     ClientConfiguration clientConfiguration = new ClientConfiguration();
     clientConfiguration.apiUrl(uris);
@@ -111,7 +124,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     clientConfiguration.connectTimeout(Duration.ofSeconds(connectionTimeout));
     try {
       OpenFgaClient client = new OpenFgaClient(clientConfiguration);
-      return new OpenFGAAuthorizationProvider(client, modelId, permissions, userType, groupType, tenantSeparator, groupMemberRelation);
+      return new OpenFGAAuthorizationProvider(client, modelId, permissions, uType, gType, tSeparator, gMemberRelation);
     }
     catch (FgaInvalidParameterException e) {
       throw new IOException(e);

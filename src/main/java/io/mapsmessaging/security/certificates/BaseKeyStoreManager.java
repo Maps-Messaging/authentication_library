@@ -28,15 +28,15 @@ import java.util.Enumeration;
 import java.util.List;
 import lombok.Getter;
 
-public abstract class BasKeyStoreManager implements CertificateManager {
+public abstract class BaseKeyStoreManager implements CertificateManager {
   @Getter
   protected KeyStore keyStore;
 
-  protected BasKeyStoreManager() {
+  protected BaseKeyStoreManager() {
     keyStore = null;
   }
 
-  protected BasKeyStoreManager(KeyStore keyStore) {
+  protected BaseKeyStoreManager(KeyStore keyStore) {
     this.keyStore = keyStore;
   }
 

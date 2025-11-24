@@ -25,10 +25,8 @@ import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
-
-import java.util.List;
-
 import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class PerformanceTest extends BaseSecurityTest {

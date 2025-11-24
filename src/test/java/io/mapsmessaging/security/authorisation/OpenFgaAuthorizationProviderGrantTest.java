@@ -20,29 +20,13 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import static io.mapsmessaging.security.authorisation.OpenFgaAuthorizationProviderTest.deleteAllTuples;
-import static io.mapsmessaging.security.authorisation.OpenFgaAuthorizationProviderTest.getAllTuples;
 
-import dev.openfga.sdk.api.client.OpenFgaClient;
-import dev.openfga.sdk.api.configuration.ClientConfiguration;
-import dev.openfga.sdk.api.model.TupleKey;
-import io.mapsmessaging.security.authorisation.impl.openfga.OpenFGAAuthorizationProvider;
-import java.time.Duration;
-import java.util.List;
 
 public class OpenFgaAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest{
 
   @Override
   protected AuthorizationProvider createAuthorizationProvider()throws Exception{
-    ClientConfiguration clientConfiguration = new ClientConfiguration();
-    clientConfiguration.apiUrl("http://10.140.62.152:8080");
-    clientConfiguration.storeId("01KAF6PKR6YRJZ8RXXYXAJDX1E");
-    clientConfiguration.connectTimeout(Duration.ofMillis(10000));
-    OpenFgaClient client = new OpenFgaClient(clientConfiguration);
-
-    List<TupleKey> tuplets = getAllTuples(client);
-    deleteAllTuples(client, tuplets, "01KAF6SSMG4T5WZY47FS12QZ0C");
-    return new OpenFGAAuthorizationProvider(client, "01KAF6SSMG4T5WZY47FS12QZ0C",  TestPermissions.values(),null, null, null, null);
+    return createOpenFgaAuthorizationProvider();
   }
 
 }

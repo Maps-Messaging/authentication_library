@@ -22,14 +22,11 @@ package io.mapsmessaging.security.authorisation;
 
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.*;
-import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.ClientReadOptions;
 import dev.openfga.sdk.api.configuration.ClientWriteOptions;
 import dev.openfga.sdk.api.model.Tuple;
 import dev.openfga.sdk.api.model.TupleKey;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import io.mapsmessaging.security.authorisation.impl.openfga.OpenFGAAuthorizationProvider;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -39,15 +36,7 @@ public class OpenFgaAuthorizationProviderTest extends AbstractAuthorizationProvi
 
   @Override
   protected AuthorizationProvider createAuthorizationProvider()throws Exception{
-    ClientConfiguration clientConfiguration = new ClientConfiguration();
-    clientConfiguration.apiUrl("http://10.140.62.152:8080");
-    clientConfiguration.storeId("01KAF6PKR6YRJZ8RXXYXAJDX1E");
-    clientConfiguration.connectTimeout(Duration.ofMillis(10000));
-    OpenFgaClient client = new OpenFgaClient(clientConfiguration);
-
-    List<TupleKey> tuplets = getAllTuples(client);
-    deleteAllTuples(client, tuplets, "01KAF6SSMG4T5WZY47FS12QZ0C");
-    return new OpenFGAAuthorizationProvider(client, "01KAF6SSMG4T5WZY47FS12QZ0C",  TestPermissions.values(),null, null, null, null);
+    return createOpenFgaAuthorizationProvider();
   }
 
   public static List<TupleKey> getAllTuples(OpenFgaClient openFgaClient) throws FgaInvalidParameterException {
@@ -110,17 +99,3 @@ public class OpenFgaAuthorizationProviderTest extends AbstractAuthorizationProvi
   }
 
 }
-/*
-{
-  "store": {
-    "created_at":"2025-11-19T23:20:24.075622Z",
-    "id":"01KAF6PKR6YRJZ8RXXYXAJDX1E",
-    "name":"mapsmessaging",
-    "updated_at":"2025-11-19T23:20:24.075622Z"
-  }
-}
-
-{
-  "authorization_model_id":"01KAF6SSMG4T5WZY47FS12QZ0C"
-}
- */

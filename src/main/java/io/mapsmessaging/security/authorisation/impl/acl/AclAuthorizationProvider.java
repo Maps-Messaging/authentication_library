@@ -20,27 +20,49 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
+import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
-
+import io.mapsmessaging.security.authorisation.Permission;
+import io.mapsmessaging.security.certificates.CertificateManager;
+import io.mapsmessaging.security.certificates.CertificateManagerFactory;
+import io.mapsmessaging.security.certificates.CertificateWithPrivateKey;
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.Data;
+import lombok.Value;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
+  private static final String ACL_SECRET_KEY_ALIAS = "acl.state.key";
 
   private final Map<ResourceKey, AccessControlList> accessControlListMap;
   private final Map<Long, Permission> permissions;
+  private final AclSaveState saveState;
 
-  public AclAuthorizationProvider(Permission[] permission) {
+  public AclAuthorizationProvider() {
+    accessControlListMap = null;
+    permissions = null;
+    saveState = null;
+  }
+
+  public AclAuthorizationProvider(String config, Permission[] permission, AclSaveState saveState) {
     this.permissions = new  ConcurrentHashMap<>();
     this.accessControlListMap = new ConcurrentHashMap<>();
     for (Permission permissionPrototype : permission) {
       permissions.put(permissionPrototype.getMask(),  permissionPrototype);
     }
+    this.saveState = saveState;
+    readState(config);
   }
 
   public String  getName() {
@@ -48,8 +70,25 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions) {
-    return new AclAuthorizationProvider(permissions);
+  public AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions) throws IOException {
+    try {
+      ConfigurationProperties certificateConfig = (ConfigurationProperties)config.get("certificateStore");
+      CertificateManager certificateManager = CertificateManagerFactory.getInstance().getManager(certificateConfig);
+      String keyPassword = certificateConfig.getProperty("passphrase");
+      SecretKey secretKey = loadOrCreateAclKey(certificateManager, keyPassword.toCharArray());
+      String filePath = config.getProperty("configDirectory", ".");
+      if(!filePath.endsWith("/")) {
+        filePath = filePath + "/";
+      }
+      filePath = filePath + ".acl_enc.dat";
+      AclLoadState aclLoadState = new AclLoadState(filePath, secretKey);
+      AclSaveState aclSaveState = new AclSaveState(filePath, secretKey);
+
+      String aclLoad = aclLoadState.loadState();
+      return new AclAuthorizationProvider(aclLoad, permissions, aclSaveState);
+    } catch (IOException|GeneralSecurityException e) {
+      throw new IOException(e);
+    }
   }
 
   @Override
@@ -230,52 +269,117 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     }
   }
 
-  private void writeState(){
+  private void writeState() {
     Gson gson = new GsonBuilder()
         .disableHtmlEscaping()
         .setPrettyPrinting()
         .create();
-    Map<String, AccessControlList> json = new LinkedHashMap<>();
+
+    AuthorizationState authorizationState = new AuthorizationState();
+    authorizationState.setVersion(1);
+
+    List<AuthorizationStateEntry> entries = new ArrayList<>();
     for (Map.Entry<ResourceKey, AccessControlList> entry : accessControlListMap.entrySet()) {
-      json.put(entry.getKey().toString(), entry.getValue());
+      AuthorizationStateEntry stateEntry = new AuthorizationStateEntry(entry.getKey(), entry.getValue());
+      entries.add(stateEntry);
     }
-
-    String out = gson.toJson(json);
+    authorizationState.setEntries(entries);
+    String data = gson.toJson(authorizationState);
+    try {
+      saveState.saveState(data);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
-  private ResourceKey parse(String s) {
-    if (s == null || s.isEmpty()) {
-      throw new IllegalArgumentException("Cannot parse empty ResourceKey");
+  private void readState(String state) {
+    if (state == null || state.isEmpty()) {
+      return;
     }
 
-    // Strip any leading/trailing wrappers just in case
-    String trimmed = s.trim();
+    Gson gson = new GsonBuilder()
+        .disableHtmlEscaping()
+        .setPrettyPrinting()
+        .create();
 
-    // Expecting: type=resource, name=resource-1, tenant=
-    String[] parts = trimmed.split(",");
-
-    String type = null;
-    String name = null;
-    String tenant = "";
-
-    for (String part : parts) {
-      String p = part.trim();
-
-      if (p.startsWith("type=")) {
-        type = p.substring("type=".length());
-      }
-      else if (p.startsWith("name=")) {
-        name = p.substring("name=".length());
-      }
-      else if (p.startsWith("tenant=")) {
-        tenant = p.substring("tenant=".length());
-      }
+    AuthorizationState authorizationState = gson.fromJson(state, AuthorizationState.class);
+    if (authorizationState == null) {
+      return;
     }
 
-    if (type == null || name == null) {
-      throw new IllegalArgumentException("Invalid ResourceKey string: " + s);
+    // Optional: check version here if you ever change the format
+    // int version = authorizationState.getVersion();
+
+    List<AuthorizationStateEntry> entries = authorizationState.getEntries();
+    if (entries == null) {
+      return;
     }
 
-    return new ResourceKey(type, name, tenant);
+    for (AuthorizationStateEntry entry : entries) {
+      ResourceKey resourceKey = entry.getKey();
+      AccessControlList accessControlList = entry.getAcl();
+      if (resourceKey != null && accessControlList != null) {
+        accessControlListMap.put(resourceKey, accessControlList);
+      }
+    }
   }
+
+  @Data
+  private static class AuthorizationState {
+    private int version;
+    private List<AuthorizationStateEntry> entries;
+  }
+
+  @Value
+  private static class AuthorizationStateEntry {
+    ResourceKey key;
+    AccessControlList acl;
+  }
+
+  private SecretKey loadOrCreateAclKey(
+      CertificateManager certificateManager, char[] keyStorePassword) throws IOException {
+
+    KeyStore keyStore = certificateManager.getKeyStore();
+    try {
+
+      // Existing entry: must be a PrivateKey
+      if (keyStore.containsAlias(ACL_SECRET_KEY_ALIAS)) {
+        Key existingKey = keyStore.getKey(ACL_SECRET_KEY_ALIAS, keyStorePassword);
+        if (existingKey instanceof PrivateKey privateKey) {
+          return deriveAesKeyFromPrivateKey(privateKey);
+        }
+        throw new IOException("Existing ACL key alias is not a PrivateKey");
+      }
+
+      // Create a new keypair + self-signed cert for ACL use
+      CertificateWithPrivateKey certificateWithPrivateKey =
+          generateSelfSignedCertificateSecret(ACL_SECRET_KEY_ALIAS);
+
+      certificateManager.addCertificate(
+          ACL_SECRET_KEY_ALIAS, certificateWithPrivateKey.getCertificate());
+
+      certificateManager.addPrivateKey(
+          ACL_SECRET_KEY_ALIAS,
+          keyStorePassword,
+          certificateWithPrivateKey.getPrivateKey(),
+          new Certificate[] {certificateWithPrivateKey.getCertificate()});
+
+      certificateManager.saveKeyStore();
+
+      return deriveAesKeyFromPrivateKey(certificateWithPrivateKey.getPrivateKey());
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+  }
+
+  private SecretKey deriveAesKeyFromPrivateKey(PrivateKey privateKey) throws GeneralSecurityException {
+    byte[] privateKeyBytes = privateKey.getEncoded();
+
+    MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+    byte[] hash = messageDigest.digest(privateKeyBytes);
+
+    // Use first 32 bytes as AES-256 key
+    return new SecretKeySpec(hash, 0, 32, "AES");
+  }
+
 }

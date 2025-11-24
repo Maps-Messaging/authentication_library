@@ -20,7 +20,6 @@
 
 package io.mapsmessaging.security.access;
 
-import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.GroupMapManagement;
@@ -28,8 +27,6 @@ import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
 import io.mapsmessaging.security.authorisation.*;
-import io.mapsmessaging.security.authorisation.impl.acl.AclAuthorizationProvider;
-import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
 import io.mapsmessaging.security.authorisation.impl.open.OpenAuthorizationProvider;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -60,9 +57,9 @@ public class IdentityAccessManager {
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
 
 
-    if(config.containsKey("authorization") && config.get("authorization") instanceof Map auth) {
-      String name = auth.get("name").toString();
-      authorizationProvider = AuthorizationProviderFactory.getInstance().get( name, auth, permissions);
+    if(config.containsKey("authorisationProvider")) {
+      String authorisationProvider = config.get("authorisationProvider").toString();
+      authorizationProvider = AuthorizationProviderFactory.getInstance().get( authorisationProvider, config, permissions);
     }
     else{
       authorizationProvider = new OpenAuthorizationProvider();

@@ -19,5 +19,4 @@
 #
 io.mapsmessaging.security.authorisation.impl.open.OpenAuthorizationProvider
 io.mapsmessaging.security.authorisation.impl.acl.AclAuthorizationProvider
-io.mapsmessaging.security.authorisation.impl.caching.CachingAuthorizationProvider
 io.mapsmessaging.security.authorisation.impl.openfga.OpenFGAAuthorizationProvider

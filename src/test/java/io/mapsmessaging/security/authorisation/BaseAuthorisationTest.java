@@ -25,6 +25,7 @@ import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
+import java.io.IOException;
 import java.util.*;
 
 public class BaseAuthorisationTest {
@@ -54,4 +55,55 @@ public class BaseAuthorisationTest {
   protected Grantee createGranteeForGroup(Group group) {
     return new Grantee(GranteeType.GROUP, group.getId());
   }
+
+
+  protected AuthorizationProvider createOpenFgaAuthorizationProvider()throws Exception{
+    Map<String, Object> config = new HashMap<>();
+    Map<String, Object> authorisation = new HashMap<>();
+    authorisation.put("enableCaching", false);
+    authorisation.put("cachingTime", 10);
+    config.put("authorisation", authorisation);
+    Map<String, Object> openFgaMap = new HashMap<>();
+    openFgaMap.put("uris", "http://10.140.62.152:8080");
+    openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
+    openFgaMap.put("modelId", "01KAF6SSMG4T5WZY47FS12QZ0C");
+    openFgaMap.put("connectionTimeout", 10);
+    authorisation.put("openfga", openFgaMap);
+    return AuthorizationProviderFactory.getInstance().get("openFGA", config, TestPermissions.values());
+  }
+
+
+  protected AuthorizationProvider createAclAuthorizationProvider() throws IOException {
+    Map<String, Object> config = new HashMap<>();
+    config.put("configDirectory", ".");
+    Map<String, Object> certificateConfig = new HashMap<>();
+    certificateConfig.put("type", "JKS");
+    certificateConfig.put("path", "./authKeyStore.jks");
+    certificateConfig.put("passphrase", "changeit");
+    certificateConfig.put("alias", "default");
+    certificateConfig.put("privateKey.name", "default");
+    certificateConfig.put("privateKey.passphrase", "changeit");
+    config.put("certificateStore", certificateConfig);
+
+
+    return AuthorizationProviderFactory.getInstance().get("ACL", config, TestPermissions.values());
+  }
+
+  protected AuthorizationProvider createCachingAuthorizationProvider() throws IOException {
+    Map<String, Object> config = new HashMap<>();
+    config.put("cachingTime", 10);
+    config.put("enableCaching", true);
+    Map<String, Object> certificateConfig = new HashMap<>();
+    certificateConfig.put("type", "JKS");
+    certificateConfig.put("path", "./authKeyStore.jks");
+    certificateConfig.put("passphrase", "changeit");
+    certificateConfig.put("alias", "default");
+    certificateConfig.put("privateKey.name", "default");
+    certificateConfig.put("privateKey.passphrase", "changeit");
+    config.put("certificateStore", certificateConfig);
+
+
+    return AuthorizationProviderFactory.getInstance().get("ACL", config, TestPermissions.values());
+  }
+
 }

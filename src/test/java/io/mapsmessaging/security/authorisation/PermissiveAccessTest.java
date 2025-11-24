@@ -48,7 +48,6 @@ class PermissiveAccessTest extends BaseSecurityTest {
   @Test
   void validate(){
     AccessControlList accessControlList = new AccessControlList(createList());
-    Assertions.assertEquals("permission", accessControlList.getName());
     Assertions.assertEquals(4, userUUIDMap.size());
     buildUser("user4");
     accessControlList.addUser(userUUIDMap.get("user4"), 3);

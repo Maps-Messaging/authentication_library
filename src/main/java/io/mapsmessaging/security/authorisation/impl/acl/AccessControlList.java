@@ -22,7 +22,6 @@ package io.mapsmessaging.security.authorisation.impl.acl;
 
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
-
 import java.util.*;
 
 public class AccessControlList {
@@ -36,10 +35,6 @@ public class AccessControlList {
   public AccessControlList(List<String> aclEntries) {
     AccessControlListParser parser = new AccessControlListParser();
     this.aclEntries = new ArrayList<>(parser.createList(aclEntries));
-  }
-
-  public String getName() {
-    return "permission";
   }
 
   public AccessControlList create(List<String> config) {
@@ -86,7 +81,7 @@ public class AccessControlList {
   }
 
   private boolean isValidAclEntry(AclEntry aclEntry, long time, UUID authId) {
-    return !aclEntry.getExpiryPolicy().hasExpired(time) && aclEntry.matches(authId);
+    return aclEntry.matches(authId);
   }
 
   // We are exiting early here because we want to fast exit once we found access is allowed

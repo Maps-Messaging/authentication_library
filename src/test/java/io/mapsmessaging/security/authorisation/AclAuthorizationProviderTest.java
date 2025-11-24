@@ -20,15 +20,14 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import io.mapsmessaging.security.authorisation.impl.acl.AclAuthorizationProvider;
-import io.mapsmessaging.security.authorisation.impl.acl.AccessControlList;
-import java.util.LinkedList;
+
+import java.io.IOException;
 
 public class AclAuthorizationProviderTest extends AbstractAuthorizationProviderTest{
 
 
   @Override
-  protected AuthorizationProvider createAuthorizationProvider(){
-    return new AclAuthorizationProvider(TestPermissions.values());
+  protected AuthorizationProvider createAuthorizationProvider() throws IOException {
+    return createAclAuthorizationProvider();
   }
 }
