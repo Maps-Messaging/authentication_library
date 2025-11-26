@@ -37,6 +37,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.Data;
@@ -48,11 +49,13 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   private final Map<ResourceKey, AccessControlList> accessControlListMap;
   private final Map<Long, Permission> permissions;
   private final AclSaveState saveState;
+  private final AtomicBoolean batchStarted;
 
   public AclAuthorizationProvider() {
     accessControlListMap = null;
     permissions = null;
     saveState = null;
+    batchStarted = new AtomicBoolean(false);
   }
 
   public AclAuthorizationProvider(String config, Permission[] permission, AclSaveState saveState) {
@@ -62,6 +65,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
       permissions.put(permissionPrototype.getMask(),  permissionPrototype);
     }
     this.saveState = saveState;
+    batchStarted = new AtomicBoolean(false);
     readState(config);
   }
 
@@ -89,6 +93,15 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     } catch (IOException|GeneralSecurityException e) {
       throw new IOException(e);
     }
+  }
+
+  public void startBatch(long timeout){
+    batchStarted.set(true);
+  }
+
+  public void stopBatch(){
+    batchStarted.set(false);
+    writeState();
   }
 
   @Override
@@ -170,19 +183,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   @Override
   public void registerResource(ProtectedResource protectedResource, ResourceCreationContext resourceCreationContext) {
     AccessControlList accessControlList = getOrCreateAccessControlList(protectedResource);
-    switch (resourceCreationContext.getInitialGrantPolicy()){
-      case NONE:
-      default:
-        break;
-      case OWNER_FULL:
-        break;
-      case OWNER_MANAGE:
-        break;
-      case INHERIT_FROM_PARENT:
-        break;
-    }
     writeState();
-
   }
 
   @Override
@@ -270,6 +271,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   }
 
   private void writeState() {
+    if(batchStarted.get()) return; // in middle of batch
     Gson gson = new GsonBuilder()
         .disableHtmlEscaping()
         .setPrettyPrinting()

@@ -127,6 +127,13 @@ public interface AuthorizationProvider {
     // default: no-op
   }
 
+  default void startBatch(long timeout){
+    // nothing to do, indicates, that a batch update is about to start
+  }
+
+  default void stopBatch(){
+    // nothing to do, indicates a batch update has finished
+  }
 
   // ==== Grant introspection ====
 
