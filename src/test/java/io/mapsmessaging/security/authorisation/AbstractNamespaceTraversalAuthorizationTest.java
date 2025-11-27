@@ -37,7 +37,7 @@ public abstract class AbstractNamespaceTraversalAuthorizationTest extends BaseSe
     return new ProtectedResource("resource", path, tenant);
   }
 
-  abstract AuthorizationProvider createProvider(ResourceTraversalFactory factory) throws Exception;
+ public abstract AuthorizationProvider createProvider(ResourceTraversalFactory factory) throws Exception;
 
   @Test
   public void testGrantOnParentAllowsChildViaTraversal() throws Exception {

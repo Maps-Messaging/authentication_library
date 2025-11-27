@@ -18,23 +18,16 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.caching;
 
-import static org.junit.jupiter.api.Assertions.*;
+import io.mapsmessaging.security.authorisation.AbstractAuthorizationProviderGrantTest;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 
-import io.mapsmessaging.security.authorisation.impl.acl.AclEntry;
-import java.util.UUID;
-import org.junit.jupiter.api.Test;
-
-class AclEntryTest {
-
-  @Test
-  void testMatchesMethod() {
-    UUID authId = UUID.randomUUID();
-    AclEntry entry = new AclEntry(authId, false, 12345L, 0L);
-
-    assertTrue(entry.matches(authId), "Matches should return true for the same authId");
-    assertFalse(entry.matches(UUID.randomUUID()), "Matches should return false for a different authId");
+public class CachingAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest {
+  @Override
+  protected AuthorizationProvider createAuthorizationProvider() throws Exception {
+    return AuthTestHelper.createCachingAuthorizationProvider(null);
   }
-}
 
+}

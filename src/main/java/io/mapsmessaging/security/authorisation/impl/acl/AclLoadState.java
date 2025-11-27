@@ -21,9 +21,8 @@
 package io.mapsmessaging.security.authorisation.impl.acl;
 
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
+import static io.mapsmessaging.security.authorisation.impl.acl.StateConfig.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,11 +33,13 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 
 public class AclLoadState {
 
-  private static final int GCM_TAG_LENGTH_BITS = 128;
-  private static final int GCM_IV_LENGTH_BYTES = 12;
+
 
   private final String filepath;
   private final SecretKey encryptionKey;
@@ -70,7 +71,7 @@ public class AclLoadState {
 
   private byte[] decryptAesGcm(byte[] cipherText,
                                byte[] initializationVector) throws GeneralSecurityException {
-    Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+    Cipher cipher = Cipher.getInstance(StateConfig.ENCRYPTION_METHOD);
     GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH_BITS, initializationVector);
     cipher.init(Cipher.DECRYPT_MODE, encryptionKey, gcmParameterSpec);
     return cipher.doFinal(cipherText);
@@ -79,7 +80,7 @@ public class AclLoadState {
   private String decompressData(byte[] compressedData) throws IOException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     try (GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(compressedData))) {
-      byte[] buffer = new byte[4096];
+      byte[] buffer = new byte[INITIAL_BUFFER_SIZE];
       int bytesRead;
       while ((bytesRead = gzipInputStream.read(buffer)) != -1) {
         byteArrayOutputStream.write(buffer, 0, bytesRead);

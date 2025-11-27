@@ -18,24 +18,18 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.openfga;
 
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
 
-public class BaseAuthorisationTest {
+import io.mapsmessaging.security.authorisation.AbstractAuthorizationProviderGrantTest;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 
-  protected ProtectedResource createProtectedResource(String resourceName) {
-    return new ProtectedResource("resource", resourceName, "");
+public class OpenFgaAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest {
+
+  @Override
+  protected AuthorizationProvider createAuthorizationProvider()throws Exception{
+    return AuthTestHelper.createOpenFgaAuthorizationProvider(null);
   }
-
-  protected Grantee createGranteeForIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
-  }
-
-  protected Grantee createGranteeForGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
-  }
-
 
 }

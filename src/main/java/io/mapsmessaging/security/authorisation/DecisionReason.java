@@ -20,22 +20,22 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
+public enum DecisionReason {
 
-public class BaseAuthorisationTest {
+  ALLOW_EXPLICIT_IDENTITY,
 
-  protected ProtectedResource createProtectedResource(String resourceName) {
-    return new ProtectedResource("resource", resourceName, "");
-  }
+  ALLOW_EXPLICIT_GROUP,
 
-  protected Grantee createGranteeForIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
-  }
+  ALLOW_INHERITED_RESOURCE,
 
-  protected Grantee createGranteeForGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
-  }
+  DENY_EXPLICIT_IDENTITY,
 
+  DENY_EXPLICIT_GROUP,
+
+  DENY_INHERITED_RESOURCE,
+
+  DEFAULT_DENY,
+
+  PROVIDER_ERROR
 
 }

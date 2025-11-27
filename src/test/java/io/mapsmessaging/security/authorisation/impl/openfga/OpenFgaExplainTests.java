@@ -18,13 +18,17 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.openfga;
 
-public class OpenFgaNamespaceTraversalAuthorizationTest extends AbstractNamespaceTraversalAuthorizationTest {
+import io.mapsmessaging.security.authorisation.AbstractExplainTests;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+
+public class OpenFgaExplainTests extends AbstractExplainTests {
 
   @Override
-  AuthorizationProvider createProvider(ResourceTraversalFactory factory) throws Exception {
-    return AuthTestHelper.createOpenFgaAuthorizationProvider(factory);
-
+  protected AuthorizationProvider createAuthorizationProvider() throws Exception {
+    return AuthTestHelper.createOpenFgaAuthorizationProvider(null);
   }
+
 }

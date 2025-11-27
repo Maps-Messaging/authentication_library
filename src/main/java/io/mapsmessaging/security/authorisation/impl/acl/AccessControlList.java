@@ -23,7 +23,6 @@ package io.mapsmessaging.security.authorisation.impl.acl;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.Access;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +59,38 @@ public class AccessControlList {
     }
     return mask;
   }
+
+  @SuppressWarnings("java:S3516")
+  public AclAccessResult evaluateAccess(Identity identity, long requestedAccess) {
+    if (identity == null) {
+      return new AclAccessResult(Access.UNKNOWN, null, false, null);
+    }
+
+    UUID identityId = identity.getId();
+    AclEntry identityEntry = find(identityId);
+    if (identityEntry != null) {
+      Access identityAccess = isAccessGranted(identityEntry, requestedAccess, identityId);
+      if (identityAccess != Access.UNKNOWN) {
+        return new AclAccessResult(identityAccess, identityId, false, identityEntry);
+      }
+    }
+
+    if (!identity.getGroupList().isEmpty()) {
+      for (Group group : identity.getGroupList()) {
+        UUID groupId = group.getId();
+        AclEntry groupEntry = find(groupId);
+        if (groupEntry != null) {
+          Access groupAccess = isAccessGranted(groupEntry, requestedAccess, groupId);
+          if (groupAccess != Access.UNKNOWN) {
+            return new AclAccessResult(groupAccess, groupId, true, groupEntry);
+          }
+        }
+      }
+    }
+
+    return new AclAccessResult(Access.UNKNOWN, null, false, null);
+  }
+
 
   public long getGroupAccess(Group group) {
     return processGroups(List.of(group));

@@ -18,14 +18,15 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
 
+import io.mapsmessaging.security.authorisation.AbstractAuthorizationProviderGrantTest;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 import java.io.IOException;
 
-public class AclAuthorizationProviderTest extends AbstractAuthorizationProviderTest{
-
-
+public class AclAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest {
   @Override
   protected AuthorizationProvider createAuthorizationProvider() throws IOException {
     return AuthTestHelper.createAclAuthorizationProvider(null);

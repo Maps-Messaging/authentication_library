@@ -18,12 +18,18 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
-public class CachingAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest {
+import io.mapsmessaging.security.authorisation.AbstractExplainTests;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import java.io.IOException;
+
+public class AclExplainTests extends AbstractExplainTests {
+
   @Override
-  protected AuthorizationProvider createAuthorizationProvider() throws Exception {
-    return AuthTestHelper.createCachingAuthorizationProvider(null);
+  protected AuthorizationProvider createAuthorizationProvider() throws IOException {
+    return AuthTestHelper.createAclAuthorizationProvider(null);
   }
 
 }

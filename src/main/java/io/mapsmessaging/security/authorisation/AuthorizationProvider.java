@@ -23,8 +23,8 @@ package io.mapsmessaging.security.authorisation;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
-
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 public interface AuthorizationProvider {
@@ -42,6 +42,16 @@ public interface AuthorizationProvider {
                     ProtectedResource protectedResource);
 
 
+  default AccessDecision explainAccess(Identity identity,
+                                       Permission permission,
+                                       ProtectedResource protectedResource) {
+    throw new UnsupportedOperationException("Explain not supported by this provider");
+  }
+
+  default EffectiveAccess explainEffectiveAccess(Identity identity,
+                                                 ProtectedResource protectedResource) {
+    throw new UnsupportedOperationException("Explain not supported by this provider");
+  }
   // ==== Policy management (grants) ====
 
   /**
@@ -119,6 +129,10 @@ public interface AuthorizationProvider {
    */
   default void removeGroupMember(UUID groupId, UUID identityId) {
     // default: no-op
+  }
+
+  default void setGroupsForIdentity(UUID identityId, List<UUID> groupId) {
+    // no op
   }
 
   // ==== Resource lifecycle ====

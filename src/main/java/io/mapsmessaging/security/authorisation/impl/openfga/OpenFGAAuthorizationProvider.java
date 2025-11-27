@@ -33,16 +33,15 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
@@ -267,6 +266,170 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
     return Access.UNKNOWN;
   }
+
+  @Override
+  public AccessDecision explainAccess(Identity identity,
+                                      Permission permission,
+                                      ProtectedResource protectedResource) {
+
+    if (identity == null || permission == null || protectedResource == null) {
+      return AccessDecision.builder()
+          .identity(identity)
+          .permission(permission)
+          .protectedResource(protectedResource)
+          .allowed(false)
+          .decisionReason(DecisionReason.DEFAULT_DENY)
+          .contributingGrants(List.of())
+          .contributingGroups(List.of())
+          .detailMessage("Missing identity, permission or resource")
+          .build();
+    }
+
+    ResourceTraversal traversal = factory.create(protectedResource);
+
+    while (traversal.hasMore()) {
+      ProtectedResource currentResource = traversal.current();
+      Access accessDecision = canAccessAtNode(identity, permission, currentResource);
+      if (accessDecision == Access.UNKNOWN) {
+        traversal.moveToParent();
+        continue;
+      }
+
+      boolean allowed = (accessDecision == Access.ALLOW);
+
+      // Find contributing grants at this node
+      Collection<Grant> grantsAtResource = getGrantsForResource(currentResource);
+      List<Grant> contributingGrants = new ArrayList<>();
+      List<Group> contributingGroups = new ArrayList<>();
+
+      boolean hasUserGrant = false;
+      boolean hasGroupGrant = false;
+
+      for (Grant grant : grantsAtResource) {
+        if (!grant.getPermission().getName().equalsIgnoreCase(permission.getName())) {
+          continue;
+        }
+        if (grant.isAllow() != allowed) {
+          continue;
+        }
+
+        Grantee grantee = grant.getGrantee();
+        if (grantee.type() == GranteeType.USER
+            && grantee.id().equals(identity.getId())) {
+          contributingGrants.add(grant);
+          hasUserGrant = true;
+        } else if (grantee.type() == GranteeType.GROUP) {
+          Group group = findGroupById(identity, grantee.id());
+          if (group != null) {
+            contributingGrants.add(grant);
+            contributingGroups.add(group);
+            hasGroupGrant = true;
+          }
+        }
+      }
+
+      DecisionReason reason;
+      boolean isExactResource =
+          currentResource.getResourceType().equals(protectedResource.getResourceType())
+              && currentResource.getResourceId().equals(protectedResource.getResourceId())
+              && Objects.equals(currentResource.getTenant(), protectedResource.getTenant());
+
+      if (allowed) {
+        if (isExactResource) {
+          if (hasUserGrant) {
+            reason = DecisionReason.ALLOW_EXPLICIT_IDENTITY;
+          } else if (hasGroupGrant) {
+            reason = DecisionReason.ALLOW_EXPLICIT_GROUP;
+          } else {
+            reason = DecisionReason.ALLOW_EXPLICIT_IDENTITY;
+          }
+        } else {
+          reason = DecisionReason.ALLOW_INHERITED_RESOURCE;
+        }
+      } else {
+        if (isExactResource) {
+          if (hasUserGrant) {
+            reason = DecisionReason.DENY_EXPLICIT_IDENTITY;
+          } else if (hasGroupGrant) {
+            reason = DecisionReason.DENY_EXPLICIT_GROUP;
+          } else {
+            reason = DecisionReason.DENY_EXPLICIT_IDENTITY;
+          }
+        } else {
+          reason = DecisionReason.DENY_INHERITED_RESOURCE;
+        }
+      }
+
+      String detailMessage =
+          "Decision=" + accessDecision
+              + ", resource=" + toObject(currentResource)
+              + ", requestedPermission=" + permission.getName().toLowerCase();
+
+      return AccessDecision.builder()
+          .identity(identity)
+          .permission(permission)
+          .protectedResource(protectedResource)
+          .allowed(allowed)
+          .decisionReason(reason)
+          .contributingGrants(contributingGrants)
+          .contributingGroups(contributingGroups)
+          .detailMessage(detailMessage)
+          .build();
+    }
+
+    // No node gave a definitive answer, default deny
+    return AccessDecision.builder()
+        .identity(identity)
+        .permission(permission)
+        .protectedResource(protectedResource)
+        .allowed(false)
+        .decisionReason(DecisionReason.DEFAULT_DENY)
+        .contributingGrants(List.of())
+        .contributingGroups(List.of())
+        .detailMessage("No matching OpenFGA tuples, default deny")
+        .build();
+  }
+
+  @Override
+  public EffectiveAccess explainEffectiveAccess(Identity identity,
+                                                ProtectedResource protectedResource) {
+
+    Set<Permission> allowedPermissions = new HashSet<>();
+    Set<Permission> deniedPermissions = new HashSet<>();
+    Map<Permission, AccessDecision> decisionsByPermission = new HashMap<>();
+
+    for (Permission perm : permissions.values()) {
+      AccessDecision decision = explainAccess(identity, perm, protectedResource);
+      decisionsByPermission.put(perm, decision);
+      if (decision.isAllowed()) {
+        allowedPermissions.add(perm);
+      } else {
+        deniedPermissions.add(perm);
+      }
+    }
+
+    EffectiveAccess effectiveAccess = new EffectiveAccess();
+    effectiveAccess.setIdentity(identity);
+    effectiveAccess.setProtectedResource(protectedResource);
+    effectiveAccess.setAllowedPermissions(allowedPermissions);
+    effectiveAccess.setDeniedPermissions(deniedPermissions);
+    effectiveAccess.setDecisionsByPermission(decisionsByPermission);
+
+    return effectiveAccess;
+  }
+
+  private Group findGroupById(Identity identity, UUID groupId) {
+    if (identity == null || identity.getGroupList() == null) {
+      return null;
+    }
+    for (Group group : identity.getGroupList()) {
+      if (groupId.equals(group.getId())) {
+        return group;
+      }
+    }
+    return null;
+  }
+
 
   // =============================================================================================
   // Grants

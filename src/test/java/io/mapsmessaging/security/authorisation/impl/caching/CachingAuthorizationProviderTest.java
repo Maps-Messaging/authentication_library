@@ -18,13 +18,17 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.caching;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.mapsmessaging.security.authorisation.impl.caching.CachingAuthorizationProvider;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.Grantee;
+import io.mapsmessaging.security.authorisation.TestPermissions;
 import io.mapsmessaging.security.authorisation.impl.openfga.OpenFGAAuthorizationProvider;
+import io.mapsmessaging.security.authorisation.impl.openfga.OpenFgaAuthorizationProviderTest;
 import org.junit.jupiter.api.Test;
 
 class CachingAuthorizationProviderTest extends OpenFgaAuthorizationProviderTest {

@@ -18,24 +18,17 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.caching;
 
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
+import io.mapsmessaging.security.authorisation.AbstractNamespaceTraversalAuthorizationTest;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.ResourceTraversalFactory;
 
-public class BaseAuthorisationTest {
+public class CachingNamespaceTraversalAuthorizationTest extends AbstractNamespaceTraversalAuthorizationTest {
 
-  protected ProtectedResource createProtectedResource(String resourceName) {
-    return new ProtectedResource("resource", resourceName, "");
+  @Override
+  public AuthorizationProvider createProvider(ResourceTraversalFactory factory) throws Exception {
+    return AuthTestHelper.createCachingAuthorizationProvider(factory);
   }
-
-  protected Grantee createGranteeForIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
-  }
-
-  protected Grantee createGranteeForGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
-  }
-
-
 }

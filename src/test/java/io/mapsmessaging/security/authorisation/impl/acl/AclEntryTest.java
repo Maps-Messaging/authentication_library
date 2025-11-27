@@ -18,24 +18,22 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class BaseAuthorisationTest {
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
-  protected ProtectedResource createProtectedResource(String resourceName) {
-    return new ProtectedResource("resource", resourceName, "");
+class AclEntryTest {
+
+  @Test
+  void testMatchesMethod() {
+    UUID authId = UUID.randomUUID();
+    AclEntry entry = new AclEntry(authId, false, 12345L, 0L);
+
+    assertTrue(entry.matches(authId), "Matches should return true for the same authId");
+    assertFalse(entry.matches(UUID.randomUUID()), "Matches should return false for a different authId");
   }
-
-  protected Grantee createGranteeForIdentity(Identity identity) {
-    return new Grantee(GranteeType.USER, identity.getId());
-  }
-
-  protected Grantee createGranteeForGroup(Group group) {
-    return new Grantee(GranteeType.GROUP, group.getId());
-  }
-
-
 }
+

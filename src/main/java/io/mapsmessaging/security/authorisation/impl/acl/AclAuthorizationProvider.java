@@ -20,8 +20,11 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
+import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
@@ -30,19 +33,16 @@ import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.CertificateManagerFactory;
 import io.mapsmessaging.security.certificates.CertificateWithPrivateKey;
-import lombok.Data;
-import lombok.Value;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import lombok.Data;
+import lombok.Value;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
   private static final String ACL_SECRET_KEY_ALIAS = "acl.state.key";
@@ -102,6 +102,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
       String aclLoad = aclLoadState.loadState();
       return new AclAuthorizationProvider(aclLoad, permissions, aclSaveState, factory);
     } catch (IOException|GeneralSecurityException e) {
+      // ToDo:: Log This as fatal!
       throw new IOException(e);
     }
   }
@@ -139,6 +140,141 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     }
     return false; // default deny
   }
+
+  public AccessDecision explainAccess(Identity identity,
+                                      Permission permission,
+                                      ProtectedResource protectedResource) {
+    ResourceTraversal traversal = factory.create(protectedResource);
+    long requestedAccess = permission.getMask();
+    ProtectedResource currentResource;
+    while (traversal.hasMore()) {
+      currentResource = traversal.current();
+      AccessControlList accessControlList = findAccessControlList(currentResource);
+      if (accessControlList != null) {
+        AclAccessResult result = accessControlList.evaluateAccess(identity, requestedAccess);
+        Access access = result.getAccess();
+        if (access != Access.UNKNOWN) {
+          boolean allowed = (access == Access.ALLOW);
+
+          DecisionReason reason;
+          if (allowed) {
+            if (currentResource.equals(protectedResource)) {
+              reason = result.isGroupDecision()
+                  ? DecisionReason.ALLOW_EXPLICIT_GROUP
+                  : DecisionReason.ALLOW_EXPLICIT_IDENTITY;
+            } else {
+              reason = DecisionReason.ALLOW_INHERITED_RESOURCE;
+            }
+          } else {
+            if (currentResource.equals(protectedResource)) {
+              reason = result.isGroupDecision()
+                  ? DecisionReason.DENY_EXPLICIT_GROUP
+                  : DecisionReason.DENY_EXPLICIT_IDENTITY;
+            } else {
+              reason = DecisionReason.DENY_INHERITED_RESOURCE;
+            }
+          }
+
+          List<Grant> contributingGrants = List.of();
+          List<Group> contributingGroups = List.of();
+
+          AclEntry aclEntry = result.getAclEntry();
+          UUID decidingId = result.getDecidingAuthId();
+
+          if (aclEntry != null && decidingId != null) {
+            boolean grantAllow = (aclEntry.getAllow() & requestedAccess) != 0L;
+            Grantee grantee = aclEntry.isGroup()
+                ? new Grantee(GranteeType.GROUP, decidingId)
+                : new Grantee(GranteeType.USER, decidingId);
+
+            ProtectedResource decisionResource =
+                new ProtectedResource(
+                    currentResource.getResourceType(),
+                    currentResource.getResourceId(),
+                    currentResource.getTenant());
+
+            Grant grant = new Grant(grantee, permission, decisionResource, grantAllow);
+            contributingGrants = List.of(grant);
+
+            if (result.isGroupDecision()) {
+              Group group = findGroupById(identity, decidingId);
+              if (group != null) {
+                contributingGroups = List.of(group);
+              }
+            }
+          }
+
+          String detailMessage = "Decision=" + access
+              + ", resource=" + currentResource
+              + ", requestedPermission=" + permission.getName();
+
+          return AccessDecision.builder()
+              .identity(identity)
+              .permission(permission)
+              .protectedResource(protectedResource)
+              .allowed(allowed)
+              .decisionReason(reason)
+              .contributingGrants(contributingGrants)
+              .contributingGroups(contributingGroups)
+              .detailMessage(detailMessage)
+              .build();
+        }
+      }
+      traversal.moveToParent();
+    }
+
+    // No ACL matched, default deny
+    return AccessDecision.builder()
+        .identity(identity)
+        .permission(permission)
+        .protectedResource(protectedResource)
+        .allowed(false)
+        .decisionReason(DecisionReason.DEFAULT_DENY)
+        .contributingGrants(List.of())
+        .contributingGroups(List.of())
+        .detailMessage("No ACL entry matched, default deny")
+        .build();
+  }
+
+  public EffectiveAccess explainEffectiveAccess(Identity identity,
+                                                ProtectedResource protectedResource) {
+    Set<Permission> allowedPermissions = new HashSet<>();
+    Set<Permission> deniedPermissions = new HashSet<>();
+    Map<Permission, AccessDecision> decisionsByPermission = new HashMap<>();
+
+    for (Permission perm : permissions.values()) {
+      AccessDecision decision = explainAccess(identity, perm, protectedResource);
+      decisionsByPermission.put(perm, decision);
+
+      if (decision.isAllowed()) {
+        allowedPermissions.add(perm);
+      } else {
+        deniedPermissions.add(perm);
+      }
+    }
+
+    EffectiveAccess effectiveAccess = new EffectiveAccess();
+    effectiveAccess.setIdentity(identity);
+    effectiveAccess.setProtectedResource(protectedResource);
+    effectiveAccess.setAllowedPermissions(allowedPermissions);
+    effectiveAccess.setDeniedPermissions(deniedPermissions);
+    effectiveAccess.setDecisionsByPermission(decisionsByPermission);
+
+    return effectiveAccess;
+  }
+
+  private Group findGroupById(Identity identity, UUID groupId) {
+    if (identity == null || identity.getGroupList() == null) {
+      return null;
+    }
+    for (Group group : identity.getGroupList()) {
+      if (groupId.equals(group.getId())) {
+        return group;
+      }
+    }
+    return null;
+  }
+
 
   @Override
   public void grantAccess(Grantee grantee,
@@ -349,8 +485,14 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
         .setPrettyPrinting()
         .create();
 
-    AuthorizationState authorizationState = gson.fromJson(state, AuthorizationState.class);
-    if (authorizationState == null) {
+    AuthorizationState authorizationState;
+    try {
+      authorizationState = gson.fromJson(state, AuthorizationState.class);
+      if (authorizationState == null) {
+        return;
+      }
+    } catch (JsonSyntaxException e) {
+      // ToDo: Log a FATAL ERROR!!!!!
       return;
     }
 

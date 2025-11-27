@@ -25,8 +25,6 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
-import lombok.Getter;
-
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
@@ -36,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Getter;
 
 public class CachingAuthorizationProvider implements AuthorizationProvider {
 
@@ -88,10 +87,7 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public boolean canAccess(Identity identity,
-                           Permission permission,
-                           ProtectedResource protectedResource) {
-
+  public boolean canAccess(Identity identity, Permission permission, ProtectedResource protectedResource) {
     long now = System.currentTimeMillis();
     CacheKey cacheKey = new CacheKey(identity, permission, protectedResource);
     CacheEntry cacheEntry = cache.get(cacheKey);
@@ -111,6 +107,15 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
     return allowed;
   }
 
+
+  public AccessDecision explainAccess(Identity identity, Permission permission, ProtectedResource protectedResource) {
+    return delegate.explainAccess(identity, permission, protectedResource);
+  }
+
+  public EffectiveAccess explainEffectiveAccess(Identity identity, ProtectedResource protectedResource) {
+    return delegate.explainEffectiveAccess(identity, protectedResource);
+  }
+
   @Override
   public void grantAccess(Grantee grantee,
                           Permission permission,
@@ -120,8 +125,7 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public void denyAccess(
-      Grantee grantee, Permission permission, ProtectedResource protectedResource) {
+  public void denyAccess(Grantee grantee, Permission permission, ProtectedResource protectedResource) {
     delegate.denyAccess(grantee, permission, protectedResource);
     cache.clear();
   }

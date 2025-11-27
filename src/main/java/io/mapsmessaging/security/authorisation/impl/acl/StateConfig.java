@@ -18,15 +18,13 @@
  *
  */
 
-package io.mapsmessaging.security.authorisation;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
+class StateConfig {
+  public static final String ENCRYPTION_METHOD = "AES/GCM/NoPadding";
+  public static final int GCM_TAG_LENGTH_BITS = 128;
+  public static final int GCM_IV_LENGTH_BYTES = 12;
+  public static final int INITIAL_BUFFER_SIZE = 4096;
 
-
-public class OpenFgaAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest{
-
-  @Override
-  protected AuthorizationProvider createAuthorizationProvider()throws Exception{
-    return AuthTestHelper.createOpenFgaAuthorizationProvider(null);
-  }
-
+  private StateConfig(){}
 }

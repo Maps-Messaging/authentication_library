@@ -20,10 +20,35 @@
 
 package io.mapsmessaging.security.authorisation;
 
-public class CachingNamespaceTraversalAuthorizationTest extends AbstractNamespaceTraversalAuthorizationTest {
+import io.mapsmessaging.security.access.Identity;
+import java.util.Map;
+import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-  @Override
-  AuthorizationProvider createProvider(ResourceTraversalFactory factory) throws Exception {
-    return AuthTestHelper.createCachingAuthorizationProvider(factory);
-  }
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class EffectiveAccess {
+
+  private Identity identity;
+
+  private ProtectedResource protectedResource;
+
+  @Builder.Default
+  private Set<Permission> allowedPermissions = Set.of();
+
+  @Builder.Default
+  private Set<Permission> deniedPermissions =  Set.of();
+
+  /**
+   * Optional per-permission decisions for detailed inspection.
+   * Implementations may choose not to populate this to save work.
+   */
+  @Builder.Default
+  private Map<Permission, AccessDecision> decisionsByPermission = Map.of();
+
 }

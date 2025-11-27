@@ -20,9 +20,8 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
+import static io.mapsmessaging.security.authorisation.impl.acl.StateConfig.GCM_TAG_LENGTH_BITS;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +31,9 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.zip.GZIPOutputStream;
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 
 public class AclSaveState {
 
@@ -69,8 +71,8 @@ public class AclSaveState {
     SecureRandom secureRandom = new SecureRandom();
     secureRandom.nextBytes(initializationVector);
 
-    Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-    GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(128, initializationVector);
+    Cipher cipher = Cipher.getInstance(StateConfig.ENCRYPTION_METHOD);
+    GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH_BITS, initializationVector);
     cipher.init(Cipher.ENCRYPT_MODE, encryptionKey, gcmParameterSpec);
 
     byte[] cipherText = cipher.doFinal(input);
