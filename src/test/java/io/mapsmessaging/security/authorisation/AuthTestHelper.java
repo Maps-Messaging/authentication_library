@@ -120,19 +120,18 @@ public class AuthTestHelper {
 
   public static  AuthorizationProvider createCachingAuthorizationProvider(ResourceTraversalFactory factory) throws IOException {
     Map<String, Object> config = new HashMap<>();
+    Map<String, Object> authorisation = new HashMap<>();
     config.put("cachingTime", 10);
     config.put("enableCaching", true);
-    Map<String, Object> certificateConfig = new HashMap<>();
-    certificateConfig.put("type", "JKS");
-    certificateConfig.put("path", "./authKeyStore.jks");
-    certificateConfig.put("passphrase", "changeit");
-    certificateConfig.put("alias", "default");
-    certificateConfig.put("privateKey.name", "default");
-    certificateConfig.put("privateKey.passphrase", "changeit");
-    config.put("certificateStore", certificateConfig);
+    config.put("authorisation", authorisation);
+    Map<String, Object> openFgaMap = new HashMap<>();
+    openFgaMap.put("uris", "http://10.140.62.152:8080");
+    openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
+    openFgaMap.put("modelId", "01KAF6SSMG4T5WZY47FS12QZ0C");
+    openFgaMap.put("connectionTimeout", 10);
+    authorisation.put("openfga", openFgaMap);
 
-
-    AuthorizationProvider provider =  AuthorizationProviderFactory.getInstance().get("ACL", config, TestPermissions.values(), factory);
+    AuthorizationProvider provider =  AuthorizationProviderFactory.getInstance().get("openFGA", config, TestPermissions.values(), factory);
     provider.reset();
     return provider;
   }

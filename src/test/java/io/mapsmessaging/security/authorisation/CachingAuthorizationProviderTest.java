@@ -23,6 +23,8 @@ package io.mapsmessaging.security.authorisation;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.mapsmessaging.security.authorisation.impl.caching.CachingAuthorizationProvider;
+import io.mapsmessaging.security.authorisation.impl.openfga.OpenFGAAuthorizationProvider;
 import org.junit.jupiter.api.Test;
 
 class CachingAuthorizationProviderTest extends OpenFgaAuthorizationProviderTest {
@@ -39,6 +41,12 @@ class CachingAuthorizationProviderTest extends OpenFgaAuthorizationProviderTest 
     authorizationProvider.grantAccess(aliceGrantee, TestPermissions.READ, protectedResource);
 
     long end = System.currentTimeMillis() + 10000;
+    AuthorizationProvider delegate = ((CachingAuthorizationProvider)authorizationProvider).getDelegate();
+    long startCount  =0;
+    long endCount  =0;
+    if(delegate instanceof OpenFGAAuthorizationProvider fgaAuthorizationProvider) {
+      startCount = fgaAuthorizationProvider.getRequestCount();
+    }
     while (System.currentTimeMillis() < end) {
       assertTrue(
           authorizationProvider.canAccess(identityAlice, TestPermissions.READ, protectedResource),
@@ -57,5 +65,9 @@ class CachingAuthorizationProviderTest extends OpenFgaAuthorizationProviderTest 
           "CREATE should not be allowed when only READ granted"
       );
     }
+    if(delegate instanceof OpenFGAAuthorizationProvider fgaAuthorizationProvider) {
+      endCount = fgaAuthorizationProvider.getRequestCount();
+    }
+    assertTrue((endCount - startCount < 10));
   }
 }

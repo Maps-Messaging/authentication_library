@@ -37,6 +37,7 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -57,6 +58,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   private final TuplePresenceCache tuplePresenceCache;
   @Getter
   private final Map<String, Permission> permissions;
+  private final AtomicLong requestCount;
 
   @Builder
   public OpenFGAAuthorizationProvider(@NonNull OpenFgaClient openFgaClient,
@@ -70,6 +72,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     this.openFgaClient = openFgaClient;
     this.factory = factory;
     this.defaultAuthorizationModelId = defaultAuthorizationModelId;
+    this.requestCount = new AtomicLong(0);
     this.userType = userType != null ? userType : "user";
     this.groupType = groupType != null ? groupType : "group";
     this.tenantSeparator = tenantSeparator != null ? tenantSeparator : "/";
@@ -93,71 +96,10 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     this.tuplePresenceCache = null;
     this.permissions = new ConcurrentHashMap<>();
     this.readHelper = new ReadHelper(this);
-  }
-
-  // =============================================================================================
-  // Runtime check
-  // =============================================================================================
-
-  @Override
-  public String getName() {
-    return "OpenFGA";
+    this.requestCount = new AtomicLong(0);
   }
 
   @Override
-  public void reset() {
-    if (openFgaClient == null) {
-      return;
-    }
-
-    ClientReadRequest readAll = new ClientReadRequest();
-    String continuationToken = null;
-
-    do {
-      try {
-        ClientReadOptions readOptions = new ClientReadOptions();
-        if (continuationToken != null && !continuationToken.isEmpty()) {
-          readOptions.continuationToken(continuationToken);
-        }
-
-        ClientReadResponse response = openFgaClient.read(readAll, readOptions).get();
-
-        List<ClientTupleKeyWithoutCondition> deletes =
-            response.getTuples().stream()
-                .map(
-                    tuple -> {
-                      TupleKey key = tuple.getKey();
-                      ClientTupleKeyWithoutCondition del = new ClientTupleKeyWithoutCondition();
-                      del.user(key.getUser());
-                      del.relation(key.getRelation());
-                      del._object(key.getObject());
-                      return del;
-                    })
-                .toList();
-
-        if (!deletes.isEmpty()) {
-          ClientWriteRequest writeRequest = ClientWriteRequest.ofDeletes(deletes);
-
-          ClientWriteOptions writeOptions = new ClientWriteOptions();
-          if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
-            writeOptions.authorizationModelId(defaultAuthorizationModelId);
-          }
-
-          openFgaClient.write(writeRequest, writeOptions).get();
-        }
-
-        continuationToken = response.getContinuationToken();
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return;
-      } catch (ExecutionException | FgaInvalidParameterException e) {
-        // log / rethrow as you like
-        return;
-      }
-    } while (!continuationToken.isEmpty());
-  }
-
-@Override
   public   AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions, ResourceTraversalFactory factory)throws IOException{
     ConfigurationProperties authorisation = (ConfigurationProperties) config.get("authorisation");
 
@@ -182,6 +124,57 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     catch (FgaInvalidParameterException e) {
       throw new IOException(e);
     }
+  }
+
+  public long getRequestCount() {
+    return requestCount.get();
+  }
+  // =============================================================================================
+  // Runtime check
+  // =============================================================================================
+
+  @Override
+  public String getName() {
+    return "OpenFGA";
+  }
+
+  @Override
+  public void reset() {
+    if (openFgaClient == null) {
+      return;
+    }
+
+    ClientReadRequest readAll = new ClientReadRequest();
+    String continuationToken = null;
+
+    do {
+      ClientReadOptions readOptions = new ClientReadOptions();
+      if (continuationToken != null && !continuationToken.isEmpty()) {
+        readOptions.continuationToken(continuationToken);
+      }
+      ClientReadResponse response  = handleReadRequest(readAll, readOptions);
+      if(response == null){
+        break;
+      }
+      List<ClientTupleKeyWithoutCondition> deletes =
+          response.getTuples().stream()
+              .map(
+                  tuple -> {
+                    TupleKey key = tuple.getKey();
+                    ClientTupleKeyWithoutCondition del = new ClientTupleKeyWithoutCondition();
+                    del.user(key.getUser());
+                    del.relation(key.getRelation());
+                    del._object(key.getObject());
+                    return del;
+                  })
+              .toList();
+
+      if (!deletes.isEmpty()) {
+        ClientWriteRequest writeRequest = ClientWriteRequest.ofDeletes(deletes);
+        handleRequest(writeRequest);
+      }
+      continuationToken = response.getContinuationToken();
+    } while (!continuationToken.isEmpty());
   }
 
   @Override
@@ -232,6 +225,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
     boolean allowed;
     try {
+      requestCount.incrementAndGet();
       ClientCheckResponse response = openFgaClient.check(clientCheckRequest, clientCheckOptions).get();
       allowed = Boolean.TRUE.equals(response.getAllowed());
     } catch (InterruptedException interruptedException) {
@@ -278,9 +272,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     tupleKey.relation(permission.getName().toLowerCase());
     tupleKey._object(toObject(protectedResource));
 
-    ClientWriteRequest clientWriteRequest =
-        new ClientWriteRequest().writes(Collections.singletonList(tupleKey));
-
+    ClientWriteRequest clientWriteRequest = new ClientWriteRequest().writes(Collections.singletonList(tupleKey));
     handleRequest(clientWriteRequest);
   }
 
@@ -302,8 +294,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     tupleKey.relation(permission.getName().toLowerCase());
     tupleKey._object(toObject(protectedResource));
 
-    ClientWriteRequest clientWriteRequest =
-        new ClientWriteRequest().deletes(Collections.singletonList(tupleKey));
+    ClientWriteRequest clientWriteRequest = new ClientWriteRequest().deletes(Collections.singletonList(tupleKey));
 
     handleRequest(clientWriteRequest);
   }
@@ -341,8 +332,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
         .relation(groupMemberRelation)
         ._object(toGroupObject(groupId));
 
-    ClientWriteRequest clientWriteRequest =
-        new ClientWriteRequest().deletes(Collections.singletonList(tupleKey));
+    ClientWriteRequest clientWriteRequest = new ClientWriteRequest().deletes(Collections.singletonList(tupleKey));
     handleRequest(clientWriteRequest);
   }
 
@@ -420,18 +410,11 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
         options.continuationToken(continuationToken);
       }
 
-      ClientReadResponse response;
-      try {
-        response = openFgaClient.read(request, options).get();
-      } catch (InterruptedException interruptedException) {
-        Thread.currentThread().interrupt();
-        break;
-      } catch (ExecutionException | FgaInvalidParameterException executionException) {
-        executionException.printStackTrace();
-        // TODO: log if you care
+      requestCount.incrementAndGet();
+      ClientReadResponse response = handleReadRequest(request, options);
+      if(response == null) {
         break;
       }
-
       for (var tuple : response.getTuples()) {
         TupleKey key = tuple.getKey();
         Grantee grantee = readHelper.parseUserToGrantee(key.getUser());
@@ -462,12 +445,26 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   // Helpers
   // =============================================================================================
 
+  private ClientReadResponse handleReadRequest(ClientReadRequest clientReadRequest,  ClientReadOptions options) {
+    try {
+      requestCount.incrementAndGet();
+      return openFgaClient.read(clientReadRequest, options).get();
+    } catch (InterruptedException interruptedException) {
+      Thread.currentThread().interrupt();
+    } catch (ExecutionException | FgaInvalidParameterException executionException) {
+      // ToDo: log this or surface upstream when you care
+    }
+    return null;
+  }
+
+
   private void handleRequest(ClientWriteRequest clientWriteRequest) {
     ClientWriteOptions clientWriteOptions = new ClientWriteOptions();
     if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
       clientWriteOptions.authorizationModelId(defaultAuthorizationModelId);
     }
     try {
+      requestCount.incrementAndGet();
       openFgaClient.write(clientWriteRequest, clientWriteOptions).get();
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
@@ -501,4 +498,5 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     }
     return resourceType + ":" + resourceId;
   }
+
 }

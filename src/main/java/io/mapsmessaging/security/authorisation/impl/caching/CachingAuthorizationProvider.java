@@ -32,9 +32,11 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Getter;
 
 public class CachingAuthorizationProvider implements AuthorizationProvider {
 
+  @Getter
   private final AuthorizationProvider delegate;
   private final Map<CacheKey, CacheEntry> cache;
   private final long ttlMillis;
