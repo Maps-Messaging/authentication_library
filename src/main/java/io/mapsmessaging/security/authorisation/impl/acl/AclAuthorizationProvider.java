@@ -28,6 +28,7 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
+import io.mapsmessaging.security.authorisation.Access;
 import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.CertificateManagerFactory;
@@ -50,16 +51,19 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   private final Map<Long, Permission> permissions;
   private final AclSaveState saveState;
   private final AtomicBoolean batchStarted;
+  private final ResourceTraversalFactory factory;
 
   public AclAuthorizationProvider() {
     accessControlListMap = null;
     permissions = null;
+    factory = null;
     saveState = null;
     batchStarted = new AtomicBoolean(false);
   }
 
-  public AclAuthorizationProvider(String config, Permission[] permission, AclSaveState saveState) {
+  public AclAuthorizationProvider(String config, Permission[] permission, AclSaveState saveState, ResourceTraversalFactory factory) {
     this.permissions = new  ConcurrentHashMap<>();
+    this.factory = factory;
     this.accessControlListMap = new ConcurrentHashMap<>();
     for (Permission permissionPrototype : permission) {
       permissions.put(permissionPrototype.getMask(),  permissionPrototype);
@@ -69,12 +73,19 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     readState(config);
   }
 
+  @Override
   public String  getName() {
     return "ACL";
   }
 
   @Override
-  public AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions) throws IOException {
+  public void reset(){
+    accessControlListMap.clear();
+    writeState();
+  }
+
+  @Override
+  public AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions,  ResourceTraversalFactory factory) throws IOException {
     try {
       ConfigurationProperties certificateConfig = (ConfigurationProperties)config.get("certificateStore");
       CertificateManager certificateManager = CertificateManagerFactory.getInstance().getManager(certificateConfig);
@@ -89,16 +100,18 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
       AclSaveState aclSaveState = new AclSaveState(filePath, secretKey);
 
       String aclLoad = aclLoadState.loadState();
-      return new AclAuthorizationProvider(aclLoad, permissions, aclSaveState);
+      return new AclAuthorizationProvider(aclLoad, permissions, aclSaveState, factory);
     } catch (IOException|GeneralSecurityException e) {
       throw new IOException(e);
     }
   }
 
+  @Override
   public void startBatch(long timeout){
     batchStarted.set(true);
   }
 
+  @Override
   public void stopBatch(){
     batchStarted.set(false);
     writeState();
@@ -108,9 +121,23 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   public boolean canAccess(Identity identity,
                            Permission permission,
                            ProtectedResource protectedResource) {
-    AccessControlList accessControlList = getOrCreateAccessControlList(protectedResource);
+    ResourceTraversal traversal = factory.create(protectedResource);
     long requestedAccess = permission.getMask();
-    return accessControlList.canAccess(identity, requestedAccess);
+    while (traversal.hasMore()) {
+      ProtectedResource current = traversal.current();
+      AccessControlList accessControlList = findAccessControlList(current);
+      if (accessControlList != null) {
+        Access decision = accessControlList.canAccess(identity, requestedAccess);
+        if (decision == Access.DENY) {
+          return false;
+        }
+        if (decision == Access.ALLOW) {
+          return true;
+        }
+      }
+      traversal.moveToParent();
+    }
+    return false; // default deny
   }
 
   @Override
@@ -193,12 +220,14 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
 
   }
 
+  private AccessControlList findAccessControlList(ProtectedResource protectedResource) {
+    ResourceKey resourceKey = toResourceKey(protectedResource);
+    return accessControlListMap.get(resourceKey);
+  }
+
   private AccessControlList getOrCreateAccessControlList(ProtectedResource protectedResource) {
     ResourceKey resourceKey = toResourceKey(protectedResource);
-    return accessControlListMap.computeIfAbsent(
-        resourceKey,
-        key -> new AccessControlList()
-    );
+    return accessControlListMap.computeIfAbsent(resourceKey, key -> new AccessControlList());
   }
 
   private ResourceKey toResourceKey(ProtectedResource protectedResource) {

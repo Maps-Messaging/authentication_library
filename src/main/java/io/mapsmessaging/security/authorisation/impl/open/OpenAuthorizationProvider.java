@@ -38,7 +38,10 @@ public class OpenAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public AuthorizationProvider create(ConfigurationProperties config, Permission[]  permissions){
+  public void reset(){}
+
+  @Override
+  public AuthorizationProvider create(ConfigurationProperties config, Permission[]  permissions, ResourceTraversalFactory factory) {
     return this;
   }
 

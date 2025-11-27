@@ -31,17 +31,10 @@ import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
-import io.mapsmessaging.security.authorisation.AuthorizationProvider;
-import io.mapsmessaging.security.authorisation.Grant;
-import io.mapsmessaging.security.authorisation.Grantee;
-import io.mapsmessaging.security.authorisation.GranteeType;
-import io.mapsmessaging.security.authorisation.Permission;
-import io.mapsmessaging.security.authorisation.ProtectedResource;
-import io.mapsmessaging.security.authorisation.ResourceCreationContext;
+import io.mapsmessaging.security.authorisation.*;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import lombok.Builder;
@@ -60,6 +53,8 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   private final String groupMemberRelation;
   private final String defaultAuthorizationModelId;
   private final ReadHelper readHelper;
+  private final ResourceTraversalFactory factory;
+  private final TuplePresenceCache tuplePresenceCache;
   @Getter
   private final Map<String, Permission> permissions;
 
@@ -67,17 +62,20 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   public OpenFGAAuthorizationProvider(@NonNull OpenFgaClient openFgaClient,
                                       String defaultAuthorizationModelId,
                                       Permission[] permission,
+                                      ResourceTraversalFactory factory,
                                       String userType,
                                       String groupType,
                                       String tenantSeparator,
                                       String groupMemberRelation) {
     this.openFgaClient = openFgaClient;
+    this.factory = factory;
     this.defaultAuthorizationModelId = defaultAuthorizationModelId;
     this.userType = userType != null ? userType : "user";
     this.groupType = groupType != null ? groupType : "group";
     this.tenantSeparator = tenantSeparator != null ? tenantSeparator : "/";
     this.groupMemberRelation = groupMemberRelation != null ? groupMemberRelation : "member";
     this.permissions = new ConcurrentHashMap<>();
+    this.tuplePresenceCache = new TuplePresenceCache(openFgaClient, userType, groupType,groupMemberRelation, 10_000);
     for (Permission permissionPrototype : permission) {
       permissions.put(permissionPrototype.getName().toLowerCase(),  permissionPrototype);
     }
@@ -87,10 +85,12 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   public OpenFGAAuthorizationProvider(){
     this.openFgaClient = null;
     this.defaultAuthorizationModelId = null;
+    this.factory = null;
     this.userType = null;
     this.groupType = null;
     this.tenantSeparator = null;
     this.groupMemberRelation = null;
+    this.tuplePresenceCache = null;
     this.permissions = new ConcurrentHashMap<>();
     this.readHelper = new ReadHelper(this);
   }
@@ -105,7 +105,60 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public   AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions)throws IOException{
+  public void reset() {
+    if (openFgaClient == null) {
+      return;
+    }
+
+    ClientReadRequest readAll = new ClientReadRequest();
+    String continuationToken = null;
+
+    do {
+      try {
+        ClientReadOptions readOptions = new ClientReadOptions();
+        if (continuationToken != null && !continuationToken.isEmpty()) {
+          readOptions.continuationToken(continuationToken);
+        }
+
+        ClientReadResponse response = openFgaClient.read(readAll, readOptions).get();
+
+        List<ClientTupleKeyWithoutCondition> deletes =
+            response.getTuples().stream()
+                .map(
+                    tuple -> {
+                      TupleKey key = tuple.getKey();
+                      ClientTupleKeyWithoutCondition del = new ClientTupleKeyWithoutCondition();
+                      del.user(key.getUser());
+                      del.relation(key.getRelation());
+                      del._object(key.getObject());
+                      return del;
+                    })
+                .toList();
+
+        if (!deletes.isEmpty()) {
+          ClientWriteRequest writeRequest = ClientWriteRequest.ofDeletes(deletes);
+
+          ClientWriteOptions writeOptions = new ClientWriteOptions();
+          if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
+            writeOptions.authorizationModelId(defaultAuthorizationModelId);
+          }
+
+          openFgaClient.write(writeRequest, writeOptions).get();
+        }
+
+        continuationToken = response.getContinuationToken();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return;
+      } catch (ExecutionException | FgaInvalidParameterException e) {
+        // log / rethrow as you like
+        return;
+      }
+    } while (!continuationToken.isEmpty());
+  }
+
+@Override
+  public   AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions, ResourceTraversalFactory factory)throws IOException{
     ConfigurationProperties authorisation = (ConfigurationProperties) config.get("authorisation");
 
     ConfigurationProperties fgaProperties = (ConfigurationProperties) authorisation.get("openfga");
@@ -124,7 +177,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     clientConfiguration.connectTimeout(Duration.ofSeconds(connectionTimeout));
     try {
       OpenFgaClient client = new OpenFgaClient(clientConfiguration);
-      return new OpenFGAAuthorizationProvider(client, modelId, permissions, uType, gType, tSeparator, gMemberRelation);
+      return new OpenFGAAuthorizationProvider(client, modelId, permissions, factory, uType, gType, tSeparator, gMemberRelation);
     }
     catch (FgaInvalidParameterException e) {
       throw new IOException(e);
@@ -135,10 +188,33 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   public boolean canAccess(Identity identity,
                            Permission permission,
                            ProtectedResource protectedResource) {
-
     if (identity == null || permission == null || protectedResource == null) {
       return false;
     }
+
+    ResourceTraversal resourceTraversal = factory.create(protectedResource);
+    while (resourceTraversal.hasMore()) {
+      ProtectedResource currentResource = resourceTraversal.current();
+      Access accessDecision = canAccessAtNode(identity, permission, currentResource);
+      switch (accessDecision) {
+        case ALLOW -> {
+          return  true;
+        }
+        case DENY -> {
+          return false;
+        }
+        default -> {
+          // nothing to do
+        }
+      }
+      resourceTraversal.moveToParent();
+    }
+    return false; // default deny
+  }
+
+  private Access canAccessAtNode(Identity identity,
+                                 Permission permission,
+                                 ProtectedResource protectedResource) {
 
     String user = identity.getId().toString();
     String relation = permission.getName();
@@ -154,17 +230,30 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
       clientCheckOptions.authorizationModelId(defaultAuthorizationModelId);
     }
 
+    boolean allowed;
     try {
-      CompletableFuture<dev.openfga.sdk.api.client.model.ClientCheckResponse> future =
-          openFgaClient.check(clientCheckRequest, clientCheckOptions);
-      dev.openfga.sdk.api.client.model.ClientCheckResponse response = future.get();
-      return Boolean.TRUE.equals(response.getAllowed());
+      ClientCheckResponse response = openFgaClient.check(clientCheckRequest, clientCheckOptions).get();
+      allowed = Boolean.TRUE.equals(response.getAllowed());
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
-      return false;
+      return Access.DENY;
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      return false;
+      executionException.printStackTrace();
+      return Access.DENY;
     }
+
+    if (allowed) {
+      return Access.ALLOW;
+    }
+
+    // not allowed: check if this node is authoritative for this identity
+    boolean hasLocalAcl = tuplePresenceCache.hasAnyTuplesForIdentityOnObject(identity, object);
+
+    if (hasLocalAcl) {
+      return Access.DENY;
+    }
+
+    return Access.UNKNOWN;
   }
 
   // =============================================================================================

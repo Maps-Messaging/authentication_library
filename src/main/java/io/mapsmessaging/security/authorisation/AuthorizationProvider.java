@@ -30,7 +30,9 @@ public interface AuthorizationProvider {
 
   String getName();
 
-  AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions) throws IOException;
+  AuthorizationProvider create(ConfigurationProperties config, Permission[] permissions, ResourceTraversalFactory factory) throws IOException;
+
+  void reset();
 
   // ==== Runtime check ====
 

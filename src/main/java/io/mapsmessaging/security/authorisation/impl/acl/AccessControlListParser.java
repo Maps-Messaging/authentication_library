@@ -68,7 +68,7 @@ public class AccessControlListParser {
     if (parts.length == 2) {
       String identifier = parts[0].trim();
       long accessBitset = parseAccessBitset(parts[1].trim());
-      return new AclEntry(UUID.fromString(identifier), false, accessBitset);
+      return new AclEntry(UUID.fromString(identifier), false, accessBitset, 0L);
     }
     return null;
   }

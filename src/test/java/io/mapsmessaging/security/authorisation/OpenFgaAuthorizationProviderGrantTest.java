@@ -26,7 +26,7 @@ public class OpenFgaAuthorizationProviderGrantTest extends AbstractAuthorization
 
   @Override
   protected AuthorizationProvider createAuthorizationProvider()throws Exception{
-    return createOpenFgaAuthorizationProvider();
+    return AuthTestHelper.createOpenFgaAuthorizationProvider(null);
   }
 
 }

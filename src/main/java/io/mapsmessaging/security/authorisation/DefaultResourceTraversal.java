@@ -20,21 +20,28 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import static org.junit.jupiter.api.Assertions.*;
+public class DefaultResourceTraversal implements ResourceTraversal {
 
-import io.mapsmessaging.security.authorisation.impl.acl.AclEntry;
-import java.util.UUID;
-import org.junit.jupiter.api.Test;
+  private final ProtectedResource resource;
+  private boolean hasMore;
 
-class AclEntryTest {
+  public DefaultResourceTraversal(ProtectedResource resource) {
+    this.resource = resource;
+    hasMore = true;
+  }
 
-  @Test
-  void testMatchesMethod() {
-    UUID authId = UUID.randomUUID();
-    AclEntry entry = new AclEntry(authId, false, 12345L, 0L);
+  @Override
+  public ProtectedResource current() {
+    return resource;
+  }
 
-    assertTrue(entry.matches(authId), "Matches should return true for the same authId");
-    assertFalse(entry.matches(UUID.randomUUID()), "Matches should return false for a different authId");
+  @Override
+  public boolean hasMore() {
+    return hasMore;
+  }
+
+  @Override
+  public void moveToParent() {
+    hasMore = false;
   }
 }
-

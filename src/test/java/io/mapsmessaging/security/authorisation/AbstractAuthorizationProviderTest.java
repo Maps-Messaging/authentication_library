@@ -48,12 +48,12 @@ public abstract class AbstractAuthorizationProviderTest extends BaseAuthorisatio
   void setUp() throws Exception {
     authorizationProvider = createAuthorizationProvider();
 
-    identityAlice = createIdentity("alice");
-    identityBob = createIdentity("bob");
-    identityCharlie = createIdentity("charlie");
+    identityAlice = AuthTestHelper.createIdentity("alice");
+    identityBob = AuthTestHelper.createIdentity("bob");
+    identityCharlie = AuthTestHelper.createIdentity("charlie");
 
-    groupAdmins = createGroup("admins");
-    groupGuests = createGroup("guests");
+    groupAdmins = AuthTestHelper.createGroup("admins");
+    groupGuests = AuthTestHelper.createGroup("guests");
 
     protectedResource = createProtectedResource("resource-1");
     readPermission = TestPermissions.READ;
@@ -115,39 +115,20 @@ public abstract class AbstractAuthorizationProviderTest extends BaseAuthorisatio
     Grantee adminsGrantee = createGranteeForGroup(groupAdmins);
 
     addIdentityToGroup(identityBob, groupAdmins);
-
-    assertFalse(
-        authorizationProvider.canAccess(identityBob, readPermission, protectedResource),
-        "Identity Bob should not have access before group grant"
-    );
+    assertFalse(authorizationProvider.canAccess(identityBob, readPermission, protectedResource), "Identity Bob should not have access before group grant");
 
     authorizationProvider.grantAccess(adminsGrantee, readPermission, protectedResource);
-
-    assertTrue(
-        authorizationProvider.canAccess(identityBob, readPermission, protectedResource),
-        "Identity Bob should have access via admins group"
-    );
-
-    assertFalse(
-        authorizationProvider.canAccess(identityCharlie, readPermission, protectedResource),
-        "Identity Charlie should not have access as non-member of admins"
-    );
+    assertTrue(authorizationProvider.canAccess(identityBob, readPermission, protectedResource), "Identity Bob should have access via admins group");
+    assertFalse(authorizationProvider.canAccess(identityCharlie, readPermission, protectedResource), "Identity Charlie should not have access as non-member of admins");
 
     removeIdentityFromGroup(identityBob, groupAdmins);
 
-    assertFalse(
-        authorizationProvider.canAccess(identityBob, readPermission, protectedResource),
-        "Identity Bob should not have access after being removed from admins group"
-    );
+    assertFalse(authorizationProvider.canAccess(identityBob, readPermission, protectedResource), "Identity Bob should not have access after being removed from admins group");
 
     authorizationProvider.revokeAccess(adminsGrantee, readPermission, protectedResource);
 
     addIdentityToGroup(identityCharlie, groupAdmins);
-
-    assertFalse(
-        authorizationProvider.canAccess(identityCharlie, readPermission, protectedResource),
-        "Identity Charlie should not have access after group grant revoke"
-    );
+    assertFalse(authorizationProvider.canAccess(identityCharlie, readPermission, protectedResource), "Identity Charlie should not have access after group grant revoke");
   }
 
   @Test
@@ -340,7 +321,7 @@ public abstract class AbstractAuthorizationProviderTest extends BaseAuthorisatio
 
   @Test
   void testGrantWithoutRegistrationStillProvidesAccess() {
-    Identity ghost = createIdentity("ghost");
+    Identity ghost = AuthTestHelper.createIdentity("ghost");
     Grantee ghostGrantee = createGranteeForIdentity(ghost);
 
     // No registerIdentity(ghost) call here

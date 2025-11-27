@@ -53,6 +53,13 @@ public class AuthorizationProviderFactory {
   }
 
   public AuthorizationProvider get(String name, Map<String, Object> config, Permission[]  permissions) throws IOException {
+    return get(name, config, permissions, null);
+  }
+
+  public AuthorizationProvider get(String name, Map<String, Object> config, Permission[]  permissions, ResourceTraversalFactory factory) throws IOException {
+    if(factory == null) {
+      factory = new DefaultFactory();
+    }
     ConfigurationProperties props = new ConfigurationProperties(config);
     ConfigurationProperties authorisationConfig = (ConfigurationProperties) props.get("authorisation");
 
@@ -61,7 +68,7 @@ public class AuthorizationProviderFactory {
     }
     for (AuthorizationProvider authorizationProvider : authorizationProviders) {
       if (authorizationProvider.getName().equalsIgnoreCase(name)) {
-        AuthorizationProvider provider = authorizationProvider.create(props, permissions);
+        AuthorizationProvider provider = authorizationProvider.create(props, permissions, factory);
         if(authorisationConfig != null &&  authorisationConfig.getBooleanProperty("enableCaching", true)){
           long cacheTime = authorisationConfig.getLongProperty("cachingTime", 10);
           return new CachingAuthorizationProvider(provider, Duration.ofSeconds(cacheTime));
@@ -71,4 +78,12 @@ public class AuthorizationProviderFactory {
     }
     return null;
   }
+
+  private static final class DefaultFactory implements ResourceTraversalFactory {
+    @Override
+    public ResourceTraversal create(ProtectedResource resource) {
+      return ResourceTraversalFactory.super.create(resource);
+    }
+  }
+
 }

@@ -26,6 +26,6 @@ import java.io.IOException;
 public class AclAuthorizationProviderGrantTest extends AbstractAuthorizationProviderGrantTest {
   @Override
   protected AuthorizationProvider createAuthorizationProvider() throws IOException {
-    return createAclAuthorizationProvider();
+    return AuthTestHelper.createAclAuthorizationProvider(null);
   }
 }

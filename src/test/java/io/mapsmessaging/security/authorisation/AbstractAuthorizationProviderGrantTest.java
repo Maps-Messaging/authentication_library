@@ -49,12 +49,12 @@ public abstract class AbstractAuthorizationProviderGrantTest extends BaseAuthori
   void setUp() throws Exception {
     authorizationProvider = createAuthorizationProvider();
 
-    identityAlice = createIdentity("alice");
-    identityBob = createIdentity("bob");
-    identityCharlie = createIdentity("charlie");
+    identityAlice = AuthTestHelper.createIdentity("alice");
+    identityBob = AuthTestHelper.createIdentity("bob");
+    identityCharlie = AuthTestHelper.createIdentity("charlie");
 
-    groupAdmins = createGroup("admins");
-    groupGuests = createGroup("guests");
+    groupAdmins = AuthTestHelper.createGroup("admins");
+    groupGuests = AuthTestHelper.createGroup("guests");
 
     protectedResource = createProtectedResource("resource-1");
     readPermission = TestPermissions.READ;
@@ -102,7 +102,7 @@ public abstract class AbstractAuthorizationProviderGrantTest extends BaseAuthori
 
   @Test
   void testGetGrantsForGroupReturnsGroupGrants() {
-    Group group = createGroup("introspection-admins");
+    Group group = AuthTestHelper.createGroup("introspection-admins");
     authorizationProvider.registerGroup(group.getId());
 
     Grantee groupGrantee = createGranteeForGroup(group);
@@ -138,7 +138,7 @@ public abstract class AbstractAuthorizationProviderGrantTest extends BaseAuthori
   @Test
   void testGetGrantsForResourceReturnsAllGrantsOnResource() {
     Identity identity = identityAlice;
-    Group group = createGroup("introspection-resource-group");
+    Group group = AuthTestHelper.createGroup("introspection-resource-group");
     authorizationProvider.registerGroup(group.getId());
 
     Grantee userGrantee = createGranteeForIdentity(identity);
@@ -174,7 +174,7 @@ public abstract class AbstractAuthorizationProviderGrantTest extends BaseAuthori
 
   @Test
   void testGetGrantsForIdentityEmptyWhenNoGrants() {
-    Identity identity = createIdentity("introspection-no-grants-user");
+    Identity identity = AuthTestHelper.createIdentity("introspection-no-grants-user");
 
     Collection<Grant> grants = authorizationProvider.getGrantsForIdentity(identity);
 
@@ -184,7 +184,7 @@ public abstract class AbstractAuthorizationProviderGrantTest extends BaseAuthori
 
   @Test
   void testGetGrantsForGroupEmptyWhenNoGrants() {
-    Group group = createGroup("introspection-no-grants-group");
+    Group group = AuthTestHelper.createGroup("introspection-no-grants-group");
     authorizationProvider.registerGroup(group.getId());
 
     Collection<Grant> grants = authorizationProvider.getGrantsForGroup(group);

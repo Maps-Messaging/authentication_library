@@ -20,82 +20,11 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import dev.openfga.sdk.api.client.OpenFgaClient;
-import dev.openfga.sdk.api.client.model.*;
-import dev.openfga.sdk.api.configuration.ClientReadOptions;
-import dev.openfga.sdk.api.configuration.ClientWriteOptions;
-import dev.openfga.sdk.api.model.Tuple;
-import dev.openfga.sdk.api.model.TupleKey;
-import dev.openfga.sdk.errors.FgaInvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 public class OpenFgaAuthorizationProviderTest extends AbstractAuthorizationProviderTest{
-
 
   @Override
   protected AuthorizationProvider createAuthorizationProvider()throws Exception{
-    return createOpenFgaAuthorizationProvider();
-  }
-
-  public static List<TupleKey> getAllTuples(OpenFgaClient openFgaClient) throws FgaInvalidParameterException {
-    List<TupleKey> result = new ArrayList<>();
-    String continuationToken = null;
-
-    do {
-      ClientReadRequest request = new ClientReadRequest();
-
-      ClientReadOptions options = new ClientReadOptions()
-          .pageSize(100)                 // or whatever page size you like
-          .continuationToken(continuationToken);
-
-      ClientReadResponse response;
-      try {
-        response = openFgaClient.read(request, options).get();
-      } catch (InterruptedException interruptedException) {
-        Thread.currentThread().interrupt();
-        throw new RuntimeException("Interrupted while reading tuples from OpenFGA", interruptedException);
-      } catch (ExecutionException executionException) {
-        throw new RuntimeException("Failed to read tuples from OpenFGA", executionException);
-      }
-
-      if (response.getTuples() != null) {
-        for (Tuple tuple : response.getTuples()) {
-          result.add(tuple.getKey());
-        }
-      }
-
-      continuationToken = response.getContinuationToken();
-    } while (continuationToken != null && !continuationToken.isEmpty());
-
-    return result;
-  }
-
-  public static void deleteAllTuples(OpenFgaClient openFgaClient, List<TupleKey> allTuples, String defaultId) throws FgaInvalidParameterException {
-    if (allTuples.isEmpty()) {
-      return;
-    }
-    List<ClientTupleKeyWithoutCondition> clientList = allTuples.stream()
-        .map(t -> new ClientTupleKeyWithoutCondition()
-            .user(t.getUser())
-            .relation(t.getRelation())
-            ._object(t.getObject()))
-        .toList();
-    ClientWriteRequest request = new ClientWriteRequest()
-        .deletes(clientList);
-
-    ClientWriteOptions options = new ClientWriteOptions()
-        .authorizationModelId(defaultId);
-
-    try {
-      openFgaClient.write(request, options).get();
-    } catch (InterruptedException interruptedException) {
-      Thread.currentThread().interrupt();
-      throw new RuntimeException("Interrupted while deleting tuples from OpenFGA", interruptedException);
-    } catch (ExecutionException executionException) {
-      throw new RuntimeException("Failed to delete tuples from OpenFGA", executionException);
-    }
+    return AuthTestHelper.createOpenFgaAuthorizationProvider(null);
   }
 
 }

@@ -22,6 +22,7 @@ package io.mapsmessaging.security.authorisation.impl.acl;
 
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
+import io.mapsmessaging.security.authorisation.Access;
 import java.util.*;
 
 public class AccessControlList {
@@ -38,89 +39,101 @@ public class AccessControlList {
   }
 
   public AccessControlList create(List<String> config) {
-    return new AccessControlList( config);
+    return new AccessControlList(config);
   }
 
   public long getSubjectAccess(Identity identity) {
     long mask = 0;
     if (identity != null) {
-      long time = System.currentTimeMillis();
-      mask = processAclEntriesForSubject(identity.getId(), time);
-      mask |= processGroups(identity.getGroupList(), time);
+      mask = processAclEntriesForSubject(identity.getId());
+      mask |= processGroups(identity.getGroupList());
     }
     return mask;
   }
 
-  public long getGroupAccess(Group group){
-    long time = System.currentTimeMillis();
-    return processGroups(List.of(group), time);
+  public long getGroupAccess(Group group) {
+    return processGroups(List.of(group));
   }
 
-  public long getRawAccess(UUID uuid){
-    return processAclEntriesForSubject(uuid, System.currentTimeMillis());
+  public long getRawAccess(UUID uuid) {
+    return processAclEntriesForSubject(uuid);
   }
 
-  private long processAclEntriesForSubject(UUID authId, long time) {
+  private long processAclEntriesForSubject(UUID authId) {
     return aclEntries.stream()
-        .filter(aclEntry -> isValidAclEntry(aclEntry, time, authId))
-        .mapToLong(AclEntry::getPermissions)
+        .filter(aclEntry -> isValidAclEntry(aclEntry, authId))
+        .mapToLong(AclEntry::getAllow)
         .reduce(0, (a, b) -> a | b);
   }
 
-  private long processGroups(List<Group> groups, long time) {
+  private long processGroups(List<Group> groups) {
     return groups.stream()
-        .mapToLong(groupIdMap -> processAclEntriesForGroupId(groupIdMap, time))
+        .mapToLong(groupIdMap -> processAclEntriesForGroupId(groupIdMap))
         .reduce(0, (a, b) -> a | b);
   }
 
-  private long processAclEntriesForGroupId(Group group, long time) {
+  private long processAclEntriesForGroupId(Group group) {
     return aclEntries.stream()
-        .filter(aclEntry -> isValidAclEntry(aclEntry, time, group.getId()))
-        .mapToLong(AclEntry::getPermissions)
+        .filter(aclEntry -> isValidAclEntry(aclEntry, group.getId()))
+        .mapToLong(AclEntry::getAllow)
         .reduce(0, (a, b) -> a | b);
   }
 
-  private boolean isValidAclEntry(AclEntry aclEntry, long time, UUID authId) {
+  private boolean isValidAclEntry(AclEntry aclEntry, UUID authId) {
     return aclEntry.matches(authId);
   }
 
   // We are exiting early here because we want to fast exit once we found access is allowed
   @SuppressWarnings("java:S3516")
-  public boolean canAccess(Identity identity, long requestedAccess) {
-    if (identity == null || requestedAccess == 0) {
-      return false;
-    }
-
+  public Access canAccess(Identity identity, long requestedAccess) {
     UUID authId = identity.getId();
-    if (checkAccessForId(authId, requestedAccess)) {
-      return true;
+    Access access = checkAccessForId(authId, requestedAccess);
+    if (access != Access.UNKNOWN) {
+      return access;
     }
 
     if (!identity.getGroupList().isEmpty()) {
       for (Group group : identity.getGroupList()) {
-        if (checkAccessForId(group.getId(), requestedAccess)) {
-          return true;
+        Access groupAccess = checkAccessForId(group.getId(), requestedAccess);
+        if(groupAccess != Access.UNKNOWN) {
+          return groupAccess;
         }
       }
     }
-    return false;
+    return access;
   }
 
   public boolean addUser(UUID uuid, long requestedAccess) {
-    AclEntry entry = new AclEntry(uuid, false, requestedAccess);
-    aclEntries.add(entry);
+    AclEntry entry = findOrCreate(uuid, false);
+    entry.setAllow(entry.getAllow() | requestedAccess);
+    entry.setDeny(entry.getDeny() | 0L);
     return true;
   }
 
   public boolean addGroup(UUID uuid, long requestedAccess) {
-    AclEntry entry = new AclEntry(uuid, true, requestedAccess);
-    aclEntries.add(entry);
+    AclEntry entry = findOrCreate(uuid, true);
+    entry.setAllow(entry.getAllow() | requestedAccess);
+    entry.setDeny(entry.getDeny() | 0L);
     return true;
   }
 
   public boolean remove(UUID uuid, long requestedAccess) {
-    aclEntries.removeIf(entry -> entry.matches(uuid) && entry.getPermissions() == requestedAccess);
-    return true;
+    AclEntry entry = null;
+    for (AclEntry aclEntry : aclEntries) {
+      if (aclEntry.matches(uuid)) {
+        entry = aclEntry;
+        break;
+      }
+    }
+    if (entry != null) {
+      entry.setAllow(entry.getAllow() & ~requestedAccess);
+      entry.setDeny(entry.getDeny() & ~requestedAccess);
+      if (entry.getAllow() == 0 && entry.getDeny() == 0) {
+        aclEntries.remove(entry);
+        return true;
+      }
+    }
+    return false;
   }
 
   public List<AclEntry> getAclEntries() {
@@ -129,17 +142,40 @@ public class AccessControlList {
 
   // We are exiting early here because we want to fast exit once we found access is allowed
   @SuppressWarnings("java:S3516")
-  private boolean checkAccessForId(UUID id, long requestedAccess) {
-    for (AclEntry aclEntry : aclEntries) {
-      if(isAccessGranted(aclEntry, requestedAccess, id)){
-        return true;
+  private Access checkAccessForId(UUID id, long requestedAccess) {
+    AclEntry aclEntry = find(id);
+    if (aclEntry != null) {
+      return isAccessGranted(aclEntry, requestedAccess, id);
+    }
+    return Access.UNKNOWN;
+  }
+
+  private Access isAccessGranted(AclEntry aclEntry, long requestedAccess, UUID authId) {
+    if (aclEntry.matches(authId)) {
+      if ((aclEntry.getAllow() & requestedAccess) != 0) {
+        return Access.ALLOW;
+      } else if ((aclEntry.getDeny() & requestedAccess) != 0) {
+        return Access.DENY;
       }
     }
-    return false;
+    return Access.UNKNOWN;
   }
 
-  private boolean isAccessGranted(AclEntry aclEntry, long requestedAccess, UUID authId) {
-    return (aclEntry.getPermissions() & requestedAccess) == requestedAccess && aclEntry.matches(authId);
+  private AclEntry find(UUID uuid) {
+    return aclEntries.stream()
+        .filter(e -> e.matches(uuid))
+        .findFirst()
+        .orElse(null);
   }
 
+
+  private AclEntry findOrCreate(UUID authId, boolean isGroup) {
+    AclEntry newEntry = find(authId);
+    if(newEntry != null) {
+      return newEntry;
+    }
+    newEntry = new AclEntry(authId, isGroup, 0L, 0L);
+    aclEntries.add(newEntry);
+    return newEntry;
+  }
 }

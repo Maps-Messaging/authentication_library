@@ -28,6 +28,6 @@ public class AclAuthorizationProviderTest extends AbstractAuthorizationProviderT
 
   @Override
   protected AuthorizationProvider createAuthorizationProvider() throws IOException {
-    return createAclAuthorizationProvider();
+    return AuthTestHelper.createAclAuthorizationProvider(null);
   }
 }

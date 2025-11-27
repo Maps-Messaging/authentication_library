@@ -64,14 +64,14 @@ public class AccessControlJHMTest {
     // Create the subjects for testing
     identities = new Identity[numIterations];
     for (int i = 0; i < numIterations; i++) {
-      identities[i] = BaseSecurityTest.createRandomIdenties(null);
+      identities[i] = AuthTestHelper.createRandomIdenties(null);
     }
   }
 
   @Benchmark
   public void testAccessControlListPerformance() {
     for (int i = 0; i < numIterations; i++) {
-      boolean hasAccess = acl.canAccess(identities[i], TestPermissions.READ.getMask());
+      boolean hasAccess = acl.canAccess(identities[i], TestPermissions.READ.getMask()) == Access.ALLOW;
       // Optionally, perform assertions or logging based on the hasAccess result
     }
   }

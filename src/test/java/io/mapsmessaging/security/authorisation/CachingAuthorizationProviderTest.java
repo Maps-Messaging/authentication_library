@@ -29,7 +29,7 @@ class CachingAuthorizationProviderTest extends OpenFgaAuthorizationProviderTest 
 
   @Override
   protected AuthorizationProvider createAuthorizationProvider() throws Exception {
-    return createCachingAuthorizationProvider();
+    return AuthTestHelper.createCachingAuthorizationProvider(null);
   }
 
   @Test

@@ -20,57 +20,13 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import com.github.javafaker.Faker;
-import io.mapsmessaging.security.access.Group;
-import io.mapsmessaging.security.access.Identity;
-import io.mapsmessaging.security.access.mapping.GroupIdMap;
-import io.mapsmessaging.security.access.mapping.GroupMapManagement;
-import io.mapsmessaging.security.identity.GroupEntry;
-import io.mapsmessaging.security.identity.IdentityEntry;
-import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
-import java.util.*;
+
 import org.junit.jupiter.api.BeforeAll;
 
 public class BaseSecurityTest {
-  private static final Faker faker = new Faker();
-
   @BeforeAll
-  static void setUp() {
+  static void setUp() throws Exception {
     PermissionRegistry.registerAll(TestPermissions.values());
-  }
-
-  protected List<String> generateGroupEntries(int numEntries, GroupMapManagement groupMapManagement) {
-    List<String> aclEntries = new ArrayList<>();
-    for (int i = 0; i < numEntries; i++) {
-      String groupName = faker.space().nebula() + "-" + faker.space().galaxy();
-      GroupIdMap groupIdMap = new GroupIdMap(UUID.randomUUID(), groupName, "test");
-      groupMapManagement.add(groupIdMap);
-      String entry = groupIdMap.getAuthId() + " = Read|Write";
-      aclEntries.add(entry);
-    }
-    return aclEntries;
-  }
-
-  public static Identity createRandomIdenties(GroupMapManagement groupMapManagement) {
-    Random random = new Random();
-    String username = faker.name().firstName();
-    String groupName = "group" + random.nextInt(100);
-    return createIdentity(groupMapManagement,username,  groupName);
-  }
-
-  public static Identity createIdentity(GroupMapManagement groupMapManagement, String username, String groupName) {
-    List<Group> groups = new ArrayList<>();
-    if (groupMapManagement != null) {
-      GroupIdMap groupIdMap = groupMapManagement.get("test:" + groupName);
-      if (groupIdMap != null) {
-        GroupEntry entry = new GroupEntry(groupIdMap.getGroupName(), new HashSet<>());
-
-        Group group = new Group(groupIdMap.getAuthId(), entry);
-        groups.add(group);
-      }
-    }
-    IdentityEntry identityEntry = new HtPasswdEntry(username, new char[0]);
-    return new Identity(UUID.randomUUID(), identityEntry, groups);
   }
 
 }

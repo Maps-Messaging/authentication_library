@@ -37,7 +37,7 @@ public class PerformanceTest extends BaseSecurityTest {
     int iterations = 1000000;
     MapStore<GroupIdMap> groupStore = new MapFileStore<>("./src/test/resources/groups.txt");
     GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
-    List<String> aclEntries = generateGroupEntries(1000, groupMapManagement);
+    List<String> aclEntries = AuthTestHelper.generateGroupEntries(1000, groupMapManagement);
 
     // Create an instance of AccessControlListManager
     AccessControlList acl = new AccessControlList(aclEntries);
@@ -45,8 +45,8 @@ public class PerformanceTest extends BaseSecurityTest {
     // Perform the performance test
     long startTime = System.currentTimeMillis();
     for (int i = 0; i < iterations; i++) {
-      Identity identity = createRandomIdenties(groupMapManagement);
-      boolean hasAccess = acl.canAccess(identity, TestPermissions.READ.getMask());
+      Identity identity = AuthTestHelper.createRandomIdenties(groupMapManagement);
+      boolean hasAccess = acl.canAccess(identity, TestPermissions.READ.getMask()) == Access.ALLOW;
       // Optionally, perform assertions or logging based on the hasAccess result
     }
     long endTime = System.currentTimeMillis();
