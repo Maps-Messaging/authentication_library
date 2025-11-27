@@ -54,6 +54,16 @@ public interface AuthorizationProvider {
   }
 
   /**
+   * Deny access to a user or group (grantee) for a given permission on a resource.
+   * Implementations decide how to persist/propagate this (ACL, OpenFGA, etc.).
+   */
+  default void denyAccess(Grantee grantee,
+                           Permission permission,
+                           ProtectedResource protectedResource) {
+    throw new UnsupportedOperationException("Deny not supported by this provider");
+  }
+
+  /**
    * Revoke access from a user or group (grantee).
    */
   default void revokeAccess(Grantee grantee,

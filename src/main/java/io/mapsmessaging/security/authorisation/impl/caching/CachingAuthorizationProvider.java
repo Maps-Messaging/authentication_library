@@ -117,6 +117,13 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
+  public void denyAccess(
+      Grantee grantee, Permission permission, ProtectedResource protectedResource) {
+    delegate.denyAccess(grantee, permission, protectedResource);
+    cache.clear();
+  }
+
+  @Override
   public void revokeAccess(Grantee grantee,
                            Permission permission,
                            ProtectedResource protectedResource) {
@@ -160,10 +167,12 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
     cache.clear();
   }
 
+  @Override
   public void registerResource(ProtectedResource protectedResource, ResourceCreationContext resourceCreationContext) {
     delegate.registerResource(protectedResource, resourceCreationContext);
   }
 
+  @Override
   public void deleteResource(ProtectedResource protectedResource) {
     delegate.deleteResource(protectedResource);
   }

@@ -20,29 +20,23 @@
 
 package io.mapsmessaging.security.authorisation;
 
+import lombok.Value;
+
+@Value
 public final class Grant {
 
-  private final Grantee grantee;
-  private final Permission permission;
-  private final ProtectedResource protectedResource;
+  Grantee grantee;
+  Permission permission;
+  ProtectedResource protectedResource;
+  boolean allow;
 
   public Grant(Grantee grantee,
                Permission permission,
-               ProtectedResource protectedResource) {
+               ProtectedResource protectedResource,
+               boolean allow) {
     this.grantee = grantee;
     this.permission = permission;
     this.protectedResource = protectedResource;
-  }
-
-  public Grantee getGrantee() {
-    return grantee;
-  }
-
-  public Permission getPermission() {
-    return permission;
-  }
-
-  public ProtectedResource getProtectedResource() {
-    return protectedResource;
+    this.allow = allow;
   }
 }

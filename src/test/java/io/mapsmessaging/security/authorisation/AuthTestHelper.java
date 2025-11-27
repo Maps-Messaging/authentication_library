@@ -91,7 +91,7 @@ public class AuthTestHelper {
     Map<String, Object> openFgaMap = new HashMap<>();
     openFgaMap.put("uris", "http://10.140.62.152:8080");
     openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
-    openFgaMap.put("modelId", "01KAF6SSMG4T5WZY47FS12QZ0C");
+    openFgaMap.put("modelId", "01KB1X6KRRB2KRV1HK5K0WADTR");
     openFgaMap.put("connectionTimeout", 10);
     authorisation.put("openfga", openFgaMap);
     AuthorizationProvider provider = AuthorizationProviderFactory.getInstance().get("openFGA", config, TestPermissions.values(), factory);
@@ -127,7 +127,7 @@ public class AuthTestHelper {
     Map<String, Object> openFgaMap = new HashMap<>();
     openFgaMap.put("uris", "http://10.140.62.152:8080");
     openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
-    openFgaMap.put("modelId", "01KAF6SSMG4T5WZY47FS12QZ0C");
+    openFgaMap.put("modelId", "01KB1X6KRRB2KRV1HK5K0WADTR");
     openFgaMap.put("connectionTimeout", 10);
     authorisation.put("openfga", openFgaMap);
 

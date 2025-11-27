@@ -103,18 +103,27 @@ public class AccessControlList {
     return access;
   }
 
-  public boolean addUser(UUID uuid, long requestedAccess) {
+  public boolean addUser(UUID uuid, long requestedAccess, boolean grant) {
     AclEntry entry = findOrCreate(uuid, false);
-    entry.setAllow(entry.getAllow() | requestedAccess);
-    entry.setDeny(entry.getDeny() | 0L);
+    applyToAcl(entry, requestedAccess, grant);
     return true;
   }
 
-  public boolean addGroup(UUID uuid, long requestedAccess) {
+  public boolean addGroup(UUID uuid, long requestedAccess, boolean grant) {
     AclEntry entry = findOrCreate(uuid, true);
-    entry.setAllow(entry.getAllow() | requestedAccess);
-    entry.setDeny(entry.getDeny() | 0L);
+    applyToAcl(entry, requestedAccess, grant);
     return true;
+  }
+
+  private void applyToAcl(AclEntry entry, long requestedAccess, boolean grant) {
+    if(grant) {
+      entry.setAllow(entry.getAllow() | requestedAccess);
+      entry.setDeny(entry.getDeny() & ~requestedAccess);
+    }
+    else {
+      entry.setAllow(entry.getAllow() & ~requestedAccess);
+      entry.setDeny(entry.getDeny() | requestedAccess);
+    }
   }
 
   public boolean remove(UUID uuid, long requestedAccess) {

@@ -22,12 +22,10 @@ package io.mapsmessaging.security.authorisation.impl.openfga;
 
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.*;
-import dev.openfga.sdk.api.configuration.ClientCheckOptions;
-import dev.openfga.sdk.api.configuration.ClientConfiguration;
-import dev.openfga.sdk.api.configuration.ClientReadOptions;
-import dev.openfga.sdk.api.configuration.ClientWriteOptions;
+import dev.openfga.sdk.api.configuration.*;
 import dev.openfga.sdk.api.model.TupleKey;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
+import dev.openfga.sdk.errors.FgaValidationError;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
@@ -55,7 +53,6 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   private final String defaultAuthorizationModelId;
   private final ReadHelper readHelper;
   private final ResourceTraversalFactory factory;
-  private final TuplePresenceCache tuplePresenceCache;
   @Getter
   private final Map<String, Permission> permissions;
   private final AtomicLong requestCount;
@@ -78,7 +75,6 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     this.tenantSeparator = tenantSeparator != null ? tenantSeparator : "/";
     this.groupMemberRelation = groupMemberRelation != null ? groupMemberRelation : "member";
     this.permissions = new ConcurrentHashMap<>();
-    this.tuplePresenceCache = new TuplePresenceCache(openFgaClient, userType, groupType,groupMemberRelation, 10_000);
     for (Permission permissionPrototype : permission) {
       permissions.put(permissionPrototype.getName().toLowerCase(),  permissionPrototype);
     }
@@ -93,7 +89,6 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     this.groupType = null;
     this.tenantSeparator = null;
     this.groupMemberRelation = null;
-    this.tuplePresenceCache = null;
     this.permissions = new ConcurrentHashMap<>();
     this.readHelper = new ReadHelper(this);
     this.requestCount = new AtomicLong(0);
@@ -209,44 +204,63 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
                                  Permission permission,
                                  ProtectedResource protectedResource) {
 
-    String user = identity.getId().toString();
-    String relation = permission.getName();
-    String object = toObject(protectedResource);
+    String base = permission.getName().toLowerCase();      // e.g. "publish_server"
+    String user = userType + ":" + identity.getId();       // e.g. "user:<uuid>"
+    String object = toObject(protectedResource);           // "resource:tenant/ns/path"
 
-    ClientCheckRequest clientCheckRequest = new ClientCheckRequest()
-        .user(userType + ":" + user)
-        .relation(relation)
-        ._object(object);
+    String denyRelation = "deny_" + base;
+    String allowRelation = "allow_" + base;
 
-    ClientCheckOptions clientCheckOptions = new ClientCheckOptions();
+    ClientBatchCheckItem denyRequest = new ClientBatchCheckItem()
+        .user(user)
+        .relation(denyRelation)
+        ._object(object)
+        .correlationId("deny");
+
+    ClientBatchCheckItem allowRequest = new ClientBatchCheckItem()
+        .user(user)
+        .relation(allowRelation)
+        ._object(object)
+        .correlationId("allow");
+
+    ClientBatchCheckRequest batchRequest = new ClientBatchCheckRequest()
+        .checks(Arrays.asList(denyRequest, allowRequest));
+
+    ClientBatchCheckOptions options = new ClientBatchCheckOptions();
     if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
-      clientCheckOptions.authorizationModelId(defaultAuthorizationModelId);
+      options.authorizationModelId(defaultAuthorizationModelId);
     }
 
-    boolean allowed;
+    boolean deny = false;
+    boolean allow = false;
+
     try {
       requestCount.incrementAndGet();
-      ClientCheckResponse response = openFgaClient.check(clientCheckRequest, clientCheckOptions).get();
-      allowed = Boolean.TRUE.equals(response.getAllowed());
-    } catch (InterruptedException interruptedException) {
+      ClientBatchCheckResponse response = openFgaClient.batchCheck(batchRequest, options).get();
+      for (ClientBatchCheckSingleResponse item : response.getResult()) {
+        if ("deny".equals(item.getCorrelationId())) {
+          deny = item.isAllowed();
+        } else if ("allow".equals(item.getCorrelationId())) {
+          allow =item.isAllowed();
+        }
+      }
+    } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return Access.DENY;
-    } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      executionException.printStackTrace();
+    } catch (ExecutionException | FgaInvalidParameterException e) {
+      e.printStackTrace();
+      return Access.DENY;
+    } catch (FgaValidationError e) {
+      e.printStackTrace();
       return Access.DENY;
     }
 
-    if (allowed) {
+    if (deny) {
+      return Access.DENY;
+    }
+    if (allow) {
       return Access.ALLOW;
     }
-
-    // not allowed: check if this node is authoritative for this identity
-    boolean hasLocalAcl = tuplePresenceCache.hasAnyTuplesForIdentityOnObject(identity, object);
-
-    if (hasLocalAcl) {
-      return Access.DENY;
-    }
-
     return Access.UNKNOWN;
   }
 
@@ -262,6 +276,29 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
+    String perm = "allow_"+permission.getName().toLowerCase();
+    applyAccess(grantee, perm, protectedResource);
+  }
+
+  @Override
+  public void denyAccess(Grantee grantee,
+                          Permission permission,
+                          ProtectedResource protectedResource) {
+
+    if (grantee == null || permission == null || protectedResource == null) {
+      return;
+    }
+    String perm = "deny_"+permission.getName().toLowerCase();
+    applyAccess(grantee, perm, protectedResource);
+  }
+
+  private void applyAccess(Grantee grantee,
+                         String permission,
+                         ProtectedResource protectedResource) {
+
+    if (grantee == null || protectedResource == null) {
+      return;
+    }
     ClientTupleKey tupleKey = new ClientTupleKey();
 
     if (grantee.type() == GranteeType.GROUP) {
@@ -269,7 +306,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } else {
       tupleKey.user(toGranteeUser(grantee));
     }
-    tupleKey.relation(permission.getName().toLowerCase());
+    tupleKey.relation(permission);
     tupleKey._object(toObject(protectedResource));
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest().writes(Collections.singletonList(tupleKey));
@@ -284,14 +321,18 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
+    revoke(grantee, "allow_"+permission.getName().toLowerCase(), protectedResource);
+    revoke(grantee, "deny"+permission.getName().toLowerCase(), protectedResource);
+  }
 
+  private void revoke(Grantee grantee, String perm,  ProtectedResource protectedResource) {
     ClientTupleKey tupleKey = new ClientTupleKey();
     if (grantee.type() == GranteeType.GROUP) {
       tupleKey.user(toGranteeUser(grantee) + "#member");
     } else {
       tupleKey.user(toGranteeUser(grantee));
     }
-    tupleKey.relation(permission.getName().toLowerCase());
+    tupleKey.relation(perm);
     tupleKey._object(toObject(protectedResource));
 
     ClientWriteRequest clientWriteRequest = new ClientWriteRequest().deletes(Collections.singletonList(tupleKey));
@@ -410,7 +451,6 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
         options.continuationToken(continuationToken);
       }
 
-      requestCount.incrementAndGet();
       ClientReadResponse response = handleReadRequest(request, options);
       if(response == null) {
         break;
@@ -421,8 +461,11 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
         if (grantee == null) {
           continue;
         }
+        String perm = key.getRelation();
+        boolean allow = perm.startsWith("allow_");
+        perm = perm.substring(perm.indexOf("_")+1);
 
-        Permission permission = readHelper.toPermission(key.getRelation());
+        Permission permission = readHelper.toPermission(perm);
         if (permission == null) {
           continue;
         }
@@ -432,7 +475,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
           continue;
         }
 
-        result.add(new Grant(grantee, permission, resource));
+        result.add(new Grant(grantee, permission, resource, allow));
       }
 
       continuationToken = response.getContinuationToken();
@@ -452,7 +495,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      // ToDo: log this or surface upstream when you care
+      executionException.printStackTrace();
     }
     return null;
   }

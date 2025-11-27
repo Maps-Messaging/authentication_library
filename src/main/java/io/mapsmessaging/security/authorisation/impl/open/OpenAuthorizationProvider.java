@@ -56,6 +56,11 @@ public class OpenAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
+  public void denyAccess(Grantee grantee, Permission permission, ProtectedResource protectedResource) {
+    // nothing to do, since we are in fact open
+  }
+
+  @Override
   public void revokeAccess(Grantee grantee, Permission permission, ProtectedResource protectedResource) {
     //Nothing to do, this is open
   }

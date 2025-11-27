@@ -147,12 +147,28 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     AccessControlList accessControlList = getOrCreateAccessControlList(protectedResource);
     long requestedAccess = permission.getMask();
     if (grantee.type() == GranteeType.USER) {
-      accessControlList.addUser(grantee.id(), requestedAccess);
+      accessControlList.addUser(grantee.id(), requestedAccess, true);
     }
     else{
-      accessControlList.addGroup(grantee.id(), requestedAccess);
+      accessControlList.addGroup(grantee.id(), requestedAccess, true);
     }
     writeState();
+  }
+
+
+  public void denyAccess(Grantee grantee,
+                          Permission permission,
+                          ProtectedResource protectedResource) {
+    AccessControlList accessControlList = getOrCreateAccessControlList(protectedResource);
+    long requestedAccess = permission.getMask();
+    if (grantee.type() == GranteeType.USER) {
+      accessControlList.addUser(grantee.id(), requestedAccess, false);
+    }
+    else{
+      accessControlList.addGroup(grantee.id(), requestedAccess, false);
+    }
+    writeState();
+
   }
 
 
@@ -244,7 +260,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     Grantee grantee = Grantee.forIdentity(identity);
     for(Map.Entry<ResourceKey, AccessControlList> entry : accessControlListMap.entrySet()) {
       long accessMap = entry.getValue().getSubjectAccess(identity);
-      processAccess(accessMap, entry.getKey(), grantee, collections);
+      processAccess(accessMap, entry.getKey(), grantee, collections, true);
     }
     return collections;
   }
@@ -258,7 +274,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     Grantee grantee = Grantee.forGroup(group);
     for(Map.Entry<ResourceKey, AccessControlList> entry : accessControlListMap.entrySet()) {
       long accessMap = entry.getValue().getGroupAccess(group);
-      processAccess(accessMap, entry.getKey(), grantee, collections);
+      processAccess(accessMap, entry.getKey(), grantee, collections, true);
     }
     return collections;
   }
@@ -278,21 +294,21 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
         else{
           grantee = new Grantee(GranteeType.USER, aclEntry.getAuthId());
         }
-        processAccess(accessMap, resourceKey, grantee, collections);
+        processAccess(accessMap, resourceKey, grantee, collections, true);
 
       }
     }
     return collections;
   }
 
-  private void processAccess(long accessMap, ResourceKey key, Grantee grantee, Collection<Grant> collections ){
+  private void processAccess(long accessMap, ResourceKey key, Grantee grantee, Collection<Grant> collections, boolean allow ){
     for(long x=0;x<64;x++){
       long mask = 1L<<x;
       if( (accessMap & mask) != 0){
         Permission p = permissions.get(mask);
         if(p != null){
           ProtectedResource protectedResource = new ProtectedResource(key.getType(), key.getName(), key.getTenant());
-          Grant grant = new Grant(grantee, p, protectedResource);
+          Grant grant = new Grant(grantee, p, protectedResource, allow);
           collections.add(grant);
         }
       }
