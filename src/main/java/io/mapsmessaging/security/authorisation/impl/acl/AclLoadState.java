@@ -21,6 +21,9 @@
 package io.mapsmessaging.security.authorisation.impl.acl;
 
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,9 +34,6 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.zip.GZIPInputStream;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
 
 public class AclLoadState {
 

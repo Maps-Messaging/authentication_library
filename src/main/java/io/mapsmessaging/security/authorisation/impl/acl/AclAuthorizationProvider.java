@@ -20,29 +20,29 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
-import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
-import io.mapsmessaging.security.authorisation.Access;
 import io.mapsmessaging.security.authorisation.Permission;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.CertificateManagerFactory;
 import io.mapsmessaging.security.certificates.CertificateWithPrivateKey;
+import lombok.Data;
+import lombok.Value;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import lombok.Data;
-import lombok.Value;
+
+import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
   private static final String ACL_SECRET_KEY_ALIAS = "acl.state.key";

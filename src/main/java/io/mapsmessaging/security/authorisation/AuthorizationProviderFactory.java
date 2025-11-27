@@ -20,17 +20,18 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_LOADED;
-
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.authorisation.impl.caching.CachingAuthorizationProvider;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.ServiceLoader;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_LOADED;
 
 public class AuthorizationProviderFactory {
 

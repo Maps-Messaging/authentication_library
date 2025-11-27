@@ -20,11 +20,7 @@
 
 package io.mapsmessaging.security.authorisation;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class PermissionRegistry {

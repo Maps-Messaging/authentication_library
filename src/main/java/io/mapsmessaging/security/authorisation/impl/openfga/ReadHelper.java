@@ -20,8 +20,13 @@
 
 package io.mapsmessaging.security.authorisation.impl.openfga;
 
-import io.mapsmessaging.security.authorisation.*;
-import java.util.*;
+import io.mapsmessaging.security.authorisation.Grantee;
+import io.mapsmessaging.security.authorisation.GranteeType;
+import io.mapsmessaging.security.authorisation.Permission;
+import io.mapsmessaging.security.authorisation.ProtectedResource;
+
+import java.util.Locale;
+import java.util.UUID;
 
 public class ReadHelper {
 

@@ -20,18 +20,17 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
-import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
+
+import java.util.UUID;
 
 @Getter
-@Setter
 public class AclEntry {
 
   private final UUID authId;
   private final boolean isGroup;
-  private long allow;
-  private long deny;
+  private final long allow;
+  private final long deny;
 
   public AclEntry(UUID authId, boolean isGroup, long allow, long deny) {
     this.authId = authId;

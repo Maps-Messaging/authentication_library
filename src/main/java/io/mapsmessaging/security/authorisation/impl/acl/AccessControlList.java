@@ -23,19 +23,29 @@ package io.mapsmessaging.security.authorisation.impl.acl;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.Access;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AccessControlList {
 
-  private final List<AclEntry> aclEntries;
+  private final Map<UUID, AclEntry> aclEntries;
 
   public AccessControlList() {
-    aclEntries = new ArrayList<>();
+    aclEntries = new ConcurrentHashMap<>();
   }
 
-  public AccessControlList(List<String> aclEntries) {
+  public AccessControlList(List<String> config) {
+    this.aclEntries = new ConcurrentHashMap<>();
     AccessControlListParser parser = new AccessControlListParser();
-    this.aclEntries = new ArrayList<>(parser.createList(aclEntries));
+    List<AclEntry> parsedAclEntries = parser.createList(config);
+    for(AclEntry aclEntry: parsedAclEntries){
+      aclEntries.put(aclEntry.getAuthId(), aclEntry);
+    }
   }
 
   public AccessControlList create(List<String> config) {
@@ -60,23 +70,23 @@ public class AccessControlList {
   }
 
   private long processAclEntriesForSubject(UUID authId) {
-    return aclEntries.stream()
+    return aclEntries.values().stream()
         .filter(aclEntry -> isValidAclEntry(aclEntry, authId))
         .mapToLong(AclEntry::getAllow)
-        .reduce(0, (a, b) -> a | b);
+        .reduce(0L, (a, b) -> a | b);
   }
 
   private long processGroups(List<Group> groups) {
     return groups.stream()
-        .mapToLong(groupIdMap -> processAclEntriesForGroupId(groupIdMap))
-        .reduce(0, (a, b) -> a | b);
+        .mapToLong(this::processAclEntriesForGroupId)
+        .reduce(0L, (a, b) -> a | b);
   }
 
   private long processAclEntriesForGroupId(Group group) {
-    return aclEntries.stream()
+    return aclEntries.values().stream()
         .filter(aclEntry -> isValidAclEntry(aclEntry, group.getId()))
         .mapToLong(AclEntry::getAllow)
-        .reduce(0, (a, b) -> a | b);
+        .reduce(0L, (a, b) -> a | b);
   }
 
   private boolean isValidAclEntry(AclEntry aclEntry, UUID authId) {
@@ -95,7 +105,7 @@ public class AccessControlList {
     if (!identity.getGroupList().isEmpty()) {
       for (Group group : identity.getGroupList()) {
         Access groupAccess = checkAccessForId(group.getId(), requestedAccess);
-        if(groupAccess != Access.UNKNOWN) {
+        if (groupAccess != Access.UNKNOWN) {
           return groupAccess;
         }
       }
@@ -104,49 +114,77 @@ public class AccessControlList {
   }
 
   public boolean addUser(UUID uuid, long requestedAccess, boolean grant) {
-    AclEntry entry = findOrCreate(uuid, false);
-    applyToAcl(entry, requestedAccess, grant);
-    return true;
+    return addEntry(uuid, requestedAccess, grant, false);
   }
 
   public boolean addGroup(UUID uuid, long requestedAccess, boolean grant) {
-    AclEntry entry = findOrCreate(uuid, true);
-    applyToAcl(entry, requestedAccess, grant);
-    return true;
+    return addEntry(uuid, requestedAccess, grant, true);
   }
 
-  private void applyToAcl(AclEntry entry, long requestedAccess, boolean grant) {
-    if(grant) {
-      entry.setAllow(entry.getAllow() | requestedAccess);
-      entry.setDeny(entry.getDeny() & ~requestedAccess);
-    }
-    else {
-      entry.setAllow(entry.getAllow() & ~requestedAccess);
-      entry.setDeny(entry.getDeny() | requestedAccess);
-    }
+  private boolean addEntry(UUID uuid, long requestedAccess, boolean grant, boolean isGroup) {
+    AtomicBoolean updated = new AtomicBoolean(false);
+
+    aclEntries.compute(
+        uuid,
+        (id, current) -> {
+          long allow = 0L;
+          long deny = 0L;
+          boolean groupFlag = isGroup;
+
+          if (current != null) {
+            allow = current.getAllow();
+            deny = current.getDeny();
+            groupFlag = current.isGroup();
+          }
+
+          if (grant) {
+            allow = allow | requestedAccess;
+            deny = deny & ~requestedAccess;
+          } else {
+            allow = allow & ~requestedAccess;
+            deny = deny | requestedAccess;
+          }
+
+          updated.set(true);
+
+          if (allow == 0L && deny == 0L) {
+            return null; // remove entry if no bits set
+          }
+
+          return new AclEntry(id, groupFlag, allow, deny);
+        });
+
+    return updated.get();
   }
 
   public boolean remove(UUID uuid, long requestedAccess) {
-    AclEntry entry = null;
-    for (AclEntry aclEntry : aclEntries) {
-      if (aclEntry.matches(uuid)) {
-        entry = aclEntry;
-        break;
-      }
+    AtomicBoolean changed = new AtomicBoolean(false);
+
+    if (requestedAccess == -1L) {
+      changed.set(aclEntries.remove(uuid) != null);
+      return changed.get();
     }
-    if (entry != null) {
-      entry.setAllow(entry.getAllow() & ~requestedAccess);
-      entry.setDeny(entry.getDeny() & ~requestedAccess);
-      if (entry.getAllow() == 0 && entry.getDeny() == 0) {
-        aclEntries.remove(entry);
-        return true;
-      }
-    }
-    return false;
+
+    aclEntries.computeIfPresent(
+        uuid,
+        (id, current) -> {
+          long newAllow = current.getAllow() & ~requestedAccess;
+          long newDeny = current.getDeny() & ~requestedAccess;
+
+          changed.set(true);
+
+          if (newAllow == 0L && newDeny == 0L) {
+            return null; // remove entry
+          }
+
+          return new AclEntry(id, current.isGroup(), newAllow, newDeny);
+        });
+
+    return changed.get();
   }
 
   public List<AclEntry> getAclEntries() {
-    return new ArrayList<>(aclEntries);
+    return new ArrayList<>(aclEntries.values());
   }
 
   // We are exiting early here because we want to fast exit once we found access is allowed
@@ -161,9 +199,9 @@ public class AccessControlList {
 
   private Access isAccessGranted(AclEntry aclEntry, long requestedAccess, UUID authId) {
     if (aclEntry.matches(authId)) {
-      if ((aclEntry.getAllow() & requestedAccess) != 0) {
+      if ((aclEntry.getAllow() & requestedAccess) != 0L) {
         return Access.ALLOW;
-      } else if ((aclEntry.getDeny() & requestedAccess) != 0) {
+      } else if ((aclEntry.getDeny() & requestedAccess) != 0L) {
         return Access.DENY;
       }
     }
@@ -171,20 +209,6 @@ public class AccessControlList {
   }
 
   private AclEntry find(UUID uuid) {
-    return aclEntries.stream()
-        .filter(e -> e.matches(uuid))
-        .findFirst()
-        .orElse(null);
-  }
-
-
-  private AclEntry findOrCreate(UUID authId, boolean isGroup) {
-    AclEntry newEntry = find(authId);
-    if(newEntry != null) {
-      return newEntry;
-    }
-    newEntry = new AclEntry(authId, isGroup, 0L, 0L);
-    aclEntries.add(newEntry);
-    return newEntry;
+    return aclEntries.get(uuid);
   }
 }

@@ -20,6 +20,9 @@
 
 package io.mapsmessaging.security.authorisation.impl.acl;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -29,9 +32,6 @@ import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.zip.GZIPOutputStream;
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
 
 public class AclSaveState {
 

@@ -22,7 +22,10 @@ package io.mapsmessaging.security.authorisation.impl.openfga;
 
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.*;
-import dev.openfga.sdk.api.configuration.*;
+import dev.openfga.sdk.api.configuration.ClientBatchCheckOptions;
+import dev.openfga.sdk.api.configuration.ClientConfiguration;
+import dev.openfga.sdk.api.configuration.ClientReadOptions;
+import dev.openfga.sdk.api.configuration.ClientWriteOptions;
 import dev.openfga.sdk.api.model.TupleKey;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.errors.FgaValidationError;
@@ -30,15 +33,16 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
 
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 

@@ -23,6 +23,7 @@ package io.mapsmessaging.security.authorisation;
 
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
+
 import java.util.UUID;
 
 public record Grantee(GranteeType type, UUID id) {
