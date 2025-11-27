@@ -356,6 +356,76 @@ public abstract class AbstractAuthorizationProviderTest extends BaseAuthorisatio
 
   }
 
+  @Test
+  void testDenyOverridesUserGrant() {
+    Grantee aliceGrantee = createGranteeForIdentity(identityAlice);
+
+    // Baseline: no access
+    assertFalse(
+        authorizationProvider.canAccess(identityAlice, readPermission, protectedResource),
+        "Alice should not have access before grant"
+    );
+
+    // Grant then deny
+    authorizationProvider.grantAccess(aliceGrantee, readPermission, protectedResource);
+    assertTrue(
+        authorizationProvider.canAccess(identityAlice, readPermission, protectedResource),
+        "Alice should have access after grant"
+    );
+
+    authorizationProvider.denyAccess(aliceGrantee, readPermission, protectedResource);
+
+    assertFalse(
+        authorizationProvider.canAccess(identityAlice, readPermission, protectedResource),
+        "Alice should be denied after explicit deny, even with existing grant"
+    );
+  }
+
+  @Test
+  void testDenyWithoutGrantStillDenies() {
+    Identity ghost = AuthTestHelper.createIdentity("ghost");
+    Grantee ghostGrantee = createGranteeForIdentity(ghost);
+
+    // No registration, no grant, just deny
+    authorizationProvider.denyAccess(ghostGrantee, readPermission, protectedResource);
+
+    assertFalse(
+        authorizationProvider.canAccess(ghost, readPermission, protectedResource),
+        "Explicit deny must block access even without prior grant or registration"
+    );
+  }
+
+  @Test
+  void testUserDenyOverridesGroupGrant() {
+    Grantee adminsGrantee = createGranteeForGroup(groupAdmins);
+    Grantee bobGrantee = createGranteeForIdentity(identityBob);
+
+    addIdentityToGroup(identityBob, groupAdmins);
+
+    // Group grant gives Bob access
+    authorizationProvider.grantAccess(adminsGrantee, readPermission, protectedResource);
+    assertTrue(
+        authorizationProvider.canAccess(identityBob, readPermission, protectedResource),
+        "Bob should have READ via admins group before deny"
+    );
+
+    // Explicit user-level deny must override group grant
+    authorizationProvider.denyAccess(bobGrantee, readPermission, protectedResource);
+
+    assertFalse(
+        authorizationProvider.canAccess(identityBob, readPermission, protectedResource),
+        "User-level deny should override group grant"
+    );
+
+    // Even if he leaves the group, still denied until policy is cleaned up
+    removeIdentityFromGroup(identityBob, groupAdmins);
+    assertFalse(
+        authorizationProvider.canAccess(identityBob, readPermission, protectedResource),
+        "Bob should remain denied after leaving group unless deny is revoked"
+    );
+  }
+
+
   // ===== Helpers for membership sync in tests =====
 
   private void addIdentityToGroup(Identity identity, Group group) {
