@@ -53,13 +53,14 @@ public class IdentityAccessManager {
       Map<String, Object> config,
       MapStore<UserIdMap> userStore,
       MapStore<GroupIdMap> groupStore,
+      ResourceTraversalFactory traversalFactory,
       Permission[]  permissions) throws IOException {
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
 
 
     if(config.containsKey("authorisationProvider")) {
       String authorisationProvider = config.get("authorisationProvider").toString();
-      authorizationProvider = AuthorizationProviderFactory.getInstance().get( authorisationProvider, config, permissions);
+      authorizationProvider = AuthorizationProviderFactory.getInstance().get( authorisationProvider, config, permissions, traversalFactory);
     }
     else{
       authorizationProvider = new OpenAuthorizationProvider();

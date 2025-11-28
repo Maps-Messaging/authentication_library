@@ -97,7 +97,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     MapFileStore<UserIdMap> users = new MapFileStore<>("userMap");
     MapFileStore<GroupIdMap> groups = new MapFileStore<>("groupMap");
 
-    IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups, TestPermissions.values());
+    IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups, null, TestPermissions.values());
     IdentityLookupFactory.getInstance().registerSiteIdentityLookup(auth, identityAccessManager.getIdentityLookup());
 
     for (Identity userIdMap : identityAccessManager.getUserManagement().getAllUsers()) {

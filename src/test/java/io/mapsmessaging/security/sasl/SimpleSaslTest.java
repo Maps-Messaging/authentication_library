@@ -72,7 +72,7 @@ class SimpleSaslTest extends BaseSasl {
     MapFileStore<UserIdMap> users = new MapFileStore<>("userMap");
     MapFileStore<GroupIdMap> groups = new MapFileStore<>("groupMap");
 
-    identityAccessManager = new IdentityAccessManager("Encrypted-Auth", baseConfig, users, groups, TestPermissions.values());
+    identityAccessManager = new IdentityAccessManager("Encrypted-Auth", baseConfig, users, groups, null, TestPermissions.values());
     IdentityLookupFactory.getInstance()
         .registerSiteIdentityLookup("Encrypted-Auth", identityAccessManager.getIdentityLookup());
   }
