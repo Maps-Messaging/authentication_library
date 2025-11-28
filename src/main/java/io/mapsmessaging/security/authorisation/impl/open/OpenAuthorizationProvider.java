@@ -24,7 +24,6 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -48,6 +47,16 @@ public class OpenAuthorizationProvider implements AuthorizationProvider {
 
   @Override
   public boolean canAccess(Identity identity, Permission permission, ProtectedResource protectedResource) {
+    return true;
+  }
+
+  @Override
+  public boolean hasAllAccess(AuthRequest[] requests) {
+    return true;
+  }
+
+  @Override
+  public boolean hasOneAccess(AuthRequest[] requests) {
     return true;
   }
 

@@ -203,40 +203,38 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     return false; // default deny
   }
 
+  @Override
+  public boolean hasAllAccess(AuthRequest[] requests) {
+    for(AuthRequest requestPrototype : requests){
+      if(!canAccess(requestPrototype.getIdentity(), requestPrototype.getPermission(), requestPrototype.getProtectedResource())){
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public boolean hasOneAccess(AuthRequest[] requests) {
+    for(AuthRequest requestPrototype : requests){
+      if(canAccess(requestPrototype.getIdentity(), requestPrototype.getPermission(), requestPrototype.getProtectedResource())){
+        return true;
+      }
+    }
+    return false;
+  }
+
   private Access canAccessAtNode(Identity identity,
                                  Permission permission,
                                  ProtectedResource protectedResource) {
-
-    String base = permission.getName().toLowerCase();      // e.g. "publish_server"
-    String user = userType + ":" + identity.getId();       // e.g. "user:<uuid>"
-    String object = toObject(protectedResource);           // "resource:tenant/ns/path"
-
-    String denyRelation = "deny_" + base;
-    String allowRelation = "allow_" + base;
-
-    ClientBatchCheckItem denyRequest = new ClientBatchCheckItem()
-        .user(user)
-        .relation(denyRelation)
-        ._object(object)
-        .correlationId("deny");
-
-    ClientBatchCheckItem allowRequest = new ClientBatchCheckItem()
-        .user(user)
-        .relation(allowRelation)
-        ._object(object)
-        .correlationId("allow");
-
     ClientBatchCheckRequest batchRequest = new ClientBatchCheckRequest()
-        .checks(Arrays.asList(denyRequest, allowRequest));
+        .checks(buildBatch(identity, permission, protectedResource));
 
     ClientBatchCheckOptions options = new ClientBatchCheckOptions();
     if (defaultAuthorizationModelId != null && !defaultAuthorizationModelId.isEmpty()) {
       options.authorizationModelId(defaultAuthorizationModelId);
     }
-
     boolean deny = false;
     boolean allow = false;
-
     try {
       requestCount.incrementAndGet();
       ClientBatchCheckResponse response = openFgaClient.batchCheck(batchRequest, options).get();
@@ -265,6 +263,31 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
       return Access.ALLOW;
     }
     return Access.UNKNOWN;
+  }
+
+  private List<ClientBatchCheckItem> buildBatch(Identity identity,
+                                                Permission permission,
+                                                ProtectedResource protectedResource){
+    String base = permission.getName().toLowerCase();      // e.g. "publish_server"
+    String user = userType + ":" + identity.getId();       // e.g. "user:<uuid>"
+    String object = toObject(protectedResource);           // "resource:tenant/ns/path"
+
+    String denyRelation = "deny_" + base;
+    String allowRelation = "allow_" + base;
+
+    ClientBatchCheckItem denyRequest = new ClientBatchCheckItem()
+        .user(user)
+        .relation(denyRelation)
+        ._object(object)
+        .correlationId("deny");
+
+    ClientBatchCheckItem allowRequest = new ClientBatchCheckItem()
+        .user(user)
+        .relation(allowRelation)
+        ._object(object)
+        .correlationId("allow");
+
+    return Arrays.asList(denyRequest, allowRequest);
   }
 
   @Override

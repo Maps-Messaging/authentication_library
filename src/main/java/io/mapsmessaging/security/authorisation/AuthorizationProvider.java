@@ -41,6 +41,9 @@ public interface AuthorizationProvider {
                     Permission permission,
                     ProtectedResource protectedResource);
 
+  boolean hasAllAccess(AuthRequest[] requests);
+
+  boolean hasOneAccess(AuthRequest[] requests);
 
   default AccessDecision explainAccess(Identity identity,
                                        Permission permission,

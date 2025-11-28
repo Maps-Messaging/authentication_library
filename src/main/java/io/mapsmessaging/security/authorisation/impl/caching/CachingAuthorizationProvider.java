@@ -107,6 +107,25 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
     return allowed;
   }
 
+  @Override
+  public boolean hasAllAccess(AuthRequest[] requests){
+    for(AuthRequest requestPrototype : requests){
+      if(!canAccess(requestPrototype.getIdentity(), requestPrototype.getPermission(),requestPrototype.getProtectedResource())){
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public boolean hasOneAccess(AuthRequest[] requests){
+    for(AuthRequest requestPrototype : requests){
+      if(canAccess(requestPrototype.getIdentity(), requestPrototype.getPermission(),requestPrototype.getProtectedResource())){
+        return true;
+      }
+    }
+    return false;
+  }
 
   public AccessDecision explainAccess(Identity identity, Permission permission, ProtectedResource protectedResource) {
     return delegate.explainAccess(identity, permission, protectedResource);

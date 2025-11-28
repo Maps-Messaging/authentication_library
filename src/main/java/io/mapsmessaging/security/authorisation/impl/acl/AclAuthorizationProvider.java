@@ -118,6 +118,24 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     writeState();
   }
 
+  public boolean hasAllAccess(AuthRequest[] requests){
+    for(AuthRequest requestPrototype : requests){
+      if(!canAccess(requestPrototype.getIdentity(), requestPrototype.getPermission(),requestPrototype.getProtectedResource())){
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public boolean hasOneAccess(AuthRequest[] requests){
+    for(AuthRequest requestPrototype : requests){
+      if(canAccess(requestPrototype.getIdentity(), requestPrototype.getPermission(),requestPrototype.getProtectedResource())){
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override
   public boolean canAccess(Identity identity,
                            Permission permission,
