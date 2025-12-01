@@ -44,6 +44,13 @@ public class Identity {
     attributes = buildAttributes(identityEntry);
   }
 
+  public Identity(UUID id, String username, Map<String, String> attributes, List<Group> groupList) {
+    this.id = id;
+    this.username = username;
+    this.attributes = attributes;
+    this.groupList = groupList;
+  }
+
   private Map<String, String> buildAttributes(IdentityEntry identityEntry) {
     Map<String, String> map = new LinkedHashMap<>();
     identityEntry.setAttributeMap(map);
