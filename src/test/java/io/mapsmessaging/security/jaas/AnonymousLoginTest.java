@@ -20,18 +20,18 @@
 
 package io.mapsmessaging.security.jaas;
 
+import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.security.Principal;
 import java.util.LinkedHashMap;
 import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class AnonymousLoginTest {
+class AnonymousLoginTest {
 
   @Test
-  void simpleLoginTest() throws LoginException {
+  void simpleLoginTest() {
     Subject subject = new Subject();
     ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("", new char[0], "");
     AnonymousLoginModule module = new AnonymousLoginModule();
@@ -52,15 +52,15 @@ public class AnonymousLoginTest {
 
     // Ensure the principal is of the correct type
     Principal principal = subject.getPrincipals().iterator().next();
-    Assertions.assertInstanceOf(AnonymousPrincipal.class, principal, "Principal is not of type AnonymousPrincipal");
+    Assertions.assertInstanceOf(UserPrincipal.class, principal, "Principal is not of type UserPrincipal");
 
     // Test the functionality of AnonymousPrincipal
-    AnonymousPrincipal anonymousPrincipal = (AnonymousPrincipal) principal;
+    UserPrincipal anonymousPrincipal = (UserPrincipal) principal;
     Assertions.assertNotNull(anonymousPrincipal.getName(), "Principal name should not be null");
     Assertions.assertEquals("anonymous", anonymousPrincipal.getName(), "Principal name does not match");
 
     // Test the toString method
-    String expectedToString = "AnonymousPrincipal User:" + anonymousPrincipal.getName();
+    String expectedToString = anonymousPrincipal.getName();
     Assertions.assertEquals(expectedToString, anonymousPrincipal.toString(), "toString method does not match expected format");
   }
 
