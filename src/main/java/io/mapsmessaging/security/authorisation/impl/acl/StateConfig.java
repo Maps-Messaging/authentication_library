@@ -18,37 +18,13 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
+class StateConfig {
+  public static final String ENCRYPTION_METHOD = "AES/GCM/NoPadding";
+  public static final int GCM_TAG_LENGTH_BITS = 128;
+  public static final int GCM_IV_LENGTH_BYTES = 12;
+  public static final int INITIAL_BUFFER_SIZE = 4096;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
-
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
-
-public class AnonymousLoginModule extends BaseLoginModule {
-
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
-  }
-
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
-  }
-
-  @Override
-  protected String getDomain() {
-    return "";
-  }
-
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
-  }
-
+  private StateConfig(){}
 }

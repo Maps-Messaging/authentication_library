@@ -26,6 +26,8 @@ import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
+import io.mapsmessaging.security.authorisation.*;
+import io.mapsmessaging.security.authorisation.impl.open.OpenAuthorizationProvider;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
@@ -44,13 +46,26 @@ public class IdentityAccessManager {
   private final IdentityLookup identityLookup;
   private final UserManagement userManagement;
   private final GroupManagement groupManagement;
+  private final AuthorizationProvider authorizationProvider;
 
   public IdentityAccessManager(
       String identity,
       Map<String, Object> config,
       MapStore<UserIdMap> userStore,
-      MapStore<GroupIdMap> groupStore) {
+      MapStore<GroupIdMap> groupStore,
+      ResourceTraversalFactory traversalFactory,
+      Permission[]  permissions) throws IOException {
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
+
+
+    if(config.containsKey("authorisationProvider")) {
+      String authorisationProvider = config.get("authorisationProvider").toString();
+      authorizationProvider = AuthorizationProviderFactory.getInstance().get( authorisationProvider, config, permissions, traversalFactory);
+    }
+    else{
+      authorizationProvider = new OpenAuthorizationProvider();
+    }
+
     GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
     UserMapManagement userMapManagement = new UserMapManagement(userStore);
 
@@ -65,8 +80,8 @@ public class IdentityAccessManager {
     } else {
       passwordHandler = baseHandler;
     }
-    groupManagement = new GroupManagement(identityLookup, groupMapManagement);
-    userManagement = new UserManagement(identityLookup, userMapManagement, groupManagement, passwordHandler);
+    groupManagement = new GroupManagement(identityLookup, userMapManagement, groupMapManagement, authorizationProvider);
+    userManagement = new UserManagement(identityLookup, userMapManagement, groupManagement, passwordHandler, authorizationProvider);
 
     userMapManagement.save();
     groupMapManagement.save();

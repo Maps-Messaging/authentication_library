@@ -18,37 +18,18 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
+import io.mapsmessaging.security.authorisation.AbstractNamespaceTraversalAuthorizationTest;
+import io.mapsmessaging.security.authorisation.AuthTestHelper;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
+import io.mapsmessaging.security.authorisation.ResourceTraversalFactory;
+import java.io.IOException;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
-
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
-
-public class AnonymousLoginModule extends BaseLoginModule {
-
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
-  }
+public class AclNamespaceTraversalAuthorizationTest extends AbstractNamespaceTraversalAuthorizationTest {
 
   @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
+  public AuthorizationProvider createProvider(ResourceTraversalFactory factory) throws IOException {
+    return AuthTestHelper.createAclAuthorizationProvider(factory);
   }
-
-  @Override
-  protected String getDomain() {
-    return "";
-  }
-
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
-  }
-
 }

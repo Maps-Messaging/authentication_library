@@ -24,6 +24,7 @@ import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
+import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.principals.UniqueIdentifierPrincipal;
@@ -36,19 +37,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
+import lombok.Getter;
 
 public class UserManagement {
 
   private final IdentityLookup identityLookup;
   private final UserMapManagement userMapManagement;
   private final GroupManagement groupManagement;
+  private final AuthorizationProvider authorizationProvider;
+  @Getter
   protected final PasswordHandler passwordHandler;
 
-  public UserManagement(IdentityLookup identityLookup, UserMapManagement userMapManagement, GroupManagement groupManagement, PasswordHandler passwordHandler) {
+  public UserManagement(IdentityLookup identityLookup, UserMapManagement userMapManagement, GroupManagement groupManagement, PasswordHandler passwordHandler, AuthorizationProvider authorizationProvider) {
     this.identityLookup = identityLookup;
     this.userMapManagement = userMapManagement;
     this.passwordHandler = passwordHandler;
     this.groupManagement = groupManagement;
+    this.authorizationProvider = authorizationProvider;
     for (IdentityEntry entry : identityLookup.getEntries()) {
       mapUser(entry);
     }
@@ -86,6 +91,7 @@ public class UserManagement {
       idMap = new UserIdMap(UuidGenerator.getInstance().generate(), username, identityLookup.getDomain());
       userMapManagement.add(idMap);
       userMapManagement.save();
+      authorizationProvider.registerIdentity(idMap.getAuthId());
     }
     return idMap;
   }
@@ -105,6 +111,10 @@ public class UserManagement {
   public boolean deleteUser(String username) throws IOException {
     if (identityLookup.findEntry(username) != null) {
       identityLookup.deleteUser(username);
+      UserIdMap userIdMap = getUserMapId(username);
+      if (userIdMap != null) {
+        authorizationProvider.deleteIdentity(userIdMap.getAuthId());
+      }
       userMapManagement.delete(identityLookup.getDomain() + ":" + username);
       userMapManagement.save();
       groupManagement.deleteUserFromAllGroups(username);

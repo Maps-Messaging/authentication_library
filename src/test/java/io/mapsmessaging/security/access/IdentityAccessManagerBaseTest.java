@@ -28,6 +28,7 @@ import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.authorisation.TestPermissions;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
@@ -96,7 +97,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     MapFileStore<UserIdMap> users = new MapFileStore<>("userMap");
     MapFileStore<GroupIdMap> groups = new MapFileStore<>("groupMap");
 
-    IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups);
+    IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups, null, TestPermissions.values());
     IdentityLookupFactory.getInstance().registerSiteIdentityLookup(auth, identityAccessManager.getIdentityLookup());
 
     for (Identity userIdMap : identityAccessManager.getUserManagement().getAllUsers()) {

@@ -18,37 +18,22 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
+import static org.junit.jupiter.api.Assertions.*;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
+class AclEntryTest {
 
-public class AnonymousLoginModule extends BaseLoginModule {
+  @Test
+  void testMatchesMethod() {
+    UUID authId = UUID.randomUUID();
+    AclEntry entry = new AclEntry(authId, false, 12345L, 0L);
 
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
+    assertTrue(entry.matches(authId), "Matches should return true for the same authId");
+    assertFalse(entry.matches(UUID.randomUUID()), "Matches should return false for a different authId");
   }
-
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
-  }
-
-  @Override
-  protected String getDomain() {
-    return "";
-  }
-
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
-  }
-
 }
+

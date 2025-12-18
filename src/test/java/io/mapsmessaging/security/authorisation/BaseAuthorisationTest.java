@@ -18,37 +18,24 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation;
 
+import io.mapsmessaging.security.access.Group;
+import io.mapsmessaging.security.access.Identity;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+public class BaseAuthorisationTest {
 
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
-
-public class AnonymousLoginModule extends BaseLoginModule {
-
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
+  protected ProtectedResource createProtectedResource(String resourceName) {
+    return new ProtectedResource("resource", resourceName, "");
   }
 
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
+  protected Grantee createGranteeForIdentity(Identity identity) {
+    return new Grantee(GranteeType.USER, identity.getId());
   }
 
-  @Override
-  protected String getDomain() {
-    return "";
+  protected Grantee createGranteeForGroup(Group group) {
+    return new Grantee(GranteeType.GROUP, group.getId());
   }
 
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
-  }
 
 }

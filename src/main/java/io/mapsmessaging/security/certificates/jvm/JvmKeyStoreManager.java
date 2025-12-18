@@ -21,7 +21,7 @@
 package io.mapsmessaging.security.certificates.jvm;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
-import io.mapsmessaging.security.certificates.BasKeyStoreManager;
+import io.mapsmessaging.security.certificates.BaseKeyStoreManager;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
-public class JvmKeyStoreManager extends BasKeyStoreManager {
+public class JvmKeyStoreManager extends BaseKeyStoreManager {
 
   protected static final String KEYSTORE_PASSWORD = "passphrase";
 
@@ -82,6 +82,11 @@ public class JvmKeyStoreManager extends BasKeyStoreManager {
   @Override
   public boolean getExists() {
     return true;
+  }
+
+  @Override
+  public void saveKeyStore() throws CertificateException {
+    throw new CertificateException("Unable to delete certificates to JVM Key Store");
   }
 
 }

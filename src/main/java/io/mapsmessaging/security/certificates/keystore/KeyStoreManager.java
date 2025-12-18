@@ -21,7 +21,7 @@
 package io.mapsmessaging.security.certificates.keystore;
 
 import io.mapsmessaging.configuration.ConfigurationProperties;
-import io.mapsmessaging.security.certificates.BasKeyStoreManager;
+import io.mapsmessaging.security.certificates.BaseKeyStoreManager;
 import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
@@ -34,7 +34,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-public class KeyStoreManager extends BasKeyStoreManager {
+public class KeyStoreManager extends BaseKeyStoreManager {
 
   protected static final String KEYSTORE_TYPE = "type";
   protected static final String KEYSTORE_PATH = "path";
@@ -144,7 +144,7 @@ public class KeyStoreManager extends BasKeyStoreManager {
     return existed;
   }
 
-  private void saveKeyStore() throws CertificateException {
+  public void saveKeyStore() throws CertificateException {
     try{
       ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
       keyStore.store(byteArrayOutputStream, keyStorePassword);
