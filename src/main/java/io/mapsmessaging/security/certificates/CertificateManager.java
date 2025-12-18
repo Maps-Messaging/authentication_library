@@ -53,4 +53,5 @@ public interface CertificateManager {
 
   List<String> getAliases() throws KeyStoreException;
 
+  void saveKeyStore() throws CertificateException;
 }

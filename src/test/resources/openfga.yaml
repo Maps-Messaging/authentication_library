@@ -1,0 +1,13 @@
+#     String uris = config.getProperty("openfga.uris");
+#    String storeId = config.getProperty("openfga.storeId");
+#    String modelId = config.getProperty("openfga.modelId");
+#    String userType = config.getProperty("openfga.userType");
+#    String groupType = config.getProperty("openfga.groupType");
+#    String tenantSeparator = config.getProperty("openfga.tenantSeparator");
+#    String groupMemberRelation = config.getProperty("openfga.groupMemberRelation");
+#    long connectionTimeout = config.getLongProperty("openfga.connectionTimeout", 10);
+
+openfga.uris: "http://10.140.62.152:8080"
+openfga.storeId: "01KAF6PKR6YRJZ8RXXYXAJDX1E"
+openfga.modelId: "01KAF6SSMG4T5WZY47FS12QZ0C"
+openfga.connectionTimeout: 10

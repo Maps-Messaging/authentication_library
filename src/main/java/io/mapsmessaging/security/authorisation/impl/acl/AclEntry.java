@@ -18,37 +18,29 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation.impl.acl;
 
+import lombok.Getter;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+import java.util.UUID;
 
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
+@Getter
+public class AclEntry {
 
-public class AnonymousLoginModule extends BaseLoginModule {
+  private final UUID authId;
+  private final boolean isGroup;
+  private final long allow;
+  private final long deny;
 
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
+  public AclEntry(UUID authId, boolean isGroup, long allow, long deny) {
+    this.authId = authId;
+    this.allow = allow;
+    this.deny = deny;
+    this.isGroup = isGroup;
   }
 
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
-  }
-
-  @Override
-  protected String getDomain() {
-    return "";
-  }
-
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
+  public boolean matches(UUID authId) {
+    return this.authId.equals(authId);
   }
 
 }

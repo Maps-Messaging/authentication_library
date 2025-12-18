@@ -18,37 +18,24 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation;
 
+public enum DecisionReason {
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+  ALLOW_EXPLICIT_IDENTITY,
 
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
+  ALLOW_EXPLICIT_GROUP,
 
-public class AnonymousLoginModule extends BaseLoginModule {
+  ALLOW_INHERITED_RESOURCE,
 
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
-  }
+  DENY_EXPLICIT_IDENTITY,
 
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
-  }
+  DENY_EXPLICIT_GROUP,
 
-  @Override
-  protected String getDomain() {
-    return "";
-  }
+  DENY_INHERITED_RESOURCE,
 
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
-  }
+  DEFAULT_DENY,
+
+  PROVIDER_ERROR
 
 }

@@ -18,37 +18,30 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation;
 
+public class DefaultResourceTraversal implements ResourceTraversal {
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+  private final ProtectedResource resource;
+  private boolean hasMore;
 
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
-
-public class AnonymousLoginModule extends BaseLoginModule {
-
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
+  public DefaultResourceTraversal(ProtectedResource resource) {
+    this.resource = resource;
+    hasMore = true;
   }
 
   @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
+  public ProtectedResource current() {
+    return resource;
   }
 
   @Override
-  protected String getDomain() {
-    return "";
+  public boolean hasMore() {
+    return hasMore;
   }
 
   @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
+  public void moveToParent() {
+    hasMore = false;
   }
-
 }

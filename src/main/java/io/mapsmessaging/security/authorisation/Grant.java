@@ -18,37 +18,25 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation;
 
+import lombok.Value;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+@Value
+public final class Grant {
 
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
+  Grantee grantee;
+  Permission permission;
+  ProtectedResource protectedResource;
+  boolean allow;
 
-public class AnonymousLoginModule extends BaseLoginModule {
-
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
+  public Grant(Grantee grantee,
+               Permission permission,
+               ProtectedResource protectedResource,
+               boolean allow) {
+    this.grantee = grantee;
+    this.permission = permission;
+    this.protectedResource = protectedResource;
+    this.allow = allow;
   }
-
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
-  }
-
-  @Override
-  protected String getDomain() {
-    return "";
-  }
-
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
-  }
-
 }

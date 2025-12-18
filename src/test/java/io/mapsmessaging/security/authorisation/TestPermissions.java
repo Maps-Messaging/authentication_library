@@ -18,37 +18,25 @@
  *
  */
 
-package io.mapsmessaging.security.jaas;
+package io.mapsmessaging.security.authorisation;
 
+import lombok.Getter;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
+@Getter
+public enum TestPermissions implements Permission {
 
-import com.sun.security.auth.UserPrincipal;
-import javax.security.auth.login.LoginException;
+  READ("read", "Allows Read access to the resource", 0),
+  WRITE("write", "Allows Write access to the resource", 1),
+  DELETE("delete", "Allows Delete access to the resource", 2),
+  CREATE("create", "Allows Create access to the resource", 3),;
 
-public class AnonymousLoginModule extends BaseLoginModule {
+  private final String name;
+  private final String description;
+  private final long mask;
 
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
+  TestPermissions(final String name, final String description, final long mask) {
+    this.name = name;
+    this.description = description;
+    this.mask = 1L <<mask;
   }
-
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
-  }
-
-  @Override
-  protected String getDomain() {
-    return "";
-  }
-
-  @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    return true;
-  }
-
 }

@@ -85,31 +85,4 @@ public class BaseSecurityTest {
     }
     return new Subject(true, principals, new HashSet<>(), new HashSet<>());
   }
-
-  // Custom AccessControlMapping implementation
-  public static class CustomAccessControlMapping implements AccessControlMapping {
-    // Access control keywords and corresponding bitset values
-    public static final String READ = "read";
-    public static final String WRITE = "write";
-
-    public static final long READ_VALUE = 1L;
-    public static final long WRITE_VALUE = 2L;
-
-    @Override
-    public Long getAccessValue(String accessControl) {
-      switch (accessControl.toLowerCase()) {
-        case READ:
-          return READ_VALUE;
-        case WRITE:
-          return WRITE_VALUE;
-        default:
-          return null;
-      }
-    }
-
-    @Override
-    public String getAccessName(long value) {
-      return null;
-    }
-  }
 }
