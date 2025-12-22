@@ -42,15 +42,17 @@ public class AttemptTracker {
   public AuthState getState(String username) {
     Instant now = clock.instant();
 
-    return stateMap.compute(username, (key, state) -> {
-      if (state == null) {
-        return new AuthState();
-      }
-      if (state.shouldDecayFailures(now, failureDecaySeconds)) {
-        return new AuthState(); // evict
-      }
-      return state;
-    });
+    return stateMap.compute(
+        username,
+        (key, state) -> {
+          if (state == null) {
+            return new AuthState();
+          }
+          if (state.shouldDecayFailures(now, failureDecaySeconds)) {
+            return new AuthState(); // evict
+          }
+          return state;
+        });
   }
 
   public AuthState peekState(String username) {
@@ -69,7 +71,8 @@ public class AttemptTracker {
     int removed = 0;
     Instant now = clock.instant();
 
-    for (Iterator<Map.Entry<String, AuthState>> iterator = stateMap.entrySet().iterator(); iterator.hasNext(); ) {
+    for (Iterator<Map.Entry<String, AuthState>> iterator = stateMap.entrySet().iterator();
+        iterator.hasNext(); ) {
       var entry = iterator.next();
       String username = entry.getKey();
       AuthState state = entry.getValue();
@@ -81,7 +84,8 @@ public class AttemptTracker {
       Instant lastFailure = state.getLastFailureAt();
       Instant lastSuccess = state.getLastSuccessAt();
       Instant lastActivity = lastFailure != null ? lastFailure : lastSuccess;
-      if (lastActivity == null || (lastActivity.isBefore(cutoff) && stateMap.remove(username, state))) {
+      if (lastActivity == null
+          || (lastActivity.isBefore(cutoff) && stateMap.remove(username, state))) {
         removed++;
       }
     }

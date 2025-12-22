@@ -20,5 +20,5 @@
 
 package io.mapsmessaging.security.access.monitor;
 
-public record LockStatus(String username, boolean locked, long remainingLockSeconds, String lockedUntilIso) {
-  }
+public record LockStatus(
+    String username, boolean locked, long remainingLockSeconds, String lockedUntilIso) {}

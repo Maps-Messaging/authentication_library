@@ -27,39 +27,24 @@ import lombok.Setter;
 @Setter
 public class AuthenticationMonitorConfig {
 
-  /**
-   * Number of consecutive failures before a lockout is applied.
-   */
+  /** Number of consecutive failures before a lockout is applied. */
   private int maxFailuresBeforeLock = 5;
 
-  /**
-   * Initial lockout duration in seconds.
-   */
+  /** Initial lockout duration in seconds. */
   private int initialLockSeconds = 30;
 
-  /**
-   * Maximum lockout duration in seconds.
-   */
+  /** Maximum lockout duration in seconds. */
   private int maxLockSeconds = 900;
 
-  /**
-   * Time window after which failures are forgotten.
-   * If zero or negative, failures never decay.
-   */
+  /** Time window after which failures are forgotten. If zero or negative, failures never decay. */
   private int failureDecaySeconds = 900;
 
-  /**
-   * Enable soft delay before failure response.
-   */
+  /** Enable soft delay before failure response. */
   private boolean enableSoftDelay = true;
 
-  /**
-   * Delay added per failure in milliseconds.
-   */
+  /** Delay added per failure in milliseconds. */
   private int softDelayMillisPerFailure = 200;
 
-  /**
-   * Maximum soft delay in milliseconds.
-   */
+  /** Maximum soft delay in milliseconds. */
   private int maxSoftDelayMillis = 2000;
 }

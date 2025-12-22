@@ -60,7 +60,12 @@ public class AuthenticationMonitor {
     for (Map.Entry<String, AuthState> entry : tracker.snapshot().entrySet()) {
       AuthState state = entry.getValue();
       if (state.isLocked(now)) {
-        result.add(new LockStatus(entry.getKey(), true, state.getRemainingLockSeconds(now), state.getLockedUntil().toString()));
+        result.add(
+            new LockStatus(
+                entry.getKey(),
+                true,
+                state.getRemainingLockSeconds(now),
+                state.getLockedUntil().toString()));
       }
     }
 
@@ -75,7 +80,9 @@ public class AuthenticationMonitor {
     return tracker.sweep(cutoff);
   }
 
-  int getTrackedUserCount() { return tracker.size(); }
+  int getTrackedUserCount() {
+    return tracker.size();
+  }
 
   public LockStatus getLockStatus(String username) {
     AuthState state = tracker.getState(username);
@@ -84,14 +91,11 @@ public class AuthenticationMonitor {
     boolean locked = state.isLocked(now);
     long remaining = state.getRemainingLockSeconds(now);
 
-    String lockedUntilIso = state.getLockedUntil() == null
-        ? null
-        : state.getLockedUntil().toString();
+    String lockedUntilIso =
+        state.getLockedUntil() == null ? null : state.getLockedUntil().toString();
 
     return new LockStatus(username, locked, remaining, lockedUntilIso);
   }
-
-
 
   public void recordFailure(String username, String ipAddress) {
     Instant now = clock.instant();
@@ -104,12 +108,7 @@ public class AuthenticationMonitor {
 
     state.recordFailure(now);
 
-    logger.log(
-        AuthLogMessages.AUTH_FAILURE,
-        username,
-        state.getFailureCount(),
-        ipAddress
-    );
+    logger.log(AuthLogMessages.AUTH_FAILURE, username, state.getFailureCount(), ipAddress);
 
     if (state.getFailureCount() >= config.getMaxFailuresBeforeLock()) {
       long lockSeconds = computeLockSeconds(state);
@@ -121,8 +120,7 @@ public class AuthenticationMonitor {
           username,
           state.getFailureCount(),
           lockSeconds,
-          ipAddress
-      );
+          ipAddress);
     }
   }
 
@@ -134,8 +132,7 @@ public class AuthenticationMonitor {
           AuthLogMessages.AUTH_SUCCESS_AFTER_FAILURES,
           username,
           state.getFailureCount(),
-          ipAddress
-      );
+          ipAddress);
     }
 
     state.recordSuccess(clock.instant());
