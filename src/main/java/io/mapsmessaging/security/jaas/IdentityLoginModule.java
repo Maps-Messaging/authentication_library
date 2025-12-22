@@ -22,16 +22,16 @@ package io.mapsmessaging.security.jaas;
 
 import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
+import io.mapsmessaging.security.access.AuthContext;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitor;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitorConfig;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
-import io.mapsmessaging.security.passwords.PasswordHandler;
-import io.mapsmessaging.security.passwords.PasswordHandlerFactory;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import javax.security.auth.Subject;
@@ -41,6 +41,7 @@ import javax.security.auth.login.LoginException;
 public class IdentityLoginModule extends BaseLoginModule {
 
   private IdentityLookup identityLookup = null;
+  private AuthenticationMonitor authenticationMonitor = null;
 
   @Override
   public void initialize(
@@ -56,6 +57,11 @@ public class IdentityLoginModule extends BaseLoginModule {
       String identityLookupName = options.get("identityName").toString();
       identityLookup = IdentityLookupFactory.getInstance().get(identityLookupName, (Map<String, Object>) options);
     }
+    authenticationMonitor = IdentityLookupFactory.getInstance().getAuthenticationMonitor();
+    if(authenticationMonitor == null){
+      authenticationMonitor = new AuthenticationMonitor(new AuthenticationMonitorConfig());
+      IdentityLookupFactory.getInstance().setAuthenticationMonitor(authenticationMonitor);
+    }
   }
 
   @Override
@@ -64,32 +70,42 @@ public class IdentityLoginModule extends BaseLoginModule {
   }
 
   @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
-    IdentityEntry identityEntry = identityLookup.findEntry(username);
-    if (identityEntry == null) {
-      throw new LoginException("Login failed: No such user");
+  protected boolean validate(String username, char[] password, AuthContext context) throws LoginException {
+    if (validateUser(username, password, context)) {
+      succeeded = true;
+      if (debug) {
+        logger.log(USER_LOGGED_IN, username);
+      }
+      return true;
     }
-    try {
-      PasswordHandler passwordHasher = identityEntry.getPasswordHasher();
-      if (passwordHasher == null) {
-        passwordHasher = PasswordHandlerFactory.getInstance().parse(identityEntry.getPassword().getHash());
-      }
-      boolean result = passwordHasher.matches(password);
-      if(password != null) Arrays.fill(password, (char) 0x0);
-      if (!result) {
-        throw new LoginException("Invalid password");
-      }
-    } catch (IOException | GeneralSecurityException error) {
-      LoginException lg = new LoginException("Error raised while processing");
-      lg.initCause(error);
-      throw lg;
+    return false;
+  }
+
+  private boolean validateUser(String username, char[] password, AuthContext context) throws LoginException {
+
+    String ipAddress = context.ipAddress();
+    // Fast fail if currently locked
+    if (authenticationMonitor.isLocked(username)) {
+      return false;
     }
 
-    succeeded = true;
-    if (debug) {
-      logger.log(USER_LOGGED_IN, username);
+    IdentityEntry entry = identityLookup.findEntry(username);
+    boolean success = false;
+    try {
+      if (entry != null) {
+        success = entry.getPasswordHasher().matches(password);
+      }
+    } catch (IOException|GeneralSecurityException e) {
+      authenticationMonitor.recordFailure(username, ipAddress);
+      throw new LoginException(e.getMessage());
     }
-    return true;
+
+    if (success) {
+      authenticationMonitor.recordSuccess(username, ipAddress);
+      return true;
+    }
+    authenticationMonitor.recordFailure(username, ipAddress);
+    return false;
   }
 
   @Override

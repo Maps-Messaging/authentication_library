@@ -201,7 +201,9 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     Map<String, String> initMap = new LinkedHashMap<>();
     initMap.put("siteWide", auth);
     Subject subject = new Subject();
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(username, password, "");
+    AuthContext context = new AuthContext("localhost", "test", "test");
+
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(username, password, "", context);
 
     IdentityLoginModule identityLoginModule = new IdentityLoginModule();
     identityLoginModule.initialize(subject, clientCallbackHandler, new LinkedHashMap<>(), initMap);

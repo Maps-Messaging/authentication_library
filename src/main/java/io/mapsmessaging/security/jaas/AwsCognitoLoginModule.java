@@ -23,6 +23,7 @@ package io.mapsmessaging.security.jaas;
 import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
 import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.*;
 
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     return "cognito";
   }
 
-  public boolean validate(String username, char[] password) throws LoginException {
+  public boolean validate(String username, char[] password, AuthContext context) throws LoginException {
 
     // Create AWS credentials provider
     AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKeyId, accessSecretKey);

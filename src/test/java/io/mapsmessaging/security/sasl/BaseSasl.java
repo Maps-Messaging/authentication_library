@@ -20,6 +20,7 @@
 
 package io.mapsmessaging.security.sasl;
 
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.access.IdentityAccessManager;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import java.util.Map;
@@ -44,7 +45,7 @@ class BaseSasl {
       String authorizationId,
       String serverName,
       Map<String, String> props) throws SaslException {
-    ClientCallbackHandler clientHandler = new ClientCallbackHandler(username, password, serverName);
+    ClientCallbackHandler clientHandler = new ClientCallbackHandler(username, password, serverName,new AuthContext("localhost", "test", "test"));
     saslClient = Sasl.createSaslClient(mechanism, authorizationId, protocol, serverName, props, clientHandler);
   }
 

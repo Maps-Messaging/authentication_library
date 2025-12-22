@@ -25,6 +25,7 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.security.access.AuthContext;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
@@ -65,7 +66,7 @@ public abstract class BaseLoginModule implements LoginModule {
 
   protected abstract String getDomain();
 
-  protected abstract boolean validate(String username, char[] password) throws LoginException;
+  protected abstract boolean validate(String username, char[] password, AuthContext context) throws LoginException;
 
   @Override
   public boolean login() throws LoginException {
@@ -75,9 +76,10 @@ public abstract class BaseLoginModule implements LoginModule {
       throw new LoginException("Error: no CallbackHandler available to garner authentication information from the user");
     }
 
-    Callback[] callbacks = new Callback[2];
+    Callback[] callbacks = new Callback[3];
     callbacks[0] = new NameCallback("user name: ");
     callbacks[1] = new PasswordCallback("password: ", false);
+    callbacks[2] = new AuthContextCallback();
 
     try {
       callbackHandler.handle(callbacks);
@@ -88,9 +90,11 @@ public abstract class BaseLoginModule implements LoginModule {
         tmpPassword = new char[0];
       }
       char[] password = new char[tmpPassword.length];
+      AuthContext context = ((AuthContextCallback)callbacks[2]).getAuthContext();
+
       System.arraycopy(tmpPassword, 0, password, 0, tmpPassword.length);
       userPrincipal = new UserPrincipal(username);
-      if (!validate(username, password)) {
+      if (!validate(username, password, context)) {
         throw new LoginException("Username or password is invalid");
       }
       ((PasswordCallback) callbacks[1]).clearPassword();

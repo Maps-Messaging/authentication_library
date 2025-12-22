@@ -73,6 +73,7 @@ public class IdentityAccessManager {
     UserMapManagement userMapManagement = new UserMapManagement(userStore);
 
     AuthenticationMonitor authenticationMonitor = new AuthenticationMonitor(authMonitorConfig);
+    IdentityLookupFactory.getInstance().setAuthenticationMonitor(authenticationMonitor);
     PasswordHandler passwordHandler;
     String handlerName = (String) config.get("passwordHandler");
     if (handlerName == null || handlerName.isEmpty()) {

@@ -20,6 +20,7 @@
 
 package io.mapsmessaging.security.jaas;
 
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -64,7 +65,7 @@ public class CognitoLoginTest {
     if (properties == null || properties.isEmpty()) {
       return;
     }
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "testPassword01!".toCharArray(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "testPassword01!".toCharArray(), "",new AuthContext("localhost", "test", "test"));
     Subject subject = new Subject();
     AwsCognitoLoginModule loginModule = new AwsCognitoLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
@@ -78,7 +79,7 @@ public class CognitoLoginTest {
     if (properties == null || properties.isEmpty()) {
       return;
     }
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "BadToken".toCharArray(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("maps.test", "BadToken".toCharArray(), "",new AuthContext("localhost", "test", "test"));
     Subject subject = new Subject();
     LoginModule loginModule = new AwsCognitoLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
