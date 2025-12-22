@@ -58,7 +58,7 @@ class AuthenticationMonitorTest {
 
   @Test
   void notLockedInitially() {
-    assertFalse(monitor.isLocked("user1"));
+    assertFalse(monitor.isLocked("user1", IP));
     assertTrue(monitor.getLockedUsers().isEmpty());
   }
 
@@ -68,10 +68,10 @@ class AuthenticationMonitorTest {
 
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
-    assertFalse(monitor.isLocked(username));
+    assertFalse(monitor.isLocked(username, IP));
 
     monitor.recordFailure(username, IP);
-    assertTrue(monitor.isLocked(username));
+    assertTrue(monitor.isLocked(username, IP));
 
     List<LockStatus> lockedUsers = monitor.getLockedUsers();
     assertEquals(1, lockedUsers.size());
@@ -90,10 +90,10 @@ class AuthenticationMonitorTest {
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
-    assertTrue(monitor.isLocked(username));
+    assertTrue(monitor.isLocked(username, IP));
 
     clock.advanceSeconds(601);
-    assertFalse(monitor.isLocked(username));
+    assertFalse(monitor.isLocked(username, IP));
 
     assertTrue(monitor.getLockedUsers().stream().noneMatch(lock -> lock.username().equals(username)));
   }
@@ -108,8 +108,8 @@ class AuthenticationMonitorTest {
     monitor.recordFailure(userB, IP);
     monitor.recordFailure(userB, IP); // locked
 
-    assertTrue(monitor.isLocked(userB));
-    assertFalse(monitor.isLocked(userA));
+    assertTrue(monitor.isLocked(userB, IP));
+    assertFalse(monitor.isLocked(userA, IP));
 
     // Make userA idle (> 5 minutes), but userB still locked (lock = 10 minutes)
     clock.advanceSeconds(360);
@@ -117,7 +117,7 @@ class AuthenticationMonitorTest {
     int removed = monitor.sweepOldEntries(300);
     assertEquals(1, removed);
 
-    assertTrue(monitor.isLocked(userB));
+    assertTrue(monitor.isLocked(userB, IP));
     assertTrue(monitor.getLockedUsers().stream().anyMatch(s -> s.username().equals(userB) && s.locked()));
   }
 
@@ -136,7 +136,7 @@ class AuthenticationMonitorTest {
     int removed = monitor.sweepOldEntries(300);
     assertEquals(0, removed);
 
-    assertTrue(monitor.isLocked(userB));
+    assertTrue(monitor.isLocked(userB, IP));
   }
 
   @Test
@@ -146,11 +146,11 @@ class AuthenticationMonitorTest {
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
-    assertTrue(monitor.isLocked(username));
+    assertTrue(monitor.isLocked(username, IP));
 
     monitor.reset(username);
 
-    assertFalse(monitor.isLocked(username));
+    assertFalse(monitor.isLocked(username, IP));
     assertTrue(monitor.getLockedUsers().isEmpty());
   }
 
@@ -168,7 +168,7 @@ class AuthenticationMonitorTest {
 
     // Unlock by time, then trigger lock again (this is where escalation would show)
     clock.advanceSeconds(601);
-    assertFalse(monitor.isLocked(username));
+    assertFalse(monitor.isLocked(username, IP));
 
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
@@ -194,8 +194,8 @@ class AuthenticationMonitorTest {
   void isLockedDoesNotAllocateStateForUnknownUser() {
     int before = monitor.getTrackedUserCount();
 
-    assertFalse(monitor.isLocked("username-does-not-exist-1"));
-    assertFalse(monitor.isLocked("username-does-not-exist-2"));
+    assertFalse(monitor.isLocked("username-does-not-exist-1", IP));
+    assertFalse(monitor.isLocked("username-does-not-exist-2", IP));
 
     int after = monitor.getTrackedUserCount();
     assertEquals(before, after);

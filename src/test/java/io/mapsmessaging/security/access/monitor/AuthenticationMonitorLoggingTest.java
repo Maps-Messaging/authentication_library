@@ -67,13 +67,13 @@ class AuthenticationMonitorLoggingTest {
 
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
-    assertFalse(monitor.isLocked(username));
+    assertFalse(monitor.isLocked(username, IP));
 
     monitor.recordFailure(username, IP);
-    assertTrue(monitor.isLocked(username));
+    assertTrue(monitor.isLocked(username, IP));
 
     clock.advanceSeconds(601);
-    assertFalse(monitor.isLocked(username));
+    assertFalse(monitor.isLocked(username, IP));
   }
 
   @Test
@@ -86,8 +86,8 @@ class AuthenticationMonitorLoggingTest {
     monitor.recordFailure(userB, IP);
     monitor.recordFailure(userB, IP); // locked
 
-    assertFalse(monitor.isLocked(userA));
-    assertTrue(monitor.isLocked(userB));
+    assertFalse(monitor.isLocked(userA, IP));
+    assertTrue(monitor.isLocked(userB, IP));
 
     // Make userA idle > 5 min, keep userB still locked (lock = 10 min)
     clock.advanceSeconds(360);
@@ -95,7 +95,7 @@ class AuthenticationMonitorLoggingTest {
     int removed = monitor.sweepOldEntries(300);
     assertEquals(1, removed);
 
-    assertTrue(monitor.isLocked(userB));
+    assertTrue(monitor.isLocked(userB, IP));
     assertTrue(monitor.getLockedUsers().stream().anyMatch(s -> s.username().equals(userB) && s.locked()));
   }
 
@@ -114,7 +114,7 @@ class AuthenticationMonitorLoggingTest {
     int removed = monitor.sweepOldEntries(300);
     assertEquals(0, removed);
 
-    assertTrue(monitor.isLocked(userB));
+    assertTrue(monitor.isLocked(userB, IP));
   }
 
   @Test
@@ -124,11 +124,11 @@ class AuthenticationMonitorLoggingTest {
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
     monitor.recordFailure(username, IP);
-    assertTrue(monitor.isLocked(username));
+    assertTrue(monitor.isLocked(username, IP));
 
     monitor.reset(username);
 
-    assertFalse(monitor.isLocked(username));
+    assertFalse(monitor.isLocked(username, IP));
     assertTrue(monitor.getLockedUsers().isEmpty());
   }
 

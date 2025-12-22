@@ -31,6 +31,7 @@ public enum AuthLogMessages implements LogMessage {
 // <editor-fold desc="Authentication monitor messages">
   AUTH_FAILURE(LEVEL.WARN, AuthCategory.AUTHENTICATION, "AUTH_FAILURE username={} failures={} ip={}"),
   AUTH_LOCKOUT_STARTED(LEVEL.WARN, AuthCategory.AUTHENTICATION, "AUTH_LOCKOUT username={} failures={} lockSeconds={} ip={}"),
+  AUTH_LOCKOUT(LEVEL.INFO, AuthCategory.AUTHENTICATION, "AUTH_LOCKOUT username={} failures={} lockSeconds={} ip={}"),
   AUTH_REJECTED_LOCKED(LEVEL.INFO, AuthCategory.AUTHENTICATION, "AUTH_REJECTED_LOCKED username={} remainingSeconds={} ip={}"),
   AUTH_SUCCESS_AFTER_FAILURES(LEVEL.INFO, AuthCategory.AUTHENTICATION, "AUTH_SUCCESS_AFTER_FAILURES username={} failures={} ip={}"),
 

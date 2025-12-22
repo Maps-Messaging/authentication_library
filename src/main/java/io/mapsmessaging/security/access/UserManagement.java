@@ -167,7 +167,7 @@ public class UserManagement {
 
     String ipAddress = context.ipAddress();
     // Fast fail if currently locked
-    if (authenticationMonitor.isLocked(username)) {
+    if (authenticationMonitor.isLocked(username, ipAddress)) {
       return false;
     }
 

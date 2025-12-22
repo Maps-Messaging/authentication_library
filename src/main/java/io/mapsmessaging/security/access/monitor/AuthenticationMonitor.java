@@ -20,6 +20,8 @@
 
 package io.mapsmessaging.security.access.monitor;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH_LOCKOUT;
+
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.logging.AuthLogMessages;
@@ -46,11 +48,13 @@ public class AuthenticationMonitor {
     this.tracker = new AttemptTracker(clock, config.getFailureDecaySeconds());
   }
 
-  public boolean isLocked(String username) {
+  public boolean isLocked(String username, String ipAddress) {
     AuthState state = tracker.peekState(username);
     if (state == null) {
       return false;
     }
+
+    logger.log(AUTH_LOCKOUT, username,  state.getFailureCount(), state.getRemainingLockSeconds(clock.instant()), ipAddress);
     return state.isLocked(clock.instant());
   }
 
