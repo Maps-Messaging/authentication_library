@@ -24,6 +24,8 @@ import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitor;
+import io.mapsmessaging.security.access.monitor.LockStatus;
 import io.mapsmessaging.security.authorisation.AuthorizationProvider;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
@@ -45,15 +47,23 @@ public class UserManagement {
   private final UserMapManagement userMapManagement;
   private final GroupManagement groupManagement;
   private final AuthorizationProvider authorizationProvider;
+  private final AuthenticationMonitor authenticationMonitor;
   @Getter
   protected final PasswordHandler passwordHandler;
 
-  public UserManagement(IdentityLookup identityLookup, UserMapManagement userMapManagement, GroupManagement groupManagement, PasswordHandler passwordHandler, AuthorizationProvider authorizationProvider) {
+  public UserManagement(IdentityLookup identityLookup,
+                        UserMapManagement userMapManagement,
+                        GroupManagement groupManagement,
+                        PasswordHandler passwordHandler,
+                        AuthorizationProvider authorizationProvider,
+                        AuthenticationMonitor authenticationMonitor
+  ) {
     this.identityLookup = identityLookup;
     this.userMapManagement = userMapManagement;
     this.passwordHandler = passwordHandler;
     this.groupManagement = groupManagement;
     this.authorizationProvider = authorizationProvider;
+    this.authenticationMonitor = authenticationMonitor;
     for (IdentityEntry entry : identityLookup.getEntries()) {
       mapUser(entry);
     }
@@ -118,6 +128,8 @@ public class UserManagement {
       userMapManagement.delete(identityLookup.getDomain() + ":" + username);
       userMapManagement.save();
       groupManagement.deleteUserFromAllGroups(username);
+      // Deletion is a hard reset of all auth state
+      authenticationMonitor.reset(username);
       return true;
     }
     return false;
@@ -129,20 +141,55 @@ public class UserManagement {
     if (entry != null) {
       identityLookup.deleteUser(username);
       identityLookup.createUser(username, hash, entry.getPasswordHasher());
+      authenticationMonitor.recordSuccess(username, "password-change");
       return true;
     }
     return false;
   }
 
-  public boolean validateUser(String username, char[] password) throws IOException {
-    IdentityEntry entry = identityLookup.findEntry(username);
-    if (entry != null) {
-      try {
-        return entry.getPasswordHasher().matches(password);
-      } catch (GeneralSecurityException e) {
-        throw new IOException(e);
-      }
+  public void clearUserLock(String username){
+    authenticationMonitor.reset(username);
+  }
+
+  public LockStatus getUserLockStatus(String username) {
+    return authenticationMonitor.getLockStatus(username);
+  }
+
+  public List<LockStatus> getLockedUsers() {
+    return authenticationMonitor.getLockedUsers();
+  }
+
+  public int sweepOldEntries(int idleSeconds) {
+    return authenticationMonitor.sweepOldEntries(idleSeconds);
+  }
+
+  public boolean validateUser(String username, char[] password, AuthContext context) throws IOException {
+
+    String ipAddress = context.ipAddress();
+    // Fast fail if currently locked
+    if (authenticationMonitor.isLocked(username)) {
+      return false;
     }
+
+    IdentityEntry entry = identityLookup.findEntry(username);
+    boolean success = false;
+    try {
+      if (entry != null) {
+        success = entry.getPasswordHasher().matches(password);
+      } else {
+        // Dummy verification to equalise timing
+        passwordHandler.matches(password);
+      }
+    } catch (GeneralSecurityException e) {
+      authenticationMonitor.recordFailure(username, ipAddress);
+      throw new IOException(e);
+    }
+
+    if (success) {
+      authenticationMonitor.recordSuccess(username, ipAddress);
+      return true;
+    }
+    authenticationMonitor.recordFailure(username, ipAddress);
     return false;
   }
 

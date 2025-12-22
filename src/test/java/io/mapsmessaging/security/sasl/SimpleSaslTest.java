@@ -26,6 +26,7 @@ import io.mapsmessaging.security.access.IdentityAccessManager;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitorConfig;
 import io.mapsmessaging.security.authorisation.TestPermissions;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.passwords.hashes.sha.Sha1PasswordHasher;
@@ -72,7 +73,7 @@ class SimpleSaslTest extends BaseSasl {
     MapFileStore<UserIdMap> users = new MapFileStore<>("userMap");
     MapFileStore<GroupIdMap> groups = new MapFileStore<>("groupMap");
 
-    identityAccessManager = new IdentityAccessManager("Encrypted-Auth", baseConfig, users, groups, null, TestPermissions.values());
+    identityAccessManager = new IdentityAccessManager("Encrypted-Auth", baseConfig, users, groups, null, new AuthenticationMonitorConfig(), TestPermissions.values());
     IdentityLookupFactory.getInstance()
         .registerSiteIdentityLookup("Encrypted-Auth", identityAccessManager.getIdentityLookup());
   }

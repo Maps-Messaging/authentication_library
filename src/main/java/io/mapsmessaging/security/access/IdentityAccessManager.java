@@ -26,6 +26,8 @@ import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.access.mapping.store.MapStore;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitor;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitorConfig;
 import io.mapsmessaging.security.authorisation.*;
 import io.mapsmessaging.security.authorisation.impl.open.OpenAuthorizationProvider;
 import io.mapsmessaging.security.identity.IdentityEntry;
@@ -54,6 +56,7 @@ public class IdentityAccessManager {
       MapStore<UserIdMap> userStore,
       MapStore<GroupIdMap> groupStore,
       ResourceTraversalFactory traversalFactory,
+      AuthenticationMonitorConfig authMonitorConfig,
       Permission[]  permissions) throws IOException {
     identityLookup = IdentityLookupFactory.getInstance().get(identity, config);
 
@@ -69,6 +72,7 @@ public class IdentityAccessManager {
     GroupMapManagement groupMapManagement = new GroupMapManagement(groupStore);
     UserMapManagement userMapManagement = new UserMapManagement(userStore);
 
+    AuthenticationMonitor authenticationMonitor = new AuthenticationMonitor(authMonitorConfig);
     PasswordHandler passwordHandler;
     String handlerName = (String) config.get("passwordHandler");
     if (handlerName == null || handlerName.isEmpty()) {
@@ -81,7 +85,7 @@ public class IdentityAccessManager {
       passwordHandler = baseHandler;
     }
     groupManagement = new GroupManagement(identityLookup, userMapManagement, groupMapManagement, authorizationProvider);
-    userManagement = new UserManagement(identityLookup, userMapManagement, groupManagement, passwordHandler, authorizationProvider);
+    userManagement = new UserManagement(identityLookup, userMapManagement, groupManagement, passwordHandler, authorizationProvider, authenticationMonitor);
 
     userMapManagement.save();
     groupMapManagement.save();
@@ -99,8 +103,8 @@ public class IdentityAccessManager {
     return subject;
   }
 
-  public boolean validateUser(String username, char[] passwordHash) throws IOException{
-    return userManagement.validateUser(username, passwordHash);
+  public boolean validateUser(String username, char[] passwordHash, AuthContext context) throws IOException{
+    return userManagement.validateUser(username, passwordHash, context);
   }
 
   public void setAsSystemIdentityLookup(){

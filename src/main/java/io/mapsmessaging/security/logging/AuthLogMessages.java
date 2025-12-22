@@ -28,6 +28,11 @@ import lombok.Getter;
 public enum AuthLogMessages implements LogMessage {
 
   //-------------------------------------------------------------------------------------------------------------
+// <editor-fold desc="Authentication monitor messages">
+  AUTH_FAILURE(LEVEL.WARN, AuthCategory.AUTHENTICATION, "AUTH_FAILURE username={} failures={} ip={}"),
+  AUTH_LOCKOUT_STARTED(LEVEL.WARN, AuthCategory.AUTHENTICATION, "AUTH_LOCKOUT username={} failures={} lockSeconds={} ip={}"),
+  AUTH_REJECTED_LOCKED(LEVEL.INFO, AuthCategory.AUTHENTICATION, "AUTH_REJECTED_LOCKED username={} remainingSeconds={} ip={}"),
+  AUTH_SUCCESS_AFTER_FAILURES(LEVEL.INFO, AuthCategory.AUTHENTICATION, "AUTH_SUCCESS_AFTER_FAILURES username={} failures={} ip={}"),
 
   // <editor-fold desc="SCRAM messages">
   SCRAM_SERVER_INITIAL_PHASE(LEVEL.INFO, AuthCategory.AUTHENTICATION, "SCRAM server initialising using algorithm {}"),
@@ -43,7 +48,6 @@ public enum AuthLogMessages implements LogMessage {
   // <editor-fold desc="Generic messages">
   DO_NOT_USE_IN_PRODUCTION(LEVEL.AUTH, AuthCategory.AUTHENTICATION, "Warning !!!, Not to be used in a production environment"),
   USER_LOGGED_IN(LEVEL.DEBUG, AuthCategory.AUTHENTICATION, "User {} logged in"),
-  NO_SUCH_USER_FOUND(LEVEL.INFO, AuthCategory.AUTHENTICATION, "User {} not found"),
   USER_LOGGED_OUT(LEVEL.DEBUG, AuthCategory.AUTHENTICATION, "User {} logged out"),
   // </editor-fold>
 

@@ -28,6 +28,7 @@ import io.mapsmessaging.security.SubjectHelper;
 import io.mapsmessaging.security.access.mapping.GroupIdMap;
 import io.mapsmessaging.security.access.mapping.UserIdMap;
 import io.mapsmessaging.security.access.mapping.store.MapFileStore;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitorConfig;
 import io.mapsmessaging.security.authorisation.TestPermissions;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
@@ -97,7 +98,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     MapFileStore<UserIdMap> users = new MapFileStore<>("userMap");
     MapFileStore<GroupIdMap> groups = new MapFileStore<>("groupMap");
 
-    IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups, null, TestPermissions.values());
+    IdentityAccessManager identityAccessManager = new IdentityAccessManager(auth, config, users, groups, null, new AuthenticationMonitorConfig(), TestPermissions.values());
     IdentityLookupFactory.getInstance().registerSiteIdentityLookup(auth, identityAccessManager.getIdentityLookup());
 
     for (Identity userIdMap : identityAccessManager.getUserManagement().getAllUsers()) {
@@ -148,18 +149,19 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
         count++;
         username = username.replaceAll(" ", "_");
       }
+      AuthContext context = new AuthContext("localhost", "protocol", "endpoint");
       char[] password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20))).toCharArray();
       identityAccessManager.getUserManagement().createUser(username, password);
       String group = groupNames.get(Math.abs(random.nextInt(groupNames.size())));
       identityAccessManager.getGroupManagement().addUserToGroup(username, group);
       Assertions.assertEquals(username, identityAccessManager.getUserManagement().getUser(username).getUsername());
       Assertions.assertNotNull(identityAccessManager.getUserManagement().getUser(username).getId());
-      Assertions.assertTrue(identityAccessManager.getUserManagement().validateUser(username, password));
+      Assertions.assertTrue(identityAccessManager.getUserManagement().validateUser(username, password, context));
       Identity identity = identityAccessManager.getUserManagement().getUser(username);
       Assertions.assertEquals(username, identity.getUsername());
       password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20))).toCharArray();
       identityAccessManager.getUserManagement().updateUserPassword(username, password);
-      Assertions.assertTrue(identityAccessManager.getUserManagement().validateUser(username, password));
+      Assertions.assertTrue(identityAccessManager.getUserManagement().validateUser(username, password, context));
       userPasswordMap.put(username, password);
       Subject subject = new Subject();
       identityAccessManager.getUserManagement().updateSubject(subject, username);
