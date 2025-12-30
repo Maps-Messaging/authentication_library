@@ -73,11 +73,7 @@ public class AuthenticationMonitor {
     for (Map.Entry<String, AuthState> entry : tracker.snapshot().entrySet()) {
       AuthState state = entry.getValue();
       if (state.isLocked(now)) {
-        UserIdMap userIdMap = userMapManagement.get(entry.getKey());
-        UUID uuid = null;
-        if(userIdMap != null){
-          uuid = userIdMap.getAuthId();
-        }
+        UUID uuid = lookupUUId(entry.getKey());
         result.add(
             new LockStatus(
                 uuid,
@@ -112,10 +108,7 @@ public class AuthenticationMonitor {
 
     String lockedUntilIso = state.getLockedUntil() == null ? null : state.getLockedUntil().toString();
     UserIdMap userIdMap = userMapManagement.get(username);
-    UUID uuid = null;
-    if(userIdMap != null){
-      uuid = userIdMap.getAuthId();
-    }
+    UUID uuid = lookupUUId(username);
     return new LockStatus(uuid, username, locked, remaining, lockedUntilIso);
   }
 
@@ -170,5 +163,16 @@ public class AuthenticationMonitor {
 
   public void reset(String username) {
     tracker.clearState(username);
+  }
+
+  private UUID lookupUUId(String username){
+    UUID uuid = null;
+    if(userMapManagement != null){
+      UserIdMap userIdMap = userMapManagement.get(username);
+      if (userIdMap != null) {
+        uuid = userIdMap.getAuthId();
+      }
+    }
+    return uuid;
   }
 }
