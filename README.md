@@ -13,6 +13,9 @@ security protocols in Java applications.
   Auth0, and LDAP.
 * Provides a generic ACL for resource access authorization.
 
+Want to dive deeper?
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Maps-Messaging/authentication_library)
+
 ## Getting Started
 
 To quickly integrate this library into your Java project, follow these steps:
