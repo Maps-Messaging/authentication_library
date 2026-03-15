@@ -28,6 +28,7 @@ import io.mapsmessaging.security.access.mapping.GroupMapManagement;
 import io.mapsmessaging.security.identity.GroupEntry;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.impl.apache.HtPasswdEntry;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -89,7 +90,7 @@ public class AuthTestHelper {
     authorisation.put("cachingTime", 10);
     config.put("authorisation", authorisation);
     Map<String, Object> openFgaMap = new HashMap<>();
-    openFgaMap.put("uris", "http://10.140.62.152:8080");
+    openFgaMap.put("uris", "http://openfga.syd.mapsmessaging.io:8080");
     openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
     openFgaMap.put("modelId", "01KB1X6KRRB2KRV1HK5K0WADTR");
     openFgaMap.put("connectionTimeout", 10);
@@ -125,7 +126,7 @@ public class AuthTestHelper {
     config.put("enableCaching", true);
     config.put("authorisation", authorisation);
     Map<String, Object> openFgaMap = new HashMap<>();
-    openFgaMap.put("uris", "http://10.140.62.152:8080");
+    openFgaMap.put("uris", "http://openfga.syd.mapsmessaging.io:8080");
     openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
     openFgaMap.put("modelId", "01KB1X6KRRB2KRV1HK5K0WADTR");
     openFgaMap.put("connectionTimeout", 10);
