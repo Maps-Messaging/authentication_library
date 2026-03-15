@@ -20,5 +20,7 @@
 
 package io.mapsmessaging.security.access.monitor;
 
+import java.util.UUID;
+
 public record LockStatus(
-    String username, boolean locked, long remainingLockSeconds, String lockedUntilIso) {}
+    UUID uuid, String username, boolean locked, long remainingLockSeconds, String lockedUntilIso) {}

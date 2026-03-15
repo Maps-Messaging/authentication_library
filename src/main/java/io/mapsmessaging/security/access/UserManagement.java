@@ -67,6 +67,7 @@ public class UserManagement {
     for (IdentityEntry entry : identityLookup.getEntries()) {
       mapUser(entry);
     }
+    authenticationMonitor.setUserMapManagement(userMapManagement);
   }
 
   protected IdentityEntry updateSubject(Subject subject, String username) {

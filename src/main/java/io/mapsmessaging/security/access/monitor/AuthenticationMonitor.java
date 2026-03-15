@@ -24,12 +24,17 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH_LOCKOUT;
 
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
 import io.mapsmessaging.security.logging.AuthLogMessages;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
 public class AuthenticationMonitor {
 
@@ -37,6 +42,10 @@ public class AuthenticationMonitor {
   private final AttemptTracker tracker;
   private final Clock clock;
   private final Logger logger = LoggerFactory.getLogger(AuthenticationMonitor.class);
+  @Setter
+  @Getter
+  private UserMapManagement userMapManagement;
+
 
   public AuthenticationMonitor(AuthenticationMonitorConfig config) {
     this(config, Clock.systemUTC());
@@ -64,8 +73,10 @@ public class AuthenticationMonitor {
     for (Map.Entry<String, AuthState> entry : tracker.snapshot().entrySet()) {
       AuthState state = entry.getValue();
       if (state.isLocked(now)) {
+        UUID uuid = lookupUUId(entry.getKey());
         result.add(
             new LockStatus(
+                uuid,
                 entry.getKey(),
                 true,
                 state.getRemainingLockSeconds(now),
@@ -95,10 +106,10 @@ public class AuthenticationMonitor {
     boolean locked = state.isLocked(now);
     long remaining = state.getRemainingLockSeconds(now);
 
-    String lockedUntilIso =
-        state.getLockedUntil() == null ? null : state.getLockedUntil().toString();
-
-    return new LockStatus(username, locked, remaining, lockedUntilIso);
+    String lockedUntilIso = state.getLockedUntil() == null ? null : state.getLockedUntil().toString();
+    UserIdMap userIdMap = userMapManagement.get(username);
+    UUID uuid = lookupUUId(username);
+    return new LockStatus(uuid, username, locked, remaining, lockedUntilIso);
   }
 
   public void recordFailure(String username, String ipAddress) {
@@ -152,5 +163,16 @@ public class AuthenticationMonitor {
 
   public void reset(String username) {
     tracker.clearState(username);
+  }
+
+  private UUID lookupUUId(String username){
+    UUID uuid = null;
+    if(userMapManagement != null){
+      UserIdMap userIdMap = userMapManagement.get(username);
+      if (userIdMap != null) {
+        uuid = userIdMap.getAuthId();
+      }
+    }
+    return uuid;
   }
 }

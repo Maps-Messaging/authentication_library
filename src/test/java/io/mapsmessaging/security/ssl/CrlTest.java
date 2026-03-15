@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class CrlTest {
+class CrlTest {
 
+  @Disabled // Need a new crl list to test from
   @Test
   void simpleCrlTest() throws IOException, CertificateException, OperatorCreationException {
     CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(new URL("http://crls.pki.goog/gts1c3/zdATt0Ex_Fk.crl"), 10L*24L*60L*60L*1000L);
