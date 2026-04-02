@@ -40,7 +40,7 @@ steps:
       - export SOFTHSM2_CONF=/var/lib/buildkite-agent/lib/softhsm/softhsm2.conf
       - export SONAR_TOKEN=$(buildkite-agent secret get SONAR_TOKEN)
       - export NVD_API_KEY=$(buildkite-agent secret get nvd_api_key)
-      - mvn -Dgpg.skip=true clean deploy -Psnapshot -DskipTests
+      - mvn -Dgpg.skip=true clean deploy -Psnapshot
       - mvn sonar:sonar -Dsonar.login=${SONAR_TOKEN}
     plugins:
       - test-collector#v1.0.0:
