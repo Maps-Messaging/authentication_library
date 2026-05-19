@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Copyright [ 2020 - 2024 ] Matthew Buckton
-  ~  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+  ~  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
   ~
   ~  Licensed under the Apache License, Version 2.0 with the Commons Clause
   ~  (the "License"); you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
 
   <groupId>io.mapsmessaging</groupId>
   <artifactId>authentication_library</artifactId>
-  <version>3.0.1</version>
+  <version>3.0.3-SNAPSHOT</version>
 
   <packaging>jar</packaging>
 
@@ -116,7 +116,7 @@
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>configuration_library</artifactId>
-          <version>1.1.4</version>
+          <version>1.1.5</version>
         </dependency>
       </dependencies>
 
@@ -167,7 +167,7 @@
         <dependency>
           <groupId>io.mapsmessaging</groupId>
           <artifactId>configuration_library</artifactId>
-          <version>1.1.5-SNAPSHOT</version>
+          <version>1.1.6-SNAPSHOT</version>
         </dependency>
       </dependencies>
     </profile>
