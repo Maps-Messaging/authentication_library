@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 
 public class AttemptTracker {
 
@@ -82,10 +83,11 @@ public class AttemptTracker {
       }
 
       Instant lastFailure = state.getLastFailureAt();
-      Instant lastSuccess = state.getLastSuccessAt();
+      Instant lastSuccess  = state.getLastSuccessAt();
       Instant lastActivity = lastFailure != null ? lastFailure : lastSuccess;
-      if (lastActivity == null
-          || (lastActivity.isBefore(cutoff) && stateMap.remove(username, state))) {
+
+      boolean expired = lastActivity == null || lastActivity.isBefore(cutoff);
+      if (expired && stateMap.remove(username, state)) {
         removed++;
       }
     }
@@ -95,4 +97,25 @@ public class AttemptTracker {
   public int size() {
     return stateMap.size();
   }
+
+  public AuthState findState(String username) {
+    Instant now = clock.instant();
+
+    AuthState state = stateMap.get(username);
+    if (state == null) {
+      return null;
+    }
+
+    if (state.shouldDecayFailures(now, failureDecaySeconds)) {
+      stateMap.remove(username, state);
+      return null;
+    }
+
+    return state;
+  }
+
+  public AuthState updateState(String username, BiFunction<String, AuthState, AuthState> updateFunction) {
+    return stateMap.compute(username, updateFunction);
+  }
+
 }

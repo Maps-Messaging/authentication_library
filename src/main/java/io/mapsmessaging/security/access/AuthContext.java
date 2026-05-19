@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public record AuthContext(String ipAddress, String protocol, String endpoint) {
 
     // IPv4 with port: 1.2.3.4:5678
     int colon = ip.lastIndexOf(':');
-    if (colon > 0 && ip.indexOf('.') != -1) {
+    if (colon > 0 && ip.indexOf('.') != -1 && ip.indexOf(':') == colon) {
       ip = ip.substring(0, colon);
     }
 

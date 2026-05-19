@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -63,8 +63,14 @@ public class AuthenticationMonitor {
       return false;
     }
 
-    logger.log(AUTH_LOCKOUT, username,  state.getFailureCount(), state.getRemainingLockSeconds(clock.instant()), ipAddress);
-    return state.isLocked(clock.instant());
+    Instant now = clock.instant();
+    boolean locked = state.isLocked(now);
+
+    if (locked) {
+      logger.log(AUTH_LOCKOUT, username, state.getFailureCount(), state.getRemainingLockSeconds(now), ipAddress);
+    }
+
+    return locked;
   }
 
   public List<LockStatus> getLockedUsers() {
@@ -100,59 +106,85 @@ public class AuthenticationMonitor {
   }
 
   public LockStatus getLockStatus(String username) {
-    AuthState state = tracker.getState(username);
+    AuthState state = tracker.findState(username);
+    UUID uuid = lookupUUId(username);
+
+    if (state == null) {
+      return new LockStatus(uuid, username, false, 0, null);
+    }
+
     Instant now = clock.instant();
 
     boolean locked = state.isLocked(now);
     long remaining = state.getRemainingLockSeconds(now);
-
     String lockedUntilIso = state.getLockedUntil() == null ? null : state.getLockedUntil().toString();
-    UserIdMap userIdMap = userMapManagement.get(username);
-    UUID uuid = lookupUUId(username);
+
     return new LockStatus(uuid, username, locked, remaining, lockedUntilIso);
   }
 
   public void recordFailure(String username, String ipAddress) {
     Instant now = clock.instant();
-    AuthState state = tracker.getState(username);
 
-    if (state.isLocked(now)) {
-      // already locked, no extra logging
-      return;
-    }
+    tracker.updateState(
+        username,
+        (key, state) -> {
+          AuthState currentState = state;
+          if (currentState == null || currentState.shouldDecayFailures(now, config.getFailureDecaySeconds())) {
+            currentState = new AuthState();
+          }
 
-    state.recordFailure(now);
+          if (currentState.isLocked(now)) {
+            return currentState;
+          }
 
-    logger.log(AuthLogMessages.AUTH_FAILURE, username, state.getFailureCount(), ipAddress);
+          currentState.recordFailure(now);
 
-    if (state.getFailureCount() >= config.getMaxFailuresBeforeLock()) {
-      long lockSeconds = computeLockSeconds(state);
-      state.lockUntil(now.plusSeconds(lockSeconds));
-      state.incrementLockCount();
+          logger.log(
+              AuthLogMessages.AUTH_FAILURE,
+              username,
+              currentState.getFailureCount(),
+              ipAddress);
 
-      logger.log(
-          AuthLogMessages.AUTH_LOCKOUT_STARTED,
-          username,
-          state.getFailureCount(),
-          lockSeconds,
-          ipAddress);
-    }
+          if (currentState.getFailureCount() >= config.getMaxFailuresBeforeLock()) {
+            long lockSeconds = computeLockSeconds(currentState);
+            currentState.lockUntil(now.plusSeconds(lockSeconds));
+            currentState.incrementLockCount();
+
+            logger.log(
+                AuthLogMessages.AUTH_LOCKOUT_STARTED,
+                username,
+                currentState.getFailureCount(),
+                lockSeconds,
+                ipAddress);
+          }
+
+          return currentState;
+        });
   }
 
   public void recordSuccess(String username, String ipAddress) {
-    AuthState state = tracker.getState(username);
+    Instant now = clock.instant();
 
-    if (state.getFailureCount() > 0) {
-      logger.log(
-          AuthLogMessages.AUTH_SUCCESS_AFTER_FAILURES,
-          username,
-          state.getFailureCount(),
-          ipAddress);
-    }
+    tracker.updateState(
+        username,
+        (key, state) -> {
+          if (state == null) {
+            return null;
+          }
 
-    state.recordSuccess(clock.instant());
-    state.resetLockCount();
-    tracker.clearState(username);
+          if (state.getFailureCount() > 0) {
+            logger.log(
+                AuthLogMessages.AUTH_SUCCESS_AFTER_FAILURES,
+                username,
+                state.getFailureCount(),
+                ipAddress);
+          }
+
+          state.recordSuccess(now);
+          state.resetLockCount();
+
+          return null;
+        });
   }
 
   private long computeLockSeconds(AuthState state) {
