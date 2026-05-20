@@ -20,12 +20,10 @@
   -->
 
 <configuration>
-  <appender class="ch.qos.logback.core.ConsoleAppender" name="STDERR">
-    <target>System.err</target>
+  <appender name="IN_MEMORY_APPENDER" class="io.mapsmessaging.security.InMemoryAppender">
   </appender>
-  <root level="info">
-    <appender-ref ref="STDERR"/>
-  </root>
-  <shutdownHook/>
 
+  <root level="trace">
+    <appender-ref ref="IN_MEMORY_APPENDER" />
+  </root>
 </configuration>

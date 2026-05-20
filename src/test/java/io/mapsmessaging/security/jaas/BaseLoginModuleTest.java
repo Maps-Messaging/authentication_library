@@ -20,6 +20,7 @@
 
 package io.mapsmessaging.security.jaas;
 
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
@@ -41,7 +42,9 @@ public abstract class BaseLoginModuleTest {
 
 
   void testLoad(String jaasConfigName) throws LoginException {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    AuthContext context = new AuthContext("localhost", "test", "test");
+
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "", context);
     LoginContext loginContext = new LoginContext(jaasConfigName, clientCallbackHandler);
     Assertions.assertNotNull(loginContext);
     loginContext.login();

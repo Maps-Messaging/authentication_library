@@ -23,6 +23,7 @@ package io.mapsmessaging.security.jaas;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
 import java.net.URI;
@@ -75,8 +76,9 @@ class Auth0LoginTest {
     JsonObject jsonObject = JsonParser.parseString(response.body()).getAsJsonObject();
     char[] access_token = jsonObject.get("access_token").getAsString().toCharArray();
 
+    AuthContext context = new AuthContext("localhost", "test", "test");
 
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("oNnOEXu8CsIYYxpu56ADpfm4Ma8Z1GNt", access_token, "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("oNnOEXu8CsIYYxpu56ADpfm4Ma8Z1GNt", access_token, "", context);
     Subject subject = new Subject();
     LoginModule loginModule = new Auth0JwtLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
@@ -88,7 +90,9 @@ class Auth0LoginTest {
 
   @Test
   void basicExceptionalidation() {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("Auth0", "BadToken".toCharArray(), "");
+    AuthContext context = new AuthContext("localhost", "test", "test");
+
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("Auth0", "BadToken".toCharArray(), "", context);
     Subject subject = new Subject();
     LoginModule loginModule = new Auth0JwtLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());

@@ -21,6 +21,7 @@
 package io.mapsmessaging.security.jaas;
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.security.Principal;
 import java.util.LinkedHashMap;
@@ -33,7 +34,8 @@ class AnonymousLoginTest {
   @Test
   void simpleLoginTest() {
     Subject subject = new Subject();
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("", new char[0], "");
+    AuthContext context = new AuthContext("localhost", "test", "test");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler("", new char[0], "", context);
     AnonymousLoginModule module = new AnonymousLoginModule();
     module.initialize(subject, clientCallbackHandler, new LinkedHashMap<>(), new LinkedHashMap<>());
 

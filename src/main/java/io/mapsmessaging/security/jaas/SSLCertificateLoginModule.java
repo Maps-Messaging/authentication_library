@@ -22,6 +22,7 @@ package io.mapsmessaging.security.jaas;
 
 
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import java.io.IOException;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class SSLCertificateLoginModule extends BaseLoginModule {
   }
 
   @Override
-  protected boolean validate(String username, char[] password) {
+  protected boolean validate(String username, char[] password, AuthContext context) {
     // Not called in this instance
     return true;
   }

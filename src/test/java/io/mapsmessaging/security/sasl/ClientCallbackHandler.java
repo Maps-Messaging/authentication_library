@@ -20,6 +20,8 @@
 
 package io.mapsmessaging.security.sasl;
 
+import io.mapsmessaging.security.access.AuthContext;
+import io.mapsmessaging.security.jaas.AuthContextCallback;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -31,25 +33,26 @@ public class ClientCallbackHandler  implements CallbackHandler {
   private final String username;
   private final char[] password;
   private final String serverName;
+  private final AuthContext context;
 
-  public ClientCallbackHandler(String username, char[] password, String serverName) {
+  public ClientCallbackHandler(String username, char[] password, String serverName, AuthContext context) {
     this.username = username;
     this.password = password;
     this.serverName = serverName;
+    this.context = context;
   }
 
   @Override
   public void handle(Callback[] cbs) {
     for (Callback cb : cbs) {
-      if (cb instanceof NameCallback) {
-        NameCallback nc = (NameCallback) cb;
+      if (cb instanceof NameCallback nc) {
         nc.setName(username);
-      } else if (cb instanceof PasswordCallback) {
-        PasswordCallback pc = (PasswordCallback) cb;
+      } else if (cb instanceof PasswordCallback pc) {
         pc.setPassword(password);
-      } else if (cb instanceof RealmCallback) {
-        RealmCallback rc = (RealmCallback) cb;
+      } else if (cb instanceof RealmCallback rc) {
         rc.setText(serverName);
+      } else if(cb instanceof AuthContextCallback acc){
+        acc.setAuthContext(context);
       }
     }
   }

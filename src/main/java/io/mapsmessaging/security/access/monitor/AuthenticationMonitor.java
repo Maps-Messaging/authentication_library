@@ -1,0 +1,210 @@
+/*
+ * Copyright [ 2020 - 2024 ] Matthew Buckton
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
+ *
+ *  Licensed under the Apache License, Version 2.0 with the Commons Clause
+ *  (the "License"); you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://commonsclause.com/
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *
+ */
+
+package io.mapsmessaging.security.access.monitor;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH_LOCKOUT;
+
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.security.access.mapping.UserIdMap;
+import io.mapsmessaging.security.access.mapping.UserMapManagement;
+import io.mapsmessaging.security.logging.AuthLogMessages;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
+
+public class AuthenticationMonitor {
+
+  private final AuthenticationMonitorConfig config;
+  private final AttemptTracker tracker;
+  private final Clock clock;
+  private final Logger logger = LoggerFactory.getLogger(AuthenticationMonitor.class);
+  @Setter
+  @Getter
+  private UserMapManagement userMapManagement;
+
+
+  public AuthenticationMonitor(AuthenticationMonitorConfig config) {
+    this(config, Clock.systemUTC());
+  }
+
+  public AuthenticationMonitor(AuthenticationMonitorConfig config, Clock clock) {
+    this.clock = clock;
+    this.config = config;
+    this.tracker = new AttemptTracker(clock, config.getFailureDecaySeconds());
+  }
+
+  public boolean isLocked(String username, String ipAddress) {
+    AuthState state = tracker.peekState(username);
+    if (state == null) {
+      return false;
+    }
+
+    Instant now = clock.instant();
+    boolean locked = state.isLocked(now);
+
+    if (locked) {
+      logger.log(AUTH_LOCKOUT, username, state.getFailureCount(), state.getRemainingLockSeconds(now), ipAddress);
+    }
+
+    return locked;
+  }
+
+  public List<LockStatus> getLockedUsers() {
+    Instant now = clock.instant();
+    List<LockStatus> result = new ArrayList<>();
+    for (Map.Entry<String, AuthState> entry : tracker.snapshot().entrySet()) {
+      AuthState state = entry.getValue();
+      if (state.isLocked(now)) {
+        UUID uuid = lookupUUId(entry.getKey());
+        result.add(
+            new LockStatus(
+                uuid,
+                entry.getKey(),
+                true,
+                state.getRemainingLockSeconds(now),
+                state.getLockedUntil().toString()));
+      }
+    }
+
+    return result;
+  }
+
+  public int sweepOldEntries(int idleSeconds) {
+    if (idleSeconds <= 0) {
+      return 0;
+    }
+    Instant cutoff = clock.instant().minusSeconds(idleSeconds);
+    return tracker.sweep(cutoff);
+  }
+
+  int getTrackedUserCount() {
+    return tracker.size();
+  }
+
+  public LockStatus getLockStatus(String username) {
+    AuthState state = tracker.findState(username);
+    UUID uuid = lookupUUId(username);
+
+    if (state == null) {
+      return new LockStatus(uuid, username, false, 0, null);
+    }
+
+    Instant now = clock.instant();
+
+    boolean locked = state.isLocked(now);
+    long remaining = state.getRemainingLockSeconds(now);
+    String lockedUntilIso = state.getLockedUntil() == null ? null : state.getLockedUntil().toString();
+
+    return new LockStatus(uuid, username, locked, remaining, lockedUntilIso);
+  }
+
+  public void recordFailure(String username, String ipAddress) {
+    Instant now = clock.instant();
+
+    tracker.updateState(
+        username,
+        (key, state) -> {
+          AuthState currentState = state;
+          if (currentState == null || currentState.shouldDecayFailures(now, config.getFailureDecaySeconds())) {
+            currentState = new AuthState();
+          }
+
+          if (currentState.isLocked(now)) {
+            return currentState;
+          }
+
+          currentState.recordFailure(now);
+
+          logger.log(
+              AuthLogMessages.AUTH_FAILURE,
+              username,
+              currentState.getFailureCount(),
+              ipAddress);
+
+          if (currentState.getFailureCount() >= config.getMaxFailuresBeforeLock()) {
+            long lockSeconds = computeLockSeconds(currentState);
+            currentState.lockUntil(now.plusSeconds(lockSeconds));
+            currentState.incrementLockCount();
+
+            logger.log(
+                AuthLogMessages.AUTH_LOCKOUT_STARTED,
+                username,
+                currentState.getFailureCount(),
+                lockSeconds,
+                ipAddress);
+          }
+
+          return currentState;
+        });
+  }
+
+  public void recordSuccess(String username, String ipAddress) {
+    Instant now = clock.instant();
+
+    tracker.updateState(
+        username,
+        (key, state) -> {
+          if (state == null) {
+            return null;
+          }
+
+          if (state.getFailureCount() > 0) {
+            logger.log(
+                AuthLogMessages.AUTH_SUCCESS_AFTER_FAILURES,
+                username,
+                state.getFailureCount(),
+                ipAddress);
+          }
+
+          state.recordSuccess(now);
+          state.resetLockCount();
+
+          return null;
+        });
+  }
+
+  private long computeLockSeconds(AuthState state) {
+    long base = config.getInitialLockSeconds();
+    long lock = base << state.getLockCount();
+    return Math.min(lock, config.getMaxLockSeconds());
+  }
+
+  public void reset(String username) {
+    tracker.clearState(username);
+  }
+
+  private UUID lookupUUId(String username){
+    UUID uuid = null;
+    if(userMapManagement != null){
+      UserIdMap userIdMap = userMapManagement.get(username);
+      if (userIdMap != null) {
+        uuid = userIdMap.getAuthId();
+      }
+    }
+    return uuid;
+  }
+}

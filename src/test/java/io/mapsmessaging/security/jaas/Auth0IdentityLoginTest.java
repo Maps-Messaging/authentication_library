@@ -23,6 +23,7 @@ package io.mapsmessaging.security.jaas;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -87,7 +88,7 @@ public class Auth0IdentityLoginTest extends BaseIdentity {
   void simpleJwtLoginTest() throws Exception {
     Auth0Client auth0Client = new Auth0Client();
     char[] token = auth0Client.authenticateAndGetToken().toCharArray();
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), token, "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), token, "",new AuthContext("localhost", "test", "test"));
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
     Assertions.assertTrue(subject.getPrincipals().isEmpty());

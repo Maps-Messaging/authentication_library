@@ -29,6 +29,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.sun.security.auth.UserPrincipal;
+import io.mapsmessaging.security.access.AuthContext;
 import java.security.interfaces.RSAPublicKey;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -57,7 +58,7 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
   }
 
   @Override
-  protected boolean validate(String username, char[] password) throws LoginException {
+  protected boolean validate(String username, char[] password, AuthContext context) throws LoginException {
     try {
       String token = new String(password);
       JwkProvider provider = new UrlJwkProvider("https://" + domain + "/");

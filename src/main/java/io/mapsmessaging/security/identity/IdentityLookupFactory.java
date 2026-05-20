@@ -25,9 +25,12 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.IDENTITY_LOOKUP_
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
+import io.mapsmessaging.security.access.monitor.AuthenticationMonitor;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.Getter;
+import lombok.Setter;
 
 @SuppressWarnings("java:S6548") // yes it is a singleton
 public class IdentityLookupFactory {
@@ -40,6 +43,10 @@ public class IdentityLookupFactory {
     return IdentityLookupFactory.Holder.INSTANCE;
   }
 
+
+  @Getter
+  @Setter
+  private AuthenticationMonitor authenticationMonitor;
 
   private final Map<String, IdentityLookup> identityLookupMap = new ConcurrentHashMap<>();
   private final ServiceLoader<IdentityLookup> identityLookups;

@@ -20,6 +20,7 @@
 
 package io.mapsmessaging.security.jaas;
 
+import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.sasl.ClientCallbackHandler;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -63,7 +64,7 @@ public abstract class BaseIdentity {
   void noPasswordFileTestTest()  {
     Map<String,String> options = getOptions();
     options.put("passwordFile", "NoSuchFile");
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "",new AuthContext("localhost", "test", "test"));
     LoginModule module = createLoginModule(clientCallbackHandler, options);
     Assertions.assertThrowsExactly(LoginException.class, module::login);
   }
@@ -71,7 +72,7 @@ public abstract class BaseIdentity {
 
   @Test
   void simpleLoginTest() throws LoginException {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "",new AuthContext("localhost", "test", "test"));
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
     Assertions.assertTrue(subject.getPrincipals().isEmpty());
@@ -83,7 +84,7 @@ public abstract class BaseIdentity {
 
   @Test
   void simpleLoginValidationTest() {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "",new AuthContext("localhost", "test", "test"));
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertNotNull(module);
     Assertions.assertInstanceOf(BaseLoginModule.class, module);
@@ -96,7 +97,7 @@ public abstract class BaseIdentity {
 
   @Test
   void simpleAbortLoginTest() throws LoginException {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "",new AuthContext("localhost", "test", "test"));
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
     Assertions.assertTrue(subject.getPrincipals().isEmpty());
@@ -106,7 +107,7 @@ public abstract class BaseIdentity {
 
   @Test
   void simpleModuleTest() throws LoginException {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getUser(), getPassword(), "",new AuthContext("localhost", "test", "test"));
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertTrue(module.login());
     Assertions.assertTrue(module.commit());
@@ -115,11 +116,11 @@ public abstract class BaseIdentity {
 
   @Test
   void simpleFailedLoginTest() {
-    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getInvalidUser(), getPassword(), "");
+    ClientCallbackHandler clientCallbackHandler = new ClientCallbackHandler(getInvalidUser(), getPassword(), "",new AuthContext("localhost", "test", "test"));
     LoginModule module = createLoginModule(clientCallbackHandler);
     Assertions.assertThrowsExactly(LoginException.class, module::login);
 
-    clientCallbackHandler = new ClientCallbackHandler(getUser(), getInvalidPassword(), "");
+    clientCallbackHandler = new ClientCallbackHandler(getUser(), getInvalidPassword(), "",new AuthContext("localhost", "test", "test"));
     LoginModule module1 = createLoginModule(clientCallbackHandler);
     Assertions.assertThrowsExactly(LoginException.class, module1::login);
 

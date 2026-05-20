@@ -19,37 +19,18 @@
  */
 
 package io.mapsmessaging.security.jaas;
-
-
-import static io.mapsmessaging.security.logging.AuthLogMessages.DO_NOT_USE_IN_PRODUCTION;
-
-import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.access.AuthContext;
-import javax.security.auth.login.LoginException;
+import javax.security.auth.callback.Callback;
 
-public class AnonymousLoginModule extends BaseLoginModule {
+public class AuthContextCallback implements Callback {
 
-  public AnonymousLoginModule() {
-    super();
-    username = "anonymous";
-    logger.log(DO_NOT_USE_IN_PRODUCTION);
+  private AuthContext authContext;
+
+  public AuthContext getAuthContext() {
+    return authContext;
   }
 
-  @Override
-  public boolean login() {
-    userPrincipal = new UserPrincipal(username);
-    succeeded = true;
-    return true;
+  public void setAuthContext(AuthContext authContext) {
+    this.authContext = authContext;
   }
-
-  @Override
-  protected String getDomain() {
-    return "";
-  }
-
-  @Override
-  protected boolean validate(String username, char[] password, AuthContext context) throws LoginException {
-    return true;
-  }
-
 }

@@ -50,7 +50,7 @@ class SSLCertificateLoginModuleTest {
     assertTrue(subject.getPrincipals().contains(new UserPrincipal("testUser")), "Subject should contain UserPrincipal with 'testUser'");
     List<AuthHandlerPrincipal> authHandlerPrincipals = new ArrayList<>(subject.getPrincipals(AuthHandlerPrincipal.class));
     assertNotNull(authHandlerPrincipals);
-    assertTrue(loginModule.validate("", new char[0]));
+    assertTrue(loginModule.validate("", new char[0], null));
     assertEquals(1, authHandlerPrincipals.size());
     assertEquals("SSLCertificate", authHandlerPrincipals.get(0).getName());
   }

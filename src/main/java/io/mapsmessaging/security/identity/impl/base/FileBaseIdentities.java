@@ -20,8 +20,6 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.NO_SUCH_USER_FOUND;
-
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IdentityEntry;
@@ -51,7 +49,6 @@ public abstract class FileBaseIdentities extends FileLoader {
   public PasswordBuffer getPasswordHash(String username) throws IOException, GeneralSecurityException {
     IdentityEntry identityEntry = usernamePasswordMap.get(username);
     if (identityEntry == null) {
-      logger.log(NO_SUCH_USER_FOUND, username);
       throw new NoSuchUserFoundException("User: " + username + " not found");
     }
     return identityEntry.getPassword();
