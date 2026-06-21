@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -24,11 +24,12 @@ import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_FAILURE;
 import static io.mapsmessaging.security.logging.AuthLogMessages.AUTH0_REQUEST_FAILURE;
 
 import com.auth0.client.auth.AuthAPI;
-import com.auth0.client.mgmt.ManagementAPI;
+import com.auth0.client.mgmt.ManagementApi;
+import com.auth0.client.mgmt.core.ManagementApiException;
+import com.auth0.client.mgmt.types.Role;
+import com.auth0.client.mgmt.types.UserResponseSchema;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
-import com.auth0.json.mgmt.roles.Role;
-import com.auth0.json.mgmt.users.User;
 import com.auth0.net.TokenRequest;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.logging.Logger;
@@ -53,7 +54,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
   private final Auth0Api auth0Api;
   @Getter
   private final AuthAPI authAPI;
-  private final ManagementAPI mgmt;
+  private final ManagementApi managementApi;
   @Getter
   private final String auth0Domain;
 
@@ -66,7 +67,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     apiToken = "";
     auth0Api = null;
     authAPI = null;
-    mgmt = null;
+    managementApi = null;
   }
 
   public Auth0Auth(ConfigurationProperties config) {
@@ -77,7 +78,9 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     if (cacheTimeString != null && !cacheTimeString.trim().isEmpty()) {
       cacheTime = Long.parseLong(cacheTimeString.trim());
     }
+
     authAPI = AuthAPI.newBuilder(auth0Domain, clientId, clientSecret).build();
+
     TokenRequest tokenRequest = authAPI.requestToken("https://" + auth0Domain + "/api/v2/");
     String token = "";
     try {
@@ -86,9 +89,15 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     } catch (Auth0Exception e) {
       logger.log(AUTH0_REQUEST_FAILURE, e);
     }
+
     apiToken = token;
-    mgmt = ManagementAPI.newBuilder(auth0Domain, apiToken).build();
-    auth0Api = new Auth0Api(mgmt, cacheTime);
+    managementApi =
+        ManagementApi.builder()
+            .domain(auth0Domain)
+            .token(apiToken)
+            .build();
+
+    auth0Api = new Auth0Api(managementApi, cacheTime);
   }
 
   @Override
@@ -141,13 +150,15 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     if (auth0Api.isGroupCacheValid()) {
       return;
     }
+
     groupEntryMap.clear();
+
     try {
       List<Role> roles = auth0Api.getGroupList();
       for (Role role : roles) {
-        Auth0GroupEntry groupEntry = new Auth0GroupEntry(role.getName());
+        Auth0GroupEntry groupEntry = new Auth0GroupEntry(role.getName().get());
 
-        List<String> users = auth0Api.getUserInGroup(role.getId());
+        List<String> users = auth0Api.getUserInGroup(role.getId().get());
         for (String user : users) {
           Auth0IdentityEntry identityEntry = identityEntryMap.get(user);
           if (identityEntry != null) {
@@ -155,9 +166,10 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
             identityEntry.addGroup(groupEntry);
           }
         }
-        groupEntryMap.put(role.getName(), groupEntry);
+
+        groupEntryMap.put(role.getName().get(), groupEntry);
       }
-    } catch (Auth0Exception e) {
+    } catch (ManagementApiException e) {
       logger.log(AUTH0_FAILURE, e);
     }
   }
@@ -167,18 +179,24 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     if (auth0Api.isUserCacheValid()) {
       return;
     }
+
     identityEntryMap.clear();
     identityEntries.clear();
+
     try {
-      List<User> response = auth0Api.getUserList();
-      for (User user : response) {
-        Auth0IdentityEntry entry = new Auth0IdentityEntry(this, user.getEmail());
-        identityEntryMap.put(user.getEmail(), entry);
-        identityEntries.add(entry);
+      List<UserResponseSchema> response = auth0Api.getUserList();
+      for (UserResponseSchema user : response) {
+        String email = user.getEmail().get();
+        if (email != null && !email.isEmpty()) {
+          Auth0IdentityEntry entry = new Auth0IdentityEntry(this, email);
+          identityEntryMap.put(email, entry);
+          identityEntries.add(entry);
+        }
       }
-    } catch (Exception ex) {
-      logger.log(AUTH0_FAILURE,ex);
+    } catch (ManagementApiException e) {
+      logger.log(AUTH0_FAILURE, e);
     }
+
     loadGroups();
   }
 }

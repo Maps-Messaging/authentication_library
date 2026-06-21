@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -20,15 +20,13 @@
 
 package io.mapsmessaging.security.identity.impl.auth0;
 
-import com.auth0.client.mgmt.ManagementAPI;
-import com.auth0.client.mgmt.filter.RolesFilter;
-import com.auth0.client.mgmt.filter.UserFilter;
-import com.auth0.exception.Auth0Exception;
-import com.auth0.json.mgmt.roles.Role;
-import com.auth0.json.mgmt.roles.RolesPage;
-import com.auth0.json.mgmt.users.User;
-import com.auth0.json.mgmt.users.UsersPage;
-import com.auth0.net.Request;
+import com.auth0.client.mgmt.ManagementApi;
+import com.auth0.client.mgmt.core.ManagementApiException;
+import com.auth0.client.mgmt.core.SyncPagingIterable;
+import com.auth0.client.mgmt.types.ListUsersRequestParameters;
+import com.auth0.client.mgmt.types.Role;
+import com.auth0.client.mgmt.types.RoleUser;
+import com.auth0.client.mgmt.types.UserResponseSchema;
 import io.mapsmessaging.security.identity.impl.external.WebRequestCaching;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +38,11 @@ public class Auth0Api {
   private static final String USER_IN_GROUP_REQUEST = "GetUserInGroup";
 
   private final WebRequestCaching caching;
-  private final ManagementAPI mgmt;
+  private final ManagementApi managementApi;
 
-  public Auth0Api(ManagementAPI mgmt, long cacheAge) {
+  public Auth0Api(ManagementApi managementApi, long cacheAge) {
     caching = new WebRequestCaching(cacheAge);
-    this.mgmt = mgmt;
+    this.managementApi = managementApi;
   }
 
   public boolean isUserCacheValid() {
@@ -55,72 +53,68 @@ public class Auth0Api {
     return caching.get(LIST_GROUP_REQUEST) != null;
   }
 
-  public List<String> getUserInGroup(String groupname) throws Auth0Exception {
-    List<String> users = (List<String>) caching.get(USER_IN_GROUP_REQUEST+"(" + groupname + ")");
+  @SuppressWarnings("unchecked")
+  public List<String> getUserInGroup(String groupName) throws ManagementApiException {
+    String cacheKey = USER_IN_GROUP_REQUEST + "(" + groupName + ")";
+    List<String> users = (List<String>) caching.get(cacheKey);
     if (users != null) {
       return users;
     }
-    List<String> users1 = new ArrayList<>();
-    mgmt.roles()
-        .listUsers(groupname, null)
-        .execute()
-        .getBody()
-        .getItems()
-        .forEach(user -> users1.add(user.getEmail()));
-    caching.put(USER_IN_GROUP_REQUEST+"(" + groupname + ")", users1);
-    return users1;
+
+    List<String> usersInGroup = new ArrayList<>();
+    SyncPagingIterable<RoleUser> roleUsers = managementApi.roles().users().list(groupName);
+
+    for (RoleUser user : roleUsers) {
+      if(user.getEmail().isPresent()){
+        usersInGroup.add(user.getEmail().get());
+      }
+    }
+
+    caching.put(cacheKey, usersInGroup);
+    return usersInGroup;
   }
 
-  public List<Role> getGroupList() throws Auth0Exception {
+  @SuppressWarnings("unchecked")
+  public List<Role> getGroupList() throws ManagementApiException {
     List<Role> responseList = (List<Role>) caching.get(LIST_GROUP_REQUEST);
     if (responseList != null) {
       return responseList;
     }
-    int start = 0;
-    int limit = 100;
-    mgmt.roles().list(new RolesFilter().withPage(start, limit));
-    RolesPage rolesPage =
-        mgmt.roles().list(new RolesFilter().withPage(start, limit)).execute().getBody();
-    List<Role> roleList = rolesPage.getItems();
-    start = start + roleList.size();
-    responseList = new ArrayList<>(roleList);
-    if (rolesPage.getTotal() != null && rolesPage.getTotal() > start) {
-      while (rolesPage.getTotal() > start) {
-        rolesPage = mgmt.roles().list(new RolesFilter().withPage(start, limit)).execute().getBody();
-        roleList = rolesPage.getItems();
-        start = start + roleList.size();
-        responseList.addAll(roleList);
-      }
+
+    responseList = new ArrayList<>();
+    SyncPagingIterable<Role> roles = managementApi.roles().list();
+
+    for (Role role : roles) {
+      responseList.add(role);
     }
+
     caching.put(LIST_GROUP_REQUEST, responseList);
     return responseList;
   }
 
-  public List<User> getUserList() throws Auth0Exception {
-    List<User> responseList = (List<User>) caching.get(LIST_USER_REQUEST);
+  @SuppressWarnings("unchecked")
+  public List<UserResponseSchema> getUserList() throws ManagementApiException {
+    List<UserResponseSchema> responseList = (List<UserResponseSchema>) caching.get(LIST_USER_REQUEST);
     if (responseList != null) {
       return responseList;
     }
-    int start = 0;
-    int limit = 100;
-    Request<UsersPage> request = mgmt.users().list(null);
-    UsersPage usersPage = request.execute().getBody();
-    List<User> userList = usersPage.getItems();
-    start += userList.size();
-    responseList = new ArrayList<>(userList);
-    if (usersPage.getTotal() != null && usersPage.getTotal() > start) {
-      while (usersPage.getTotal() > start) {
-        request = mgmt.users().list(new UserFilter().withPage(start, limit));
-        usersPage = request.execute().getBody();
-        start = start + usersPage.getLength();
-        userList = usersPage.getItems();
-        responseList.addAll(userList);
-      }
+
+    responseList = new ArrayList<>();
+    SyncPagingIterable<UserResponseSchema> users =
+        managementApi.users().list(
+            ListUsersRequestParameters.builder()
+                .perPage(100)
+                .build());
+
+    for (UserResponseSchema user : users) {
+      responseList.add(user);
     }
+
     responseList =
         responseList.stream()
-            .filter(user -> (user.isBlocked() == null || !user.isBlocked()))
+            .filter(user -> !user.getBlocked().orElse(false))
             .collect(Collectors.toList());
+
     caching.put(LIST_USER_REQUEST, responseList);
     return responseList;
   }

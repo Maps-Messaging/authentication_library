@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Map;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClientBuilder;
@@ -37,15 +38,13 @@ public class AWSSecretsStore implements Store {
 
   private final SecretsManagerClient secretsManagerClient;
 
-  public AWSSecretsStore(){
+  public AWSSecretsStore() {
     secretsManagerClient = null;
   }
 
   public AWSSecretsStore(SecretsManagerClient secretsManagerClient) {
     this.secretsManagerClient = secretsManagerClient;
   }
-
-
 
   @Override
   public String getName() {
@@ -59,11 +58,14 @@ public class AWSSecretsStore implements Store {
 
   @Override
   public byte[] load(String name) throws IOException {
-    GetSecretValueRequest getSecretValueRequest = GetSecretValueRequest.builder()
-        .secretId(name)
-        .build();
-    GetSecretValueResponse getSecretValueResponse = secretsManagerClient.getSecretValue(getSecretValueRequest);
-    // Assuming the secret is stored as a plain string, not in Base64 in this corrected context
+    GetSecretValueRequest getSecretValueRequest =
+        GetSecretValueRequest.builder()
+            .secretId(name)
+            .build();
+
+    GetSecretValueResponse getSecretValueResponse =
+        secretsManagerClient.getSecretValue(getSecretValueRequest);
+
     String secretString = getSecretValueResponse.secretString();
     return Base64.getDecoder().decode(secretString);
   }
@@ -71,28 +73,36 @@ public class AWSSecretsStore implements Store {
   @Override
   public void save(byte[] data, String name) throws IOException {
     String secretString = Base64.getEncoder().encodeToString(data);
-    secretsManagerClient.putSecretValue(PutSecretValueRequest.builder()
-        .secretId(name)
-        .secretString(secretString)
-        .build());
+
+    PutSecretValueRequest putSecretValueRequest =
+        PutSecretValueRequest.builder()
+            .secretId(name)
+            .secretString(secretString)
+            .build();
+
+    secretsManagerClient.putSecretValue(putSecretValueRequest);
   }
 
-
   @Override
-  public Store create(Map<String, Object> config) throws IOException{
+  public Store create(Map<String, Object> config) throws IOException {
     String region = (String) config.getOrDefault("region", "us-east-1");
-    SecretsManagerClientBuilder builder = SecretsManagerClient.builder()
-        .region(Region.of(region));
+
+    SecretsManagerClientBuilder builder =
+        SecretsManagerClient.builder()
+            .region(Region.of(region))
+            .httpClient(UrlConnectionHttpClient.create());
 
     if (config.containsKey("accessKeyId") && config.containsKey("secretAccessKey")) {
       String accessKeyId = (String) config.get("accessKeyId");
       String secretAccessKey = (String) config.get("secretAccessKey");
-      AwsCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
-          AwsBasicCredentials.create(accessKeyId, secretAccessKey));
+
+      AwsCredentialsProvider credentialsProvider =
+          StaticCredentialsProvider.create(
+              AwsBasicCredentials.create(accessKeyId, secretAccessKey));
+
       builder.credentialsProvider(credentialsProvider);
     }
 
-    // Correctly constructing and returning an AWSSecretsStore instance
     SecretsManagerClient client = builder.build();
     return new AWSSecretsStore(client);
   }
