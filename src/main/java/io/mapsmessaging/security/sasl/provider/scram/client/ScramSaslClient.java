@@ -20,7 +20,6 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client;
 
-import io.mapsmessaging.security.passwords.hashes.plain.PlainPasswordHasher;
 import io.mapsmessaging.security.sasl.provider.scram.BaseScramSasl;
 import io.mapsmessaging.security.sasl.provider.scram.client.state.InitialState;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
@@ -31,15 +30,21 @@ import javax.security.sasl.SaslClient;
 
 public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
+  private final String mechanismName;
+
   public ScramSaslClient(String algorithm, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
-    context.setPasswordHasher(new PlainPasswordHasher());
-    context.setMac(CryptoHelper.findMac(algorithm));
+    mechanismName = "SCRAM-" + algorithm.toUpperCase();
+    try {
+      context.setMac(CryptoHelper.findMac(algorithm));
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Unsupported SCRAM algorithm: " + algorithm, e);
+    }
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));
   }
 
   @Override
   public String getMechanismName() {
-    return "SCRAM";
+    return mechanismName;
   }
 
   @Override
@@ -49,8 +54,9 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
   @Override
   public Object getNegotiatedProperty(String propName) {
+    requireComplete();
     if (propName.equals(Sasl.QOP)) {
-      return "auth-conf";
+      return "auth";
     }
     return null;
   }

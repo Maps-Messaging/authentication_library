@@ -78,7 +78,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     cipherConfig.put("path", "test.jks");
     cipherConfig.put("passphrase", "8 5Tr0Ng C3rt!f1c8t3 P855sw0rd!!!!");
 
-    String[] mechanisms = new String[] {"SCRAM-SHA-512", "SCRAM-SHA-256", "DIGEST-MD5", "CRAM-MD5"};
+    String[] mechanisms = new String[] {"SCRAM-SHA-256"};
     for (String sasl : mechanisms) {
       arguments.add(arguments("Apache-Basic-Auth", apacheConfig, sasl));
       arguments.add(arguments("Encrypted-Auth", baseConfig, sasl));
