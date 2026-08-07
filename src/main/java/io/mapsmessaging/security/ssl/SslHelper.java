@@ -31,9 +31,6 @@ import java.net.URI;
 import java.net.URL;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import javax.net.ssl.*;
 
 /**
@@ -130,12 +127,21 @@ public class SslHelper {
       // Now check to see if there is a CRL configured, if so then construct the cert revocation during cert validation
       TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
       String crlUrlPath = config.getProperty("crlUrl");
-      if(crlUrlPath != null && !crlUrlPath.isEmpty()){
-        List<TrustManager> trustManagerList = new ArrayList<>(Arrays.asList(trustManagers));
+      if (crlUrlPath != null && !crlUrlPath.isEmpty()) {
         URL crlUrl = URI.create(crlUrlPath).toURL();
-        CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(crlUrl, config.getLongProperty("crlInterval", 60*60*24)); // Default daily
-        trustManagerList.add(new CrlTrustManager(certificateRevocationManager));
-        trustManagers = trustManagerList.toArray(trustManagers);
+        long crlInterval = config.getLongProperty("crlInterval", 24L * 60L * 60L * 1000L);
+        CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(crlUrl, crlInterval);
+        boolean crlManagerInstalled = false;
+        for (int index = 0; index < trustManagers.length; index++) {
+          if (trustManagers[index] instanceof X509TrustManager trustManager) {
+            trustManagers[index] = new CrlTrustManager(trustManager, certificateRevocationManager);
+            crlManagerInstalled = true;
+            break;
+          }
+        }
+        if (!crlManagerInstalled) {
+          throw new KeyManagementException("CRL configured but no X509 trust manager is available");
+        }
       }
 
       sslContext.init(keyManagers, trustManagers, new SecureRandom());
@@ -153,10 +159,15 @@ public class SslHelper {
     return sslContext;
   }
 
-  public static SSLEngine createSSLEngine(SSLContext sslContext, ConfigurationProperties tls){
+  public static SSLEngine createSSLEngine(SSLContext sslContext, ConfigurationProperties tls) {
     SSLEngine sslEngine = sslContext.createSSLEngine();
-    sslEngine.setNeedClientAuth(tls.getBooleanProperty("clientCertificateRequired", false));
-    sslEngine.setWantClientAuth(tls.getBooleanProperty("clientCertificateWanted", false));
+    boolean clientCertificateRequired = tls.getBooleanProperty("clientCertificateRequired", false);
+    boolean clientCertificateWanted = tls.getBooleanProperty("clientCertificateWanted", false);
+    if (clientCertificateRequired) {
+      sslEngine.setNeedClientAuth(true);
+    } else {
+      sslEngine.setWantClientAuth(clientCertificateWanted);
+    }
     return sslEngine;
   }
 
