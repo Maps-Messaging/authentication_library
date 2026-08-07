@@ -153,10 +153,14 @@ public class SslHelper {
     return sslContext;
   }
 
-  public static SSLEngine createSSLEngine(SSLContext sslContext, ConfigurationProperties tls){
+  public static SSLEngine createSSLEngine(SSLContext sslContext, ConfigurationProperties tls) {
     SSLEngine sslEngine = sslContext.createSSLEngine();
-    sslEngine.setNeedClientAuth(tls.getBooleanProperty("clientCertificateRequired", false));
-    sslEngine.setWantClientAuth(tls.getBooleanProperty("clientCertificateWanted", false));
+    boolean clientCertificateRequired = tls.getBooleanProperty("clientCertificateRequired", false);
+    if (clientCertificateRequired) {
+      sslEngine.setNeedClientAuth(true);
+    } else {
+      sslEngine.setWantClientAuth(tls.getBooleanProperty("clientCertificateWanted", false));
+    }
     return sslEngine;
   }
 
