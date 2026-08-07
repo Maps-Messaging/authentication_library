@@ -96,10 +96,14 @@ public class CrlTrustManager extends X509ExtendedTrustManager {
   }
 
   private void checkRevocation(X509Certificate[] chain) throws CertificateException {
-    for (X509Certificate certificate : chain) {
-      if (revocationManager.isCertificateRevoked(certificate)) {
-        throw new CertificateException("Certificate is revoked");
+    try {
+      for (X509Certificate certificate : chain) {
+        if (revocationManager.isCertificateRevoked(certificate)) {
+          throw new CertificateException("Certificate is revoked");
+        }
       }
+    } catch (RuntimeException e) {
+      throw new CertificateException("Unable to validate certificate revocation status", e);
     }
   }
 }
