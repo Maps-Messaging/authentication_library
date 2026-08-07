@@ -21,24 +21,81 @@
 package io.mapsmessaging.security.ssl;
 
 import io.mapsmessaging.security.certificates.CertificateUtils;
-import java.io.IOException;
 import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.net.ssl.X509TrustManager;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class CrlTest {
 
-  @Disabled // Need a new crl list to test from
   @Test
-  void simpleCrlTest() throws IOException, CertificateException, OperatorCreationException {
-    CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(new URL("http://crls.pki.goog/gts1c3/zdATt0Ex_Fk.crl"), 10L*24L*60L*60L*1000L);
-    Assertions.assertNotNull(certificateRevocationManager);
-    Certificate cert = CertificateUtils.generateSelfSignedCertificateSecret("fred").getCertificate();
-    Assertions.assertFalse(certificateRevocationManager.isCertificateRevoked((X509Certificate)cert));
+  void configured_crl_check_runs_after_default_trust_validation() throws Exception {
+    X509Certificate certificate = createCertificate();
+    AtomicBoolean trustValidationCalled = new AtomicBoolean();
+    CrlTrustManager trustManager = new CrlTrustManager(
+        new RecordingTrustManager(certificate, trustValidationCalled),
+        revocationManager(false));
+
+    trustManager.checkServerTrusted(new X509Certificate[]{certificate}, "RSA");
+
+    Assertions.assertTrue(trustValidationCalled.get());
+    Assertions.assertArrayEquals(new X509Certificate[]{certificate}, trustManager.getAcceptedIssuers());
+  }
+
+  @Test
+  void revoked_certificate_is_rejected() throws Exception {
+    X509Certificate certificate = createCertificate();
+    CrlTrustManager trustManager = new CrlTrustManager(
+        new RecordingTrustManager(certificate, new AtomicBoolean()),
+        revocationManager(true));
+
+    Assertions.assertThrows(
+        CertificateException.class,
+        () -> trustManager.checkServerTrusted(new X509Certificate[]{certificate}, "RSA"));
+  }
+
+  private X509Certificate createCertificate() throws CertificateException, OperatorCreationException {
+    Certificate certificate = CertificateUtils.generateSelfSignedCertificateSecret("fred").getCertificate();
+    return (X509Certificate) certificate;
+  }
+
+  private CertificateRevocationManager revocationManager(boolean revoked) throws Exception {
+    return new CertificateRevocationManager(new URL("file:/unused.crl"), 1000L) {
+      @Override
+      public boolean isCertificateRevoked(X509Certificate certificate) {
+        return revoked;
+      }
+    };
+  }
+
+  private static final class RecordingTrustManager implements X509TrustManager {
+
+    private final X509Certificate[] acceptedIssuers;
+    private final AtomicBoolean validationCalled;
+
+    private RecordingTrustManager(X509Certificate acceptedIssuer, AtomicBoolean validationCalled) {
+      this.acceptedIssuers = new X509Certificate[]{acceptedIssuer};
+      this.validationCalled = validationCalled;
+    }
+
+    @Override
+    public void checkClientTrusted(X509Certificate[] chain, String authType) {
+      validationCalled.set(true);
+    }
+
+    @Override
+    public void checkServerTrusted(X509Certificate[] chain, String authType) {
+      validationCalled.set(true);
+    }
+
+    @Override
+    public X509Certificate[] getAcceptedIssuers() {
+      return acceptedIssuers;
+    }
   }
 }
