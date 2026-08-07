@@ -21,10 +21,14 @@
 package io.mapsmessaging.security.ssl;
 
 import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Objects;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedTrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -32,6 +36,10 @@ public class CrlTrustManager extends X509ExtendedTrustManager {
 
   private final X509TrustManager trustManager;
   private final CertificateRevocationManager revocationManager;
+
+  public CrlTrustManager(CertificateRevocationManager revocationManager) {
+    this(createDefaultTrustManager(), revocationManager);
+  }
 
   public CrlTrustManager(X509TrustManager trustManager, CertificateRevocationManager revocationManager) {
     this.trustManager = Objects.requireNonNull(trustManager);
@@ -93,6 +101,21 @@ public class CrlTrustManager extends X509ExtendedTrustManager {
   @Override
   public X509Certificate[] getAcceptedIssuers() {
     return trustManager.getAcceptedIssuers();
+  }
+
+  private static X509TrustManager createDefaultTrustManager() {
+    try {
+      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      trustManagerFactory.init((KeyStore) null);
+      for (TrustManager manager : trustManagerFactory.getTrustManagers()) {
+        if (manager instanceof X509TrustManager trustManager) {
+          return trustManager;
+        }
+      }
+      throw new IllegalStateException("No default X509 trust manager is available");
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException("Unable to initialise the default X509 trust manager", e);
+    }
   }
 
   private void checkRevocation(X509Certificate[] chain) throws CertificateException {
