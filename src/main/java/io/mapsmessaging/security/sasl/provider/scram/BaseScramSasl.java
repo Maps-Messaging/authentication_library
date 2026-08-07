@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ package io.mapsmessaging.security.sasl.provider.scram;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
-import io.mapsmessaging.security.sasl.provider.utils.XorStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import javax.security.auth.callback.UnsupportedCallbackException;
@@ -31,51 +30,56 @@ import javax.security.sasl.SaslException;
 
 public class BaseScramSasl {
 
-  protected final Logger logger = LoggerFactory.getLogger(BaseScramSasl.class);
-  protected final SessionContext context;
-  private XorStream inStream;
-  private XorStream outStream;
+  private static final int MAX_MESSAGE_SIZE = 16 * 1024;
 
-  public BaseScramSasl() {
-    this.context = new SessionContext();
-  }
+  protected final Logger logger = LoggerFactory.getLogger(BaseScramSasl.class);
+  protected final SessionContext context = new SessionContext();
+  private boolean disposed;
 
   public boolean isComplete() {
-    return context.getState().isComplete();
+    return !disposed && context.getState() != null && context.getState().isComplete();
   }
 
-  @SuppressWarnings("java:S1168") // We return null since it needs to be
+  @SuppressWarnings("java:S1168")
   public byte[] evaluateChallenge(byte[] challenge) throws SaslException {
+    if (disposed) {
+      throw new SaslException("SCRAM exchange has been disposed");
+    }
+    if (isComplete()) {
+      throw new SaslException("SCRAM exchange is already complete");
+    }
+    if (challenge != null && challenge.length > MAX_MESSAGE_SIZE) {
+      throw new SaslException("SCRAM message exceeds the maximum size");
+    }
     try {
-      if (challenge != null) {
+      if (challenge != null && challenge.length != 0) {
         context.getState().handleResponse(new ChallengeResponse(challenge), context);
       }
-      ChallengeResponse challengeResponse = context.getState().produceChallenge(context);
-      if (context.getState().isComplete()) {
-        inStream = new XorStream(context.getClientKey());
-        outStream = new XorStream(context.getClientKey());
-      }
-      if (challengeResponse != null) {
-        return challengeResponse.toString().getBytes(StandardCharsets.UTF_8);
-      }
-      return null;
-    } catch (IOException | UnsupportedCallbackException e) {
-      SaslException ex = new SaslException("Exception raised eveluating challenge");
-      ex.initCause(e);
-      throw ex;
+      ChallengeResponse response = context.getState().produceChallenge(context);
+      return response == null ? null : response.toString().getBytes(StandardCharsets.UTF_8);
+    } catch (IOException | UnsupportedCallbackException | IllegalArgumentException e) {
+      throw new SaslException("Invalid SCRAM exchange", e);
     }
   }
 
-  public byte[] unwrap(byte[] incoming, int offset, int len) {
-    return inStream.xorBuffer(incoming, offset, len);
+  public byte[] unwrap(byte[] incoming, int offset, int len) throws SaslException {
+    throw new IllegalStateException("SCRAM does not negotiate a security layer");
   }
 
-  public byte[] wrap(byte[] outgoing, int offset, int len) {
-    return outStream.xorBuffer(outgoing, offset, len);
+  public byte[] wrap(byte[] outgoing, int offset, int len) throws SaslException {
+    throw new IllegalStateException("SCRAM does not negotiate a security layer");
   }
 
-  public void dispose() {
-    context.reset();
+  public void dispose() throws SaslException {
+    if (!disposed) {
+      context.reset();
+      disposed = true;
+    }
   }
 
+  protected void requireComplete() {
+    if (!isComplete()) {
+      throw new IllegalStateException("SCRAM authentication is not complete");
+    }
+  }
 }

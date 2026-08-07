@@ -33,10 +33,14 @@ public class CryptoHelper {
   }
 
   public static String generateNonce(int size) {
-    SecureRandom prng = new SecureRandom();
-    byte[] nonce = new byte[size];
-    prng.nextBytes(nonce);
+    byte[] nonce = generateRandomBytes(size);
     return Base64.getEncoder().encodeToString(nonce);
+  }
+
+  public static byte[] generateRandomBytes(int size) {
+    byte[] value = new byte[size];
+    new SecureRandom().nextBytes(value);
+    return value;
   }
 
   public static MessageDigest findDigest(String algorithm) throws NoSuchAlgorithmException {
@@ -54,17 +58,10 @@ public class CryptoHelper {
   }
 
   public static Mac findMac(String algorithm) {
-    String macLookup = "Hmac" + algorithm.toUpperCase().trim();
-    Mac mac;
-    mac = attemptLookup(macLookup);
-    if (mac == null) {
-      int idx = macLookup.indexOf("-");
-      if (idx > 0) {
-        macLookup = macLookup.substring(0, idx) + macLookup.substring(idx + 1);
-        mac = attemptLookup(macLookup);
-      }
+    if (!"SHA-256".equals(algorithm)) {
+      return null;
     }
-    return mac;
+    return attemptLookup("HmacSHA256");
   }
 
   private static Mac attemptLookup(String algorithm) {

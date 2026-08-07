@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 
 package io.mapsmessaging.security.sasl.provider.scram.client.state;
 
-import io.mapsmessaging.security.passwords.PasswordHandler;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
@@ -28,10 +27,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
+import java.util.List;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.SaslException;
 
 public class ChallengeState extends State {
+
+  private static final int MIN_ITERATIONS = 4096;
+  private static final int DEFAULT_MAX_ITERATIONS = 1_000_000;
+  private static final String MAX_ITERATIONS_PROPERTY = "io.mapsmessaging.security.sasl.scram.maxIterations";
 
   public ChallengeState(State state) {
     super(state);
@@ -50,45 +54,72 @@ public class ChallengeState extends State {
   @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException {
     ChallengeResponse response = new ChallengeResponse();
+    response.put(ChallengeResponse.CHANNEL_BINDING, Base64.getEncoder().encodeToString(context.getGs2Header().getBytes(StandardCharsets.UTF_8)));
     response.put(ChallengeResponse.NONCE, context.getServerNonce());
-    response.put(ChallengeResponse.CHANNEL_BINDING, "biws");
+    context.setClientFinalWithoutProof(response.getBareMessage());
 
-    byte[] saltedPassword=new byte[0];
+    String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + context.getClientFinalWithoutProof();
     try {
-      if (context.getPasswordHasher() != null) {
-        byte[] salt = Base64.getDecoder().decode(context.getPasswordSalt());
-        char[] computedHash = context.getPasswordHasher().transformPassword(context.getPrepPassword(), salt, context.getIterations());
-        PasswordHandler breakDown = context.getPasswordHasher().create(computedHash);
-        saltedPassword = breakDown.getPassword().getBytes();
-      }
-
-    //
-    // Compute Proof
-    //
-      String authString = context.getInitialClientChallenge() + "," + context.getInitialServerChallenge() + "," + response;
-      context.computeClientHashes(saltedPassword, authString);
-      response.put(ChallengeResponse.PROOF, Base64.getEncoder().encodeToString(context.getClientProof()));
-
-      //
-      // Compute the expected server response
-      //
-      context.computeServerSignature(saltedPassword, authString);
-
+      context.computeClientHashes(context.getPrepPassword(), authString);
+      context.computeServerSignature(context.getPrepPassword(), authString);
     } catch (GeneralSecurityException e) {
-      SaslException saslException = new SaslException(e.getMessage());
-      saslException.initCause(e);
-      throw saslException;
+      throw new SaslException("Unable to calculate SCRAM proof", e);
     }
+    response.put(ChallengeResponse.PROOF, Base64.getEncoder().encodeToString(context.getClientProof()));
     context.setState(new FinalValidationState(this));
     return response;
   }
 
   @Override
-  public void handleResponse(ChallengeResponse response, SessionContext context)
-      throws IOException, UnsupportedCallbackException {
-    context.setInitialServerChallenge(response.toString());
-    context.setServerNonce(response.get(ChallengeResponse.NONCE));
-    context.setPasswordSalt(response.get(ChallengeResponse.SALT).getBytes(StandardCharsets.UTF_8));
-    context.setIterations(Integer.parseInt(response.get(ChallengeResponse.ITERATION_COUNT)));
+  public void handleResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+    List<String> expectedAttributes = List.of(ChallengeResponse.NONCE, ChallengeResponse.SALT, ChallengeResponse.ITERATION_COUNT);
+    if (!response.getGs2Header().isEmpty() || !response.keys().subList(0, Math.min(3, response.keys().size())).equals(expectedAttributes)) {
+      throw new SaslException("Invalid SCRAM server-first message");
+    }
+    String nonce = required(response, ChallengeResponse.NONCE);
+    context.setServerNonce(nonce);
+
+    byte[] salt;
+    try {
+      salt = Base64.getDecoder().decode(required(response, ChallengeResponse.SALT));
+    } catch (IllegalArgumentException e) {
+      throw new SaslException("Invalid SCRAM salt", e);
+    }
+    if (salt.length < 8 || salt.length > 1024) {
+      throw new SaslException("Invalid SCRAM salt length");
+    }
+
+    int iterations;
+    try {
+      iterations = Integer.parseInt(required(response, ChallengeResponse.ITERATION_COUNT));
+    } catch (NumberFormatException e) {
+      throw new SaslException("Invalid SCRAM iteration count", e);
+    }
+    int maxIterations = propertyAsInt(MAX_ITERATIONS_PROPERTY, DEFAULT_MAX_ITERATIONS);
+    if (iterations < MIN_ITERATIONS || iterations > maxIterations) {
+      throw new SaslException("SCRAM iteration count is outside the permitted range");
+    }
+    context.setPasswordSalt(salt);
+    context.setIterations(iterations);
+    context.setInitialServerChallenge(response.getOriginalRequest());
+  }
+
+  private String required(ChallengeResponse response, String name) throws SaslException {
+    String value = response.get(name);
+    if (value == null || value.isEmpty()) {
+      throw new SaslException("Missing SCRAM attribute: " + name);
+    }
+    return value;
+  }
+
+  private int propertyAsInt(String name, int defaultValue) throws SaslException {
+    if (props == null || props.get(name) == null) {
+      return defaultValue;
+    }
+    try {
+      return Integer.parseInt(String.valueOf(props.get(name)));
+    } catch (NumberFormatException e) {
+      throw new SaslException("Invalid SCRAM property: " + name, e);
+    }
   }
 }
