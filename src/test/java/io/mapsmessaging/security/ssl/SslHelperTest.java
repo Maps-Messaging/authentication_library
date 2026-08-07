@@ -54,4 +54,25 @@ class SslHelperTest extends BaseCertificateTest {
     SSLEngine sslEngine = SslHelper.createSSLEngine(sslContext, new ConfigurationProperties() );
     Assertions.assertNotNull(sslEngine);
   }
+
+  @Test
+  void clientCertificateAuthenticationModesAreMutuallyExclusive() throws Exception {
+    SSLContext sslContext = SSLContext.getDefault();
+
+    assertClientAuthenticationMode(sslContext, false, false, false, false);
+    assertClientAuthenticationMode(sslContext, false, true, false, true);
+    assertClientAuthenticationMode(sslContext, true, false, true, false);
+    assertClientAuthenticationMode(sslContext, true, true, true, false);
+  }
+
+  private void assertClientAuthenticationMode(SSLContext sslContext, boolean required, boolean wanted, boolean expectedRequired, boolean expectedWanted) {
+    ConfigurationProperties properties = new ConfigurationProperties();
+    properties.put("clientCertificateRequired", required);
+    properties.put("clientCertificateWanted", wanted);
+
+    SSLEngine sslEngine = SslHelper.createSSLEngine(sslContext, properties);
+
+    Assertions.assertEquals(expectedRequired, sslEngine.getNeedClientAuth());
+    Assertions.assertEquals(expectedWanted, sslEngine.getWantClientAuth());
+  }
 }
