@@ -27,7 +27,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.net.ssl.X509TrustManager;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -59,7 +58,7 @@ class CrlTest {
         () -> trustManager.checkServerTrusted(new X509Certificate[]{certificate}, "RSA"));
   }
 
-  private X509Certificate createCertificate() throws CertificateException, OperatorCreationException {
+  private X509Certificate createCertificate() throws Exception {
     Certificate certificate = CertificateUtils.generateSelfSignedCertificateSecret("fred").getCertificate();
     return (X509Certificate) certificate;
   }
