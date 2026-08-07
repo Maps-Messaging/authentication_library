@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -84,5 +84,25 @@ class SslHelperTest extends BaseCertificateTest {
     properties.put("clientCertificateRequired", required);
     properties.put("clientCertificateWanted", wanted);
     return SslHelper.createSSLEngine(SSLContext.getDefault(), properties);
+  }
+  @Test
+  void clientCertificateAuthenticationModesAreMutuallyExclusive() throws Exception {
+    SSLContext sslContext = SSLContext.getDefault();
+
+    assertClientAuthenticationMode(sslContext, false, false, false, false);
+    assertClientAuthenticationMode(sslContext, false, true, false, true);
+    assertClientAuthenticationMode(sslContext, true, false, true, false);
+    assertClientAuthenticationMode(sslContext, true, true, true, false);
+  }
+
+  private void assertClientAuthenticationMode(SSLContext sslContext, boolean required, boolean wanted, boolean expectedRequired, boolean expectedWanted) {
+    ConfigurationProperties properties = new ConfigurationProperties();
+    properties.put("clientCertificateRequired", required);
+    properties.put("clientCertificateWanted", wanted);
+
+    SSLEngine sslEngine = SslHelper.createSSLEngine(sslContext, properties);
+
+    Assertions.assertEquals(expectedRequired, sslEngine.getNeedClientAuth());
+    Assertions.assertEquals(expectedWanted, sslEngine.getWantClientAuth());
   }
 }
