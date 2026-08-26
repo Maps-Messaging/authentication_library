@@ -155,8 +155,20 @@ public class SslHelper {
 
   public static SSLEngine createSSLEngine(SSLContext sslContext, ConfigurationProperties tls){
     SSLEngine sslEngine = sslContext.createSSLEngine();
-    sslEngine.setNeedClientAuth(tls.getBooleanProperty("clientCertificateRequired", false));
-    sslEngine.setWantClientAuth(tls.getBooleanProperty("clientCertificateWanted", false));
+    // setNeedClientAuth and setWantClientAuth each OVERRIDE the other (JDK contract:
+    // "calling this method overrides any previous setting"), so calling both
+    // unconditionally makes the second call win and CLIENT_AUTH_REQUIRED unreachable —
+    // with required=true and wanted=true an anonymous client still completed the
+    // handshake and received CONNACK. Required must take precedence: mandatory client
+    // auth rejects certificate-less clients at the TLS layer; wanted alone keeps the
+    // old request-and-validate-if-presented behaviour.
+    boolean required = tls.getBooleanProperty("clientCertificateRequired", false);
+    boolean wanted = tls.getBooleanProperty("clientCertificateWanted", false);
+    if (required) {
+      sslEngine.setNeedClientAuth(true);
+    } else if (wanted) {
+      sslEngine.setWantClientAuth(true);
+    }
     return sslEngine;
   }
 
