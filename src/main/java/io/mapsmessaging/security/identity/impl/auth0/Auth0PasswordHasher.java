@@ -79,8 +79,10 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
           success();
           return computedPassword.getHash();
         }
-      } catch (JwkException | JWTVerificationException e) {
+      } catch (JwkException e) {
         logger.log(AUTH0_JWT_FAILURE, e);
+      } catch (JWTVerificationException e) {
+        // Invalid bearer tokens are normal authentication failures.
       }
       return authenticationFailed();
     }

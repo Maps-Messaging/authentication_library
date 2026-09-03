@@ -129,6 +129,51 @@ class JwtValidatorTest {
     assertNull(validator.validateJwt(null, token));
   }
 
+  @Test
+  void rejectsTokenWithoutExpiration() {
+    JwtValidator validator = new JwtValidator(new TestTokenProvider(false));
+    String token =
+        JWT.create()
+            .withKeyId(KEY_ID)
+            .withIssuer(ISSUER)
+            .withSubject(SUBJECT)
+            .withAudience(AUDIENCE)
+            .withIssuedAt(Date.from(Instant.now().minusSeconds(1)))
+            .sign(signingAlgorithm);
+
+    assertThrows(JWTVerificationException.class, () -> validator.validateJwt(SUBJECT, token));
+  }
+
+  @Test
+  void rejectsTokenWithoutIssuedAt() {
+    JwtValidator validator = new JwtValidator(new TestTokenProvider(false));
+    String token =
+        JWT.create()
+            .withKeyId(KEY_ID)
+            .withIssuer(ISSUER)
+            .withSubject(SUBJECT)
+            .withAudience(AUDIENCE)
+            .withExpiresAt(Date.from(Instant.now().plusSeconds(300)))
+            .sign(signingAlgorithm);
+
+    assertThrows(JWTVerificationException.class, () -> validator.validateJwt(SUBJECT, token));
+  }
+
+  @Test
+  void rejectsTokenWithoutKeyId() throws Exception {
+    JwtValidator validator = new JwtValidator(new TestTokenProvider(false));
+    String token =
+        JWT.create()
+            .withIssuer(ISSUER)
+            .withSubject(SUBJECT)
+            .withAudience(AUDIENCE)
+            .withIssuedAt(Date.from(Instant.now().minusSeconds(1)))
+            .withExpiresAt(Date.from(Instant.now().plusSeconds(300)))
+            .sign(signingAlgorithm);
+
+    assertNull(validator.validateJwt(SUBJECT, token));
+  }
+
   private static String createToken(String issuer, String subject, String audience, String tokenUse, Instant expiresAt) {
     JWTCreator.Builder builder =
         JWT.create()
@@ -136,6 +181,7 @@ class JwtValidatorTest {
             .withIssuer(issuer)
             .withSubject(subject)
             .withAudience(audience)
+            .withIssuedAt(Date.from(Instant.now().minusSeconds(1)))
             .withExpiresAt(Date.from(expiresAt));
     if (tokenUse != null) {
       builder.withClaim("token_use", tokenUse);

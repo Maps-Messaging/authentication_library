@@ -27,6 +27,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
+import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 
 public class JwtValidator {
@@ -38,21 +39,37 @@ public class JwtValidator {
   }
 
   public DecodedJWT validateJwt(String expectedSubject, String token) throws JwkException {
-    if (expectedSubject == null || expectedSubject.isBlank()) {
+    String expectedIssuer = tokenProvider.getIssuer();
+    String expectedAudience = tokenProvider.getAudience();
+    if (expectedSubject == null
+        || expectedSubject.isBlank()
+        || expectedIssuer == null
+        || expectedIssuer.isBlank()
+        || expectedAudience == null
+        || expectedAudience.isBlank()) {
       return null;
     }
 
     DecodedJWT decodedJwt = JWT.decode(token);
+    if (decodedJwt.getKeyId() == null || decodedJwt.getKeyId().isBlank()) {
+      return null;
+    }
     JwkProvider provider = tokenProvider.getJwkProvider();
 
     Jwk jwk = provider.get(decodedJwt.getKeyId());
-    Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
+    PublicKey publicKey = jwk.getPublicKey();
+    if (!(publicKey instanceof RSAPublicKey rsaPublicKey)) {
+      return null;
+    }
+    Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
 
     JWTVerifier verifier =
         JWT.require(algorithm)
-            .withIssuer(tokenProvider.getIssuer())
-            .withAudience(tokenProvider.getAudience())
+            .withIssuer(expectedIssuer)
+            .withAudience(expectedAudience)
             .withSubject(expectedSubject)
+            .withClaimPresence("exp")
+            .withClaimPresence("iat")
             .build();
     DecodedJWT verifiedJwt = verifier.verify(token);
     return tokenProvider.isValidToken(verifiedJwt) ? verifiedJwt : null;
