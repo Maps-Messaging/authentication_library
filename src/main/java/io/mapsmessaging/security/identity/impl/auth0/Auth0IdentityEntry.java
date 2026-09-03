@@ -28,15 +28,23 @@ import io.mapsmessaging.security.identity.impl.external.JwtIdentityEntry;
 import io.mapsmessaging.security.passwords.PasswordBuffer;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import lombok.Getter;
 
 @SuppressWarnings("javaarchitecture:S7027") // yes this uses the Auth0PasswordHasher
 public class Auth0IdentityEntry extends JwtIdentityEntry {
 
   private static final Logger logger = LoggerFactory.getLogger(Auth0IdentityEntry.class);
+  @Getter
+  private final String userId;
 
   public Auth0IdentityEntry(Auth0Auth auth0Auth, String username) {
+    this(auth0Auth, username, null);
+  }
+
+  public Auth0IdentityEntry(Auth0Auth auth0Auth, String username, String userId) {
     super();
     this.username = username;
+    this.userId = userId;
     passwordHasher = new Auth0PasswordHasher(username, auth0Auth, this);
   }
 

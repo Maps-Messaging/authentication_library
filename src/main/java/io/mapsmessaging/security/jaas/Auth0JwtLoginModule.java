@@ -20,27 +20,25 @@
 
 package io.mapsmessaging.security.jaas;
 
-import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkException;
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.UrlJwkProvider;
 import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.auth0.jwt.interfaces.JWTVerifier;
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.security.access.AuthContext;
-import java.security.interfaces.RSAPublicKey;
-import java.time.LocalDate;
-import java.time.ZoneId;
+import io.mapsmessaging.security.identity.impl.external.JwtValidator;
+import io.mapsmessaging.security.identity.impl.external.TokenProvider;
 import java.util.Map;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 
-public class Auth0JwtLoginModule extends BaseLoginModule {
+public class Auth0JwtLoginModule extends BaseLoginModule implements TokenProvider {
 
   private String domain;
+  private String audience;
 
   @Override
   public void initialize(
@@ -50,6 +48,7 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
       Map<String, ?> options) {
     super.initialize(subject, callbackHandler, sharedState, options);
     domain = (String) options.get("auth0Domain");
+    audience = (String) options.get("audience");
   }
 
   @Override
@@ -61,33 +60,41 @@ public class Auth0JwtLoginModule extends BaseLoginModule {
   protected boolean validate(String username, char[] password, AuthContext context) throws LoginException {
     try {
       String token = new String(password);
-      JwkProvider provider = new UrlJwkProvider("https://" + domain + "/");
-      DecodedJWT jwt = JWT.decode(token);
-      Jwk jwk = provider.get(jwt.getKeyId());
-      Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
-      JWTVerifier verifier = JWT.require(algorithm)
-          .withIssuer("https://" + domain + "/")
-          .build();
-      DecodedJWT verifiedJwt = verifier.verify(token);
-      LocalDate expires = verifiedJwt.getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-      LocalDate now = LocalDate.now();
-      if (expires.isBefore(now)) {
-        throw new LoginException("Token expired on " + expires);
-      }
-      // Need to add token information into the subject
-      String tokenUser = jwt.getSubject();
-      if (tokenUser.contains("@")) {
-        tokenUser = tokenUser.substring(0, tokenUser.indexOf("@"));
-      }
-      if (username.equals(tokenUser)) {
+      String tokenSubject = JWT.decode(token).getSubject();
+      JwtValidator validator = new JwtValidator(this);
+      DecodedJWT verifiedJwt = validator.validateJwt(tokenSubject, token);
+      if (verifiedJwt != null && username.equals(normalizeSubject(verifiedJwt.getSubject()))) {
         userPrincipal = new UserPrincipal(username);
         return true;
       }
       return false;
-    } catch (JwkException e) {
+    } catch (JwkException | JWTVerificationException e) {
       LoginException loginException = new LoginException("Java web token exception");
       loginException.initCause(e);
       throw loginException;
     }
+  }
+
+  private String normalizeSubject(String subject) {
+    String clientSuffix = "@clients";
+    if (subject != null && subject.endsWith(clientSuffix)) {
+      return subject.substring(0, subject.length() - clientSuffix.length());
+    }
+    return subject;
+  }
+
+  @Override
+  public JwkProvider getJwkProvider() {
+    return new UrlJwkProvider(getIssuer());
+  }
+
+  @Override
+  public String getIssuer() {
+    return "https://" + domain + "/";
+  }
+
+  @Override
+  public String getAudience() {
+    return audience;
   }
 }

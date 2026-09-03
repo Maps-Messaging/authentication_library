@@ -20,7 +20,6 @@
 
 package io.mapsmessaging.security.jaas;
 
-import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.mapsmessaging.security.access.AuthContext;
@@ -54,6 +53,13 @@ class Auth0LoginTest {
   Map<String, String> getOptions() {
     Map<String, String> options = new LinkedHashMap<>();
     options.put("auth0Domain", domain);
+    String requestBody = properties.getProperty("requestBody");
+    if (requestBody != null) {
+      JsonObject request = JsonParser.parseString(requestBody).getAsJsonObject();
+      if (request.has("audience")) {
+        options.put("audience", request.get("audience").getAsString());
+      }
+    }
     return options;
   }
 
@@ -97,6 +103,6 @@ class Auth0LoginTest {
     LoginModule loginModule = new Auth0JwtLoginModule();
     loginModule.initialize(subject, clientCallbackHandler, null, getOptions());
 
-    Assertions.assertThrowsExactly(JWTDecodeException.class, loginModule::login);
+    Assertions.assertThrowsExactly(LoginException.class, loginModule::login);
   }
 }
