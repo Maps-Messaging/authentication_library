@@ -35,16 +35,16 @@ public class Auth0IdentityEntry extends JwtIdentityEntry {
 
   private static final Logger logger = LoggerFactory.getLogger(Auth0IdentityEntry.class);
   @Getter
-  private final String subject;
+  private final String userId;
 
   public Auth0IdentityEntry(Auth0Auth auth0Auth, String username) {
     this(auth0Auth, username, null);
   }
 
-  public Auth0IdentityEntry(Auth0Auth auth0Auth, String username, String subject) {
+  public Auth0IdentityEntry(Auth0Auth auth0Auth, String username, String userId) {
     super();
     this.username = username;
-    this.subject = subject;
+    this.userId = userId;
     passwordHasher = new Auth0PasswordHasher(username, auth0Auth, this);
   }
 

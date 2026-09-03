@@ -73,7 +73,7 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
     if (isJwt(passwordString)) {
       try {
         JwtValidator validator = new JwtValidator(this);
-        jwt = validator.validateJwt(identityEntry.getSubject(), passwordString);
+        jwt = validator.validateJwt(identityEntry.getUserId(), passwordString);
         if (jwt != null) {
           computedPassword = new PasswordBuffer(password);
           success();
@@ -98,7 +98,7 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
         TokenHolder token = holder.getBody();
         String idToken = token.getIdToken();
         JwtValidator validator = new JwtValidator(this);
-        jwt = validator.validateJwt(identityEntry.getSubject(), idToken);
+        jwt = validator.validateJwt(identityEntry.getUserId(), idToken);
         if (jwt != null) {
           computedPassword = new PasswordBuffer(password);
           success();
