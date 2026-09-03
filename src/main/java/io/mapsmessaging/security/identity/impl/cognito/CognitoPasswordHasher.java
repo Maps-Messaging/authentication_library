@@ -24,6 +24,7 @@ import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
 
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.UrlJwkProvider;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import io.mapsmessaging.security.identity.impl.external.JwtPasswordHasher;
 import io.mapsmessaging.security.identity.impl.external.JwtValidator;
 import io.mapsmessaging.security.identity.impl.external.TokenProvider;
@@ -51,16 +52,19 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
 
   @Override
   public char[] transformPassword(char[] password, byte[] salt, int cost) {
+    resetAuthenticationState();
     try {
       String passwordString = new String(password);
 
       // Login based on the JWT being passed in
       if (isJwt(passwordString)) {
         JwtValidator validator = new JwtValidator(this);
-        jwt = validator.validateJwt(username, passwordString);
-        computedPassword = new PasswordBuffer(password);
-        success();
-        return computedPassword.getHash();
+        jwt = validator.validateJwt(identityEntry.getUuid(), passwordString);
+        if (jwt != null) {
+          computedPassword = new PasswordBuffer(password);
+          success();
+          return computedPassword.getHash();
+        }
       }
       // Login based on user/password
       String secretHash = generateSecretHash(username);
@@ -82,20 +86,17 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
       AuthenticationResultType authResult = authResponse.authenticationResult();
       if (authResult != null) {
         JwtValidator validator = new JwtValidator(this);
-        jwt = validator.validateJwt(username, authResult.idToken());
-        computedPassword = new PasswordBuffer(password);
-        success();
-        return computedPassword.getHash();
+        jwt = validator.validateJwt(identityEntry.getUuid(), authResult.idToken());
+        if (jwt != null) {
+          computedPassword = new PasswordBuffer(password);
+          success();
+          return computedPassword.getHash();
+        }
       }
     } catch (Exception ex) {
       // This is an invalid user, lets not log entries since DDOS lets just fail it
     }
-    // If the above code executes without throwing an exception,
-    // the JWT token is valid for the given user
-    if(computedPassword != null){
-      computedPassword.clear();
-    }
-    return "Invalid username / password combination.".toCharArray();
+    return authenticationFailed();
   }
 
 
@@ -120,11 +121,29 @@ public class CognitoPasswordHasher extends JwtPasswordHasher implements TokenPro
   }
 
   @Override
-  public JwkProvider getJwkProvider(String issuer) {
+  public JwkProvider getJwkProvider() {
     return new UrlJwkProvider(
         "https://cognito-idp."
             + cognitoAuth.getRegionName()
             + ".amazonaws.com/"
             + cognitoAuth.getUserPoolId());
+  }
+
+  @Override
+  public String getIssuer() {
+    return "https://cognito-idp."
+        + cognitoAuth.getRegionName()
+        + ".amazonaws.com/"
+        + cognitoAuth.getUserPoolId();
+  }
+
+  @Override
+  public String getAudience() {
+    return cognitoAuth.getAppClientId();
+  }
+
+  @Override
+  public boolean isValidToken(DecodedJWT jwt) {
+    return "id".equals(jwt.getClaim("token_use").asString());
   }
 }

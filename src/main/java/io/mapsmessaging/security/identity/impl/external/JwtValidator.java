@@ -28,8 +28,6 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import java.security.interfaces.RSAPublicKey;
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 public class JwtValidator {
 
@@ -39,30 +37,24 @@ public class JwtValidator {
     this.tokenProvider = tokenProvider;
   }
 
-  public DecodedJWT validateJwt(String username, String token) throws JwkException {
+  public DecodedJWT validateJwt(String expectedSubject, String token) throws JwkException {
+    if (expectedSubject == null || expectedSubject.isBlank()) {
+      return null;
+    }
+
     DecodedJWT decodedJwt = JWT.decode(token);
-    String issuer = decodedJwt.getIssuer();
-    JwkProvider provider = tokenProvider.getJwkProvider(issuer);
+    JwkProvider provider = tokenProvider.getJwkProvider();
 
     Jwk jwk = provider.get(decodedJwt.getKeyId());
     Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
 
-    JWTVerifier verifier = JWT.require(algorithm).withIssuer(issuer).build();
+    JWTVerifier verifier =
+        JWT.require(algorithm)
+            .withIssuer(tokenProvider.getIssuer())
+            .withAudience(tokenProvider.getAudience())
+            .withSubject(expectedSubject)
+            .build();
     DecodedJWT verifiedJwt = verifier.verify(token);
-    if (validate(username, verifiedJwt)) {
-      return verifiedJwt;
-    }
-    return verifiedJwt;
-  }
-
-  private boolean validate(String username, DecodedJWT verifiedJwt) {
-    LocalDate expires =
-        verifiedJwt.getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    LocalDate now = LocalDate.now();
-    if (expires.isBefore(now)) {
-      return false;
-    }
-    String name = verifiedJwt.getClaim("name").asString();
-    return (username.equals(name));
+    return tokenProvider.isValidToken(verifiedJwt) ? verifiedJwt : null;
   }
 }

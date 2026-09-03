@@ -28,6 +28,7 @@ import com.auth0.json.auth.TokenHolder;
 import com.auth0.jwk.JwkException;
 import com.auth0.jwk.JwkProvider;
 import com.auth0.jwk.UrlJwkProvider;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.net.Response;
 import com.auth0.net.TokenRequest;
 import io.mapsmessaging.logging.Logger;
@@ -64,23 +65,24 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
 
   @Override
   public char[] transformPassword(char[] password, byte[] salt, int cost) {
+    resetAuthenticationState();
     if (auth == null) {
-      return new char[0];
+      return authenticationFailed();
     }
     String passwordString = new String(password);
     if (isJwt(passwordString)) {
       try {
         JwtValidator validator = new JwtValidator(this);
-        jwt = validator.validateJwt(username, passwordString);
+        jwt = validator.validateJwt(identityEntry.getSubject(), passwordString);
         if (jwt != null) {
           computedPassword = new PasswordBuffer(password);
           success();
           return computedPassword.getHash();
         }
-      } catch (JwkException e) {
+      } catch (JwkException | JWTVerificationException e) {
         logger.log(AUTH0_JWT_FAILURE, e);
       }
-      return new char[0];
+      return authenticationFailed();
     }
 
     try {
@@ -94,18 +96,17 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
         TokenHolder token = holder.getBody();
         String idToken = token.getIdToken();
         JwtValidator validator = new JwtValidator(this);
-        jwt = validator.validateJwt(username, idToken);
-        computedPassword = new PasswordBuffer(password);
-        success();
-        return computedPassword.getHash();
+        jwt = validator.validateJwt(identityEntry.getSubject(), idToken);
+        if (jwt != null) {
+          computedPassword = new PasswordBuffer(password);
+          success();
+          return computedPassword.getHash();
+        }
       }
-    } catch (Auth0Exception | JwkException e) {
-      if(computedPassword != null){
-        computedPassword.clear();
-      }
+    } catch (Auth0Exception | JwkException | JWTVerificationException e) {
       logger.log(AUTH0_JWT_FAILURE, e);
     }
-    return "Invalid username / password combination.".toCharArray();
+    return authenticationFailed();
   }
 
   private void success() {
@@ -113,7 +114,17 @@ public class Auth0PasswordHasher extends JwtPasswordHasher implements TokenProvi
   }
 
   @Override
-  public JwkProvider getJwkProvider(String issuer) {
+  public JwkProvider getJwkProvider() {
     return new UrlJwkProvider("https://" + auth.getAuth0Domain() + "/");
+  }
+
+  @Override
+  public String getIssuer() {
+    return "https://" + auth.getAuth0Domain() + "/";
+  }
+
+  @Override
+  public String getAudience() {
+    return auth.getClientId();
   }
 }

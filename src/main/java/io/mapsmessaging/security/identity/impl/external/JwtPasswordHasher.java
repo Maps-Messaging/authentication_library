@@ -27,9 +27,24 @@ import lombok.Getter;
 
 public abstract class JwtPasswordHasher extends PasswordHasher {
 
+  private static final String INVALID_CREDENTIALS = "Invalid username / password combination.";
+
   @Getter
   protected DecodedJWT jwt;
   protected PasswordBuffer computedPassword;
+
+  protected void resetAuthenticationState() {
+    jwt = null;
+    if (computedPassword != null) {
+      computedPassword.clear();
+      computedPassword = null;
+    }
+  }
+
+  protected char[] authenticationFailed() {
+    resetAuthenticationState();
+    return INVALID_CREDENTIALS.toCharArray();
+  }
 
   @Override
   public PasswordHasher create(char[] password) {
