@@ -37,6 +37,10 @@ steps:
         printf 'name=test\nlibrary=/usr/lib/softhsm/libsofthsm2.so\nslot=%s\n' "${SOFTHSM_SLOT}" > softhsm.cfg
         echo "SoftHSM test token slot: ${SOFTHSM_SLOT}"
 
+      - chmod +x .buildkite/bootstrap-openfga.sh
+      - .buildkite/bootstrap-openfga.sh
+      - source .buildkite/openfga.env
+
       - echo "vaultAddress=https://10.140.62.12:8200" > vault.properties
       - echo "vaultToken=$(buildkite-agent secret get vaultToken)" >> vault.properties
       - echo "secretEngine=cubbyhole" >> vault.properties
