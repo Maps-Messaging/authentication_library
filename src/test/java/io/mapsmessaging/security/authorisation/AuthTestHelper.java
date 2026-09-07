@@ -36,6 +36,10 @@ public class AuthTestHelper {
   private static final Faker faker = new Faker();
   private static final Map<String, UUID> UUIDMap = new LinkedHashMap<>();
 
+  private static final String DEFAULT_OPENFGA_URL = "http://openfga.syd.mapsmessaging.io:8080";
+  private static final String DEFAULT_OPENFGA_STORE_ID = "01KAF6PKR6YRJZ8RXXYXAJDX1E";
+  private static final String DEFAULT_OPENFGA_MODEL_ID = "01KB1X6KRRB2KRV1HK5K0WADTR";
+
   public static Identity createIdentity(String username) {
     UUID uuid = UUIDMap.computeIfAbsent(username, k -> UUID.randomUUID());
     IdentityEntry identityEntry = new HtPasswdEntry(username, new char[0]);
@@ -65,7 +69,7 @@ public class AuthTestHelper {
     Random random = new Random();
     String username = faker.name().firstName();
     String groupName = "group" + random.nextInt(100);
-    return createIdentity(groupMapManagement,username,  groupName);
+    return createIdentity(groupMapManagement, username, groupName);
   }
 
   public static Identity createIdentity(GroupMapManagement groupMapManagement, String username, String groupName) {
@@ -83,25 +87,19 @@ public class AuthTestHelper {
     return new Identity(UUID.randomUUID(), identityEntry, groups);
   }
 
-  public static  AuthorizationProvider createOpenFgaAuthorizationProvider(ResourceTraversalFactory factory)throws Exception{
+  public static AuthorizationProvider createOpenFgaAuthorizationProvider(ResourceTraversalFactory factory) throws Exception {
     Map<String, Object> config = new HashMap<>();
     Map<String, Object> authorisation = new HashMap<>();
     authorisation.put("enableCaching", false);
     authorisation.put("cachingTime", 10);
     config.put("authorisation", authorisation);
-    Map<String, Object> openFgaMap = new HashMap<>();
-    openFgaMap.put("uris", "http://openfga.syd.mapsmessaging.io:8080");
-    openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
-    openFgaMap.put("modelId", "01KB1X6KRRB2KRV1HK5K0WADTR");
-    openFgaMap.put("connectionTimeout", 10);
-    authorisation.put("openfga", openFgaMap);
+    authorisation.put("openfga", createOpenFgaConfig());
     AuthorizationProvider provider = AuthorizationProviderFactory.getInstance().get("openFGA", config, TestPermissions.values(), factory);
     provider.reset();
     return provider;
   }
 
-
-  public static  AuthorizationProvider createAclAuthorizationProvider(ResourceTraversalFactory factory) throws IOException {
+  public static AuthorizationProvider createAclAuthorizationProvider(ResourceTraversalFactory factory) throws IOException {
     Map<String, Object> config = new HashMap<>();
     config.put("configDirectory", ".");
     Map<String, Object> certificateConfig = new HashMap<>();
@@ -113,28 +111,35 @@ public class AuthTestHelper {
     certificateConfig.put("privateKey.passphrase", "changeit");
     config.put("certificateStore", certificateConfig);
 
-
-    AuthorizationProvider provider =  AuthorizationProviderFactory.getInstance().get("ACL", config, TestPermissions.values(), factory);
+    AuthorizationProvider provider = AuthorizationProviderFactory.getInstance().get("ACL", config, TestPermissions.values(), factory);
     provider.reset();
     return provider;
   }
 
-  public static  AuthorizationProvider createCachingAuthorizationProvider(ResourceTraversalFactory factory) throws IOException {
+  public static AuthorizationProvider createCachingAuthorizationProvider(ResourceTraversalFactory factory) throws IOException {
     Map<String, Object> config = new HashMap<>();
     Map<String, Object> authorisation = new HashMap<>();
     config.put("cachingTime", 10);
     config.put("enableCaching", true);
     config.put("authorisation", authorisation);
-    Map<String, Object> openFgaMap = new HashMap<>();
-    openFgaMap.put("uris", "http://openfga.syd.mapsmessaging.io:8080");
-    openFgaMap.put("storeId", "01KAF6PKR6YRJZ8RXXYXAJDX1E");
-    openFgaMap.put("modelId", "01KB1X6KRRB2KRV1HK5K0WADTR");
-    openFgaMap.put("connectionTimeout", 10);
-    authorisation.put("openfga", openFgaMap);
+    authorisation.put("openfga", createOpenFgaConfig());
 
-    AuthorizationProvider provider =  AuthorizationProviderFactory.getInstance().get("openFGA", config, TestPermissions.values(), factory);
+    AuthorizationProvider provider = AuthorizationProviderFactory.getInstance().get("openFGA", config, TestPermissions.values(), factory);
     provider.reset();
     return provider;
   }
 
+  private static Map<String, Object> createOpenFgaConfig() {
+    Map<String, Object> openFgaMap = new HashMap<>();
+    openFgaMap.put("uris", environmentOrDefault("OPENFGA_URL", DEFAULT_OPENFGA_URL));
+    openFgaMap.put("storeId", environmentOrDefault("OPENFGA_STORE_ID", DEFAULT_OPENFGA_STORE_ID));
+    openFgaMap.put("modelId", environmentOrDefault("OPENFGA_MODEL_ID", DEFAULT_OPENFGA_MODEL_ID));
+    openFgaMap.put("connectionTimeout", 10);
+    return openFgaMap;
+  }
+
+  private static String environmentOrDefault(String name, String defaultValue) {
+    String value = System.getenv(name);
+    return value == null || value.isBlank() ? defaultValue : value;
+  }
 }
