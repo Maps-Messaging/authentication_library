@@ -7,7 +7,6 @@
  *  You may obtain a copy of the License at:
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *      https://commonsclause.com/
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,7 +38,7 @@ class Pkcs11ManagerTest extends BaseCertificateTest {
     Map<String, Object> config = new LinkedHashMap<>();
     config.put("configPath", "./softhsm.cfg");
     config.put("type", "pkcs11");
-    config.put("passphrase", "2222");
+    config.put("passphrase", "1234");
     config.put("providerName", "SunPKCS11");
     certificateManager = CertificateManagerFactory.getInstance().getManager(new ConfigurationProperties(config));
   }
