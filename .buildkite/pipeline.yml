@@ -29,13 +29,13 @@ steps:
 
       - export SOFTHSM2_CONF=/etc/softhsm/softhsm2.conf
       - |
-        SOFTHSM_SLOT="$(softhsm2-util --show-slots | awk '/^Slot [0-9]+$/ { slot=$2 } /Label:[[:space:]]*testToken[[:space:]]*$/ { print slot; exit }')"
-        if [ -z "${SOFTHSM_SLOT}" ]; then
+        SOFTHSM_SLOT="$(softhsm2-util --show-slots | awk '/^Slot [0-9]+$/ { slot=$$2 } /Label:[[:space:]]*testToken[[:space:]]*$/ { print slot; exit }')"
+        if [ -z "$${SOFTHSM_SLOT}" ]; then
           echo "Unable to locate SoftHSM testToken slot" >&2
           exit 1
         fi
-        printf 'name=test\nlibrary=/usr/lib/softhsm/libsofthsm2.so\nslot=%s\n' "${SOFTHSM_SLOT}" > softhsm.cfg
-        echo "SoftHSM test token slot: ${SOFTHSM_SLOT}"
+        printf 'name=test\nlibrary=/usr/lib/softhsm/libsofthsm2.so\nslot=%s\n' "$${SOFTHSM_SLOT}" > softhsm.cfg
+        echo "SoftHSM test token slot: $${SOFTHSM_SLOT}"
 
       - chmod +x .buildkite/bootstrap-openfga.sh
       - .buildkite/bootstrap-openfga.sh
@@ -49,12 +49,10 @@ steps:
       - export SONAR_TOKEN=$(buildkite-agent secret get SONAR_TOKEN)
       - export NVD_API_KEY=$(buildkite-agent secret get nvd_api_key)
       - mvn -Dgpg.skip=true clean deploy -Psnapshot
-      - mvn -Psnapshot org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.token=${SONAR_TOKEN} -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+      - mvn -Psnapshot org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.token=$${SONAR_TOKEN} -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
     plugins:
       - test-collector#v1.0.0:
           files: "target/surefire-reports/*.xml"
           format: "junit"
-    env:
-      BUILDKITE_ANALYTICS_TOKEN: "TB4c1Dp2UgWDRHcyrbLizA2n"
     agents:
       queue: "java_build_queue_aws"
