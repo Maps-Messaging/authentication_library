@@ -45,6 +45,9 @@ import lombok.NonNull;
 
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
+  private static final System.Logger LOGGER =
+      System.getLogger(OpenFGAAuthorizationProvider.class.getName());
+
   private final OpenFgaClient openFgaClient;
   @Getter
   private final String userType;
@@ -248,11 +251,8 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return Access.DENY;
-    } catch (ExecutionException | FgaInvalidParameterException e) {
-      e.printStackTrace();
-      return Access.DENY;
-    } catch (FgaValidationError e) {
-      e.printStackTrace();
+    } catch (ExecutionException | FgaInvalidParameterException | FgaValidationError e) {
+      LOGGER.log(System.Logger.Level.WARNING, "OpenFGA access check failed", e);
       return Access.DENY;
     }
 
@@ -512,7 +512,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
       return;
     }
     revoke(grantee, "allow_"+permission.getName().toLowerCase(), protectedResource);
-    revoke(grantee, "deny"+permission.getName().toLowerCase(), protectedResource);
+    revoke(grantee, "deny_"+permission.getName().toLowerCase(), protectedResource);
   }
 
   private void revoke(Grantee grantee, String perm,  ProtectedResource protectedResource) {
@@ -574,16 +574,12 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   @Override
   public void registerResource(ProtectedResource protectedResource,
                                ResourceCreationContext resourceCreationContext) {
-
-    if (protectedResource == null || resourceCreationContext == null) {
-    }
-
-   }
+    // OpenFGA resources are materialised by relationship tuples, so there is nothing to persist here.
+  }
 
   @Override
   public void deleteResource(ProtectedResource protectedResource) {
-    if (protectedResource == null) {
-    }
+    // OpenFGA resource cleanup is handled by tuple revocation rather than a standalone resource record.
   }
 
   // =============================================================================================
@@ -685,7 +681,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      executionException.printStackTrace();
+      LOGGER.log(System.Logger.Level.WARNING, "OpenFGA read failed", executionException);
     }
     return null;
   }
