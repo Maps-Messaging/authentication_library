@@ -48,7 +48,7 @@ steps:
 
       - export SONAR_TOKEN=$(buildkite-agent secret get SONAR_TOKEN)
       - mvn clean deploy -Psnapshot
-      - mvn -Psnapshot org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.token=$${SONAR_TOKEN} -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+      - mvn -Psnapshot org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar -Dsonar.token=$${SONAR_TOKEN} -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml -Dsonar.branch.name=development
 
     agents:
       queue: "java_build_queue_aws"
