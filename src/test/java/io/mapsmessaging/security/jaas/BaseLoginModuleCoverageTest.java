@@ -38,7 +38,7 @@ class BaseLoginModuleCoverageTest {
   }
 
   @Test
-  void failedValidationAndPreLoginCommitAbortPaths() {
+  void failedValidationAndPreLoginCommitAbortPaths() throws LoginException {
     TestModule module = new TestModule(false);
     Subject subject = new Subject();
     module.initialize(
