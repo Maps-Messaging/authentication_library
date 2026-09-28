@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.1",
+  "type_definitions": [
+    {
+      "type": "user"
+    },
+    {
+      "type": "group",
+      "relations": {
+        "member": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "member": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "resource",
+      "relations": {
+        "allow_read": {
+          "this": {}
+        },
+        "deny_read": {
+          "this": {}
+        },
+        "allow_write": {
+          "this": {}
+        },
+        "deny_write": {
+          "this": {}
+        },
+        "allow_delete": {
+          "this": {}
+        },
+        "deny_delete": {
+          "this": {}
+        },
+        "allow_create": {
+          "this": {}
+        },
+        "deny_create": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "allow_read": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          },
+          "deny_read": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          },
+          "allow_write": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          },
+          "deny_write": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          },
+          "allow_delete": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          },
+          "deny_delete": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          },
+          "allow_create": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          },
+          "deny_create": {
+            "directly_related_user_types": [
+              { "type": "user" },
+              { "type": "group", "relation": "member" }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

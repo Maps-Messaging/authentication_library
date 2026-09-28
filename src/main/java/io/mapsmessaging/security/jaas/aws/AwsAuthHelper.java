@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -39,13 +40,34 @@ public class AwsAuthHelper {
 
   private AwsAuthHelper(){}
 
-  public static List<String> getGroups(String token, String region, String userPoolId) throws IOException {
+  public static List<String> getGroups(String token, String region, String userPoolId, String appClientId) throws IOException {
+    return getGroups(validateAccessToken(token, region, userPoolId, appClientId));
+  }
+
+  public static DecodedJWT validateAccessToken(String token, String region, String userPoolId, String appClientId) throws IOException {
     RSAKeyProvider keyProvider = new AwsCognitoRSAKeyProvider(region, userPoolId);
+    String issuer = "https://cognito-idp." + region + ".amazonaws.com/" + userPoolId;
+    return validateAccessToken(token, issuer, appClientId, keyProvider);
+  }
+
+  static DecodedJWT validateAccessToken(String token, String issuer, String appClientId, RSAKeyProvider keyProvider) {
     Algorithm algorithm = Algorithm.RSA256(keyProvider);
-    JWTVerifier jwtVerifier = JWT.require(algorithm).build();
-    DecodedJWT decodedJWT = jwtVerifier.verify(token);
+    JWTVerifier jwtVerifier =
+        JWT.require(algorithm)
+            .withIssuer(issuer)
+            .withClaim("token_use", "access")
+            .withClaim("client_id", appClientId)
+            .withClaimPresence("sub")
+            .withClaimPresence("exp")
+            .withClaimPresence("iat")
+            .build();
+    return jwtVerifier.verify(token);
+  }
+
+  public static List<String> getGroups(DecodedJWT decodedJWT) {
     Claim groups = decodedJWT.getClaim("cognito:groups");
-    return groups.asList(String.class);
+    List<String> groupList = groups.asList(String.class);
+    return groupList == null ? Collections.emptyList() : groupList;
   }
 
 

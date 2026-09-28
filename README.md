@@ -6,8 +6,8 @@ security protocols in Java applications.
 
 ## Features
 
-* Supports a wide range of SASL mechanisms including PLAIN, CRAM-MD5, DIGEST-MD5, SCRAM-SHA-1, SCRAM-SHA-256, and
-  SCRAM-SHA-512.
+* Implements the registered `SCRAM-SHA-256` mechanism defined by RFC 7677 and the `PLAIN` mechanism defined by RFC
+  4616. `PLAIN` must be used only over a protected transport such as TLS.
 * Compatibility with multiple identity backends like Linux passwd files, htpasswd, and others.
 * Implements the JAAS standard for authentication using various methods including UNIX, Apache Basic Auth, AWS Cognito,
   Auth0, and LDAP.

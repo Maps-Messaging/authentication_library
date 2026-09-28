@@ -60,15 +60,12 @@ class BaseSasl {
   }
 
   protected void runAuth() throws SaslException {
-    byte[] challenge;
-    byte[] response = new byte[0];
-
-    while (!saslClient.isComplete() && !saslServer.isComplete()) {
-      challenge = saslServer.evaluateResponse(response);
-      response = saslClient.evaluateChallenge(challenge);
-    }
-    if (response != null) {
-      saslServer.evaluateResponse(response);
+    byte[] response = saslClient.hasInitialResponse() ? saslClient.evaluateChallenge(new byte[0]) : new byte[0];
+    while (!saslServer.isComplete()) {
+      byte[] challenge = saslServer.evaluateResponse(response);
+      if (challenge != null) {
+        response = saslClient.evaluateChallenge(challenge);
+      }
     }
   }
 

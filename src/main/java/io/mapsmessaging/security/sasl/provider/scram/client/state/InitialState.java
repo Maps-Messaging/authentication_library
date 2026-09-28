@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -21,17 +21,21 @@
 package io.mapsmessaging.security.sasl.provider.scram.client.state;
 
 import io.mapsmessaging.security.sasl.SaslPrep;
+import io.mapsmessaging.security.sasl.provider.scram.ScramString;
 import io.mapsmessaging.security.sasl.provider.scram.SessionContext;
 import io.mapsmessaging.security.sasl.provider.scram.State;
 import io.mapsmessaging.security.sasl.provider.scram.crypto.CryptoHelper;
 import io.mapsmessaging.security.sasl.provider.scram.msgs.ChallengeResponse;
 import java.io.IOException;
 import java.util.Map;
-import javax.security.auth.callback.*;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.SaslException;
 
 public class InitialState extends State {
-
-  private static final String GS2_HEADER = "n,,";
 
   public InitialState(String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
     super(authorizationId, protocol, serverName, props, cbh);
@@ -42,46 +46,57 @@ public class InitialState extends State {
     return false;
   }
 
+  @Override
   public boolean hasInitialResponse() {
-    return false;
+    return true;
   }
 
   @Override
   public ChallengeResponse produceChallenge(SessionContext context) throws IOException, UnsupportedCallbackException {
-    context.setClientNonce(CryptoHelper.generateNonce(48));
-    ChallengeResponse firstClientChallenge = new ChallengeResponse();
-    //
-    // Request information from the user
-    //
-    Callback[] callbacks = new Callback[2];
-    callbacks[0] = new NameCallback("SCRAM Username Prompt");
-    callbacks[1] = new PasswordCallback("SCRAM Password Prompt", false);
-    cbh.handle(callbacks);
+    NameCallback nameCallback = new NameCallback("SCRAM username");
+    PasswordCallback passwordCallback = new PasswordCallback("SCRAM password", false);
+    cbh.handle(new Callback[] {nameCallback, passwordCallback});
 
-    //
-    // Update the context
-    //
-    char[] rawPassword = ((PasswordCallback) callbacks[1]).getPassword();
-    context.setUsername(((NameCallback) callbacks[0]).getName());
-    context.setPrepPassword(SaslPrep.getInstance().stringPrep(rawPassword));
+    String username = nameCallback.getName();
+    char[] password = passwordCallback.getPassword();
+    if (username == null || username.isEmpty() || password == null) {
+      passwordCallback.clearPassword();
+      throw new SaslException("SCRAM credentials are required");
+    }
 
-    //
-    // Set up the initial challenge
-    //
-    firstClientChallenge.put(ChallengeResponse.USERNAME, context.getUsername());
-    firstClientChallenge.put(ChallengeResponse.NONCE, context.getClientNonce());
+    String preparedUsername;
+    try {
+      preparedUsername = SaslPrep.getInstance().stringPrep(username);
+      if (preparedUsername.isEmpty()) {
+        throw new SaslException("SCRAM username is empty after SASLprep");
+      }
+      context.setUsername(preparedUsername);
+      char[] preparedPassword = SaslPrep.getInstance().stringPrep(password);
+      context.setPrepPassword(preparedPassword == password ? preparedPassword.clone() : preparedPassword);
+    } finally {
+      passwordCallback.clearPassword();
+    }
+
+    String preparedAuthorizationId = authorizationId == null || authorizationId.isEmpty() ? null : SaslPrep.getInstance().stringPrep(authorizationId);
+    if (preparedAuthorizationId != null && preparedAuthorizationId.isEmpty()) {
+      throw new SaslException("SCRAM authorization identity is empty after SASLprep");
+    }
+    context.setAuthorizationId(preparedAuthorizationId);
+    String gs2Header = preparedAuthorizationId == null ? "n,," : "n,a=" + ScramString.escapeSaslName(preparedAuthorizationId) + ",";
+    context.setGs2Header(gs2Header);
+
+    context.setClientNonce(CryptoHelper.generateNonce(24));
+    ChallengeResponse response = new ChallengeResponse();
+    response.put(ChallengeResponse.USERNAME, ScramString.escapeSaslName(preparedUsername));
+    response.put(ChallengeResponse.NONCE, context.getClientNonce());
+    context.setInitialClientChallenge(response.getBareMessage());
+    response.setGs2Header(gs2Header);
     context.setState(new ChallengeState(this));
-    String first = firstClientChallenge.toString();
-    if (first.startsWith("n,,")) first = first.substring(3);
-
-    context.setInitialClientChallenge(first);
-    firstClientChallenge.setGs2Header(GS2_HEADER);
-    return firstClientChallenge;
+    return response;
   }
 
   @Override
-  public void handleResponse(ChallengeResponse response, SessionContext context)
-      throws IOException, UnsupportedCallbackException {
-    // This is the first state, there is no challenge or response
+  public void handleResponse(ChallengeResponse response, SessionContext context) throws IOException, UnsupportedCallbackException {
+    throw new SaslException("SCRAM client received an unexpected initial challenge");
   }
 }

@@ -35,18 +35,8 @@ public class MapsSecurityProvider extends Provider {
 
   public MapsSecurityProvider() {
     super("MapsSasl", "1.0", "Provider for SCRAM SASL implementation.");
-    Provider[] providers = Security.getProviders();
-    for (Provider provider : providers) {
-      for (Service service : provider.getServices()) {
-        if (service.getAlgorithm().toLowerCase().startsWith("hmac")) {
-          register(service.getAlgorithm().substring("hmac".length()));
-        }
-      }
-    }
-    if (Boolean.parseBoolean(System.getProperty("sasl.test", "false"))) {
-      put("SaslClientFactory.MAPS-TEST-10", CLIENT_FACTORY);
-      put("SaslServerFactory.MAPS-TEST-10", SERVER_FACTORY);
-    }
+    put("SaslClientFactory.SCRAM-SHA-256", CLIENT_FACTORY);
+    put("SaslServerFactory.SCRAM-SHA-256", SERVER_FACTORY);
     put("SaslClientFactory.PLAIN", CLIENT_FACTORY);
     put("SaslServerFactory.PLAIN", SERVER_FACTORY);
   }
@@ -63,13 +53,4 @@ public class MapsSecurityProvider extends Provider {
     if (!found) Security.insertProviderAt(new MapsSecurityProvider(), 1);
   }
 
-  private void register(String hmacAlgorithm) {
-    if (hmacAlgorithm.toLowerCase().startsWith("sha") && !hmacAlgorithm.toLowerCase().startsWith("sha3")) {
-      hmacAlgorithm = hmacAlgorithm.substring(0, "sha".length()) + "-" + hmacAlgorithm.substring("sha".length());
-    }
-    put("SaslClientFactory.SCRAM-" + hmacAlgorithm, CLIENT_FACTORY);
-    put("SaslServerFactory.SCRAM-" + hmacAlgorithm, SERVER_FACTORY);
-    put("SaslClientFactory.SCRAM-bcrypt-" + hmacAlgorithm, CLIENT_FACTORY);
-    put("SaslServerFactory.SCRAM-bcrypt-" + hmacAlgorithm, SERVER_FACTORY);
-  }
 }

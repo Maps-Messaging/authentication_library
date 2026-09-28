@@ -25,6 +25,7 @@ import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
@@ -44,12 +45,22 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
   private final long ttlMillis;
   private final long refreshAheadMillis;
   private final ExecutorService executorService;
+  private final Clock clock;
 
   public CachingAuthorizationProvider(AuthorizationProvider delegate,
                                       Duration ttl,
                                       Duration refreshAhead,
                                       ExecutorService executorService) {
+    this(delegate, ttl, refreshAhead, executorService, Clock.systemUTC());
+  }
+
+  CachingAuthorizationProvider(AuthorizationProvider delegate,
+                               Duration ttl,
+                               Duration refreshAhead,
+                               ExecutorService executorService,
+                               Clock clock) {
     this.delegate = Objects.requireNonNull(delegate, "delegate");
+    this.clock = Objects.requireNonNull(clock, "clock");
     this.ttlMillis = (ttl != null ? ttl : Duration.ofSeconds(3)).toMillis();
     this.refreshAheadMillis = (refreshAhead != null ? refreshAhead : Duration.ofMillis(500)).toMillis();
     this.cache = new ConcurrentHashMap<>();
@@ -88,7 +99,7 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
 
   @Override
   public boolean canAccess(Identity identity, Permission permission, ProtectedResource protectedResource) {
-    long now = System.currentTimeMillis();
+    long now = clock.millis();
     CacheKey cacheKey = new CacheKey(identity, permission, protectedResource);
     CacheEntry cacheEntry = cache.get(cacheKey);
 
@@ -225,7 +236,7 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
   private void refreshAsync(CacheKey cacheKey, CacheEntry oldEntry) {
     executorService.submit(() -> {
       try {
-        long now = System.currentTimeMillis();
+        long now = clock.millis();
         boolean allowed = delegate.canAccess(cacheKey.identity, cacheKey.permission, cacheKey.protectedResource);
         CacheEntry newEntry = new CacheEntry(allowed, now + ttlMillis);
         cache.put(cacheKey, newEntry);

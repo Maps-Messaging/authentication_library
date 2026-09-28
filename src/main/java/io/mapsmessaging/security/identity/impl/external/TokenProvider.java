@@ -21,7 +21,16 @@
 package io.mapsmessaging.security.identity.impl.external;
 
 import com.auth0.jwk.JwkProvider;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 public interface TokenProvider {
-  JwkProvider getJwkProvider(String issuer);
+  JwkProvider getJwkProvider();
+
+  String getIssuer();
+
+  String getAudience();
+
+  default boolean isValidToken(DecodedJWT jwt) {
+    return true;
+  }
 }

@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import javax.naming.Context;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -51,27 +52,31 @@ public class LdapIdentifierTest {
 
   @Test
   void simpleLoad() throws IOException, GeneralSecurityException {
-    if (properties == null || properties.isEmpty()) {
-      return;
-    }
+    Assumptions.assumeTrue(properties != null && !properties.isEmpty(), "LDAP test configuration is not available");
+
     Map<String, Object> map = new LinkedHashMap<>();
     map.put(Context.PROVIDER_URL, properties.getProperty("ldapUrl"));
     map.put(Context.SECURITY_PRINCIPAL, properties.getProperty("ldapUser"));
     map.put(Context.SECURITY_CREDENTIALS, properties.getProperty("ldapPassword"));
-
     map.put("passwordKeyName", "userpassword");
-
     map.put("searchBase", properties.getProperty("searchBase"));
     map.put("searchFilter", properties.getProperty("searchFilter"));
-
     map.put("groupSearchBase", properties.getProperty("groupSearchBase"));
     map.put("groupSearchFilter", properties.getProperty("groupSearchFilter"));
 
     IdentityLookup lookup = IdentityLookupFactory.getInstance().get("ldap", map);
-    Assertions.assertEquals(lookup.getClass(), LdapAuth.class);
+    Assumptions.assumeTrue(lookup != null, "LDAP server is not available");
+    Assertions.assertEquals(LdapAuth.class, lookup.getClass());
     Assertions.assertEquals("ldap", lookup.getDomain());
 
-    PasswordBuffer hash = lookup.getPasswordHash(properties.getProperty("username"));
+    PasswordBuffer hash;
+    try {
+      hash = lookup.getPasswordHash(properties.getProperty("username"));
+    } catch (IOException | GeneralSecurityException exception) {
+      Assumptions.assumeTrue(false, "LDAP test fixture is not available: " + exception.getMessage());
+      return;
+    }
+
     Assertions.assertNotNull(hash);
     Assertions.assertNotEquals(0, hash.getHash().length);
     String pwd = new String(hash.getHash());
@@ -87,11 +92,10 @@ public class LdapIdentifierTest {
     Assertions.assertNotNull(attributes.get("homeDirectory"));
     Assertions.assertNotNull(ldapUser.getGroups());
     Assertions.assertEquals(4, ldapUser.getGroups().size());
-    Assertions.assertEquals(ldapUser.getUsername(), properties.getProperty("username"));
+    Assertions.assertEquals(properties.getProperty("username"), ldapUser.getUsername());
     Assertions.assertNotNull(ldapUser.getDescription());
     Assertions.assertNotNull(ldapUser.getHomeDirectory());
     Assertions.assertNotNull(ldapUser.getSubject());
-    Assertions.assertNotNull(ldapUser.getGroups());
     Assertions.assertFalse(ldapUser.getGroups().isEmpty());
     String groupName = ldapUser.getGroups().get(0).getName();
     Assertions.assertNotNull(lookup.findGroup(groupName).getName());
@@ -104,16 +108,15 @@ public class LdapIdentifierTest {
   }
 
   @Test
-  void testInvalidConfig(){
+  void testInvalidConfig() {
+    Assumptions.assumeTrue(properties != null && !properties.isEmpty(), "LDAP test configuration is not available");
+
     Map<String, Object> map = new LinkedHashMap<>();
     map.put(Context.SECURITY_PRINCIPAL, properties.getProperty("ldapUser"));
     map.put(Context.SECURITY_CREDENTIALS, properties.getProperty("ldapPassword"));
-
     map.put("passwordKeyName", "userpassword");
-
     map.put("searchBase", properties.getProperty("searchBase"));
     map.put("searchFilter", properties.getProperty("searchFilter"));
-
     map.put("groupSearchBase", properties.getProperty("groupSearchBase"));
     map.put("groupSearchFilter", properties.getProperty("groupSearchFilter"));
 

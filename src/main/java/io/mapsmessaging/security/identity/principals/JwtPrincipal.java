@@ -54,7 +54,8 @@ public class JwtPrincipal implements Principal {
   }
 
   public boolean isActive() {
-    return issued.isAfter(LocalDateTime.now());
+    LocalDateTime now = LocalDateTime.now();
+    return !issued.isAfter(now) && expires.isAfter(now);
   }
 
   public String getName() {
@@ -62,6 +63,6 @@ public class JwtPrincipal implements Principal {
   }
 
   public boolean hasExpired() {
-    return expires.isAfter(LocalDateTime.now());
+    return !expires.isAfter(LocalDateTime.now());
   }
 }

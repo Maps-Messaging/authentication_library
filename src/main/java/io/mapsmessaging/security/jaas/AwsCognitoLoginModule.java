@@ -23,12 +23,11 @@ package io.mapsmessaging.security.jaas;
 import static io.mapsmessaging.security.identity.JwtHelper.isJwt;
 import static io.mapsmessaging.security.jaas.aws.AwsAuthHelper.*;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
 import io.mapsmessaging.security.identity.principals.GroupPrincipal;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import javax.security.auth.Subject;
@@ -86,7 +85,6 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(credentials);
 
     try (CognitoIdentityProviderClient cognitoClient = CognitoIdentityProviderClient.builder().credentialsProvider(credentialsProvider).region(region).build()) {
-      String secretHash = generateSecretHash(appClientId, appClientSecret, username);
       String passwordString = new String(password);
 
       // Login based on the JWT being passed in
@@ -95,6 +93,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
       }
 
       // Login based on user/password
+      String secretHash = generateSecretHash(appClientId, appClientSecret, username);
       AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
           .authFlow("ADMIN_NO_SRP_AUTH")
           .clientId(appClientId)
@@ -111,9 +110,10 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
       AdminInitiateAuthResponse authResponse = cognitoClient.adminInitiateAuth(authRequest);
       AuthenticationResultType authResult = authResponse.authenticationResult();
       return (authResult != null && loadGroups(authResult));
-    } catch (NotAuthorizedException | NoSuchAlgorithmException | InvalidKeyException e) {
-      // If the token is not valid or the user is not authorized, the above code will throw a NotAuthorizedException
-      LoginException exception = new LoginException("Not authorised exception raised");
+    } catch (LoginException e) {
+      throw e;
+    } catch (Exception e) {
+      LoginException exception = new LoginException("Cognito authentication failed");
       exception.initCause(e);
       throw exception;
     }
@@ -121,7 +121,7 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
 
   private boolean loadGroups(AuthenticationResultType authResult) throws LoginException {
     try{
-      groupList = getGroups(authResult.accessToken(), region.id(), userPoolId);
+      groupList = getGroups(authResult.accessToken(), region.id(), userPoolId, appClientId);
       return true;
     }
     catch(IOException ioException){
@@ -143,7 +143,8 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     return res;
   }
 
-  private boolean validateForJWT(CognitoIdentityProviderClient cognitoClient, String username, String jwt) {
+  private boolean validateForJWT(CognitoIdentityProviderClient cognitoClient, String username, String jwt) throws IOException {
+    DecodedJWT verifiedJwt = validateAccessToken(jwt, region.id(), userPoolId, appClientId);
     GetUserRequest getUserRequest = GetUserRequest.builder()
         .accessToken(jwt)
         .build();
@@ -151,8 +152,17 @@ public class AwsCognitoLoginModule extends BaseLoginModule {
     // Call GetUser to validate the token
     GetUserResponse getUserResponse = cognitoClient.getUser(getUserRequest);
 
-    // Retrieve the username from the GetUserResponse
-    return username.equals(getUserResponse.username());
+    String subject =
+        getUserResponse.userAttributes().stream()
+            .filter(attribute -> attribute.name().equals("sub"))
+            .map(AttributeType::value)
+            .findFirst()
+            .orElse(null);
+    if (username.equals(getUserResponse.username()) && verifiedJwt.getSubject().equals(subject)) {
+      groupList = getGroups(verifiedJwt);
+      return true;
+    }
+    return false;
   }
 
 

@@ -47,6 +47,7 @@ import lombok.Getter;
 public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
   private final Logger logger = LoggerFactory.getLogger(Auth0Auth.class);
+  @Getter
   private final String clientId;
   private final String clientSecret;
   private final String apiToken;
@@ -122,7 +123,7 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
 
   @Override
   protected IdentityEntry createIdentityEntry(String username) {
-    return new Auth0IdentityEntry(this, username);
+    return new Auth0IdentityEntry(this, username, null);
   }
 
   @Override
@@ -186,9 +187,10 @@ public class Auth0Auth extends CachingIdentityLookup<Auth0IdentityEntry> {
     try {
       List<UserResponseSchema> response = auth0Api.getUserList();
       for (UserResponseSchema user : response) {
-        String email = user.getEmail().get();
+        String email = user.getEmail().orElse(null);
         if (email != null && !email.isEmpty()) {
-          Auth0IdentityEntry entry = new Auth0IdentityEntry(this, email);
+          Auth0IdentityEntry entry =
+              new Auth0IdentityEntry(this, email, user.getUserId().orElse(null));
           identityEntryMap.put(email, entry);
           identityEntries.add(entry);
         }

@@ -48,7 +48,6 @@ class SimpleSaslTest extends BaseSasl {
 
   @BeforeAll
   static void register() throws IOException {
-    System.setProperty("sasl.test", "true");
     Security.insertProviderAt(new MapsSecurityProvider(), 1);
 
     Map<String, Object> cipherConfig = new LinkedHashMap<>();
@@ -82,12 +81,7 @@ class SimpleSaslTest extends BaseSasl {
   @ValueSource(
       strings = {
         "PLAIN",
-        "DIGEST-MD5",
-        "CRAM-MD5",
-        "SCRAM-SHA-256",
-        "SCRAM-SHA-512",
-        "SCRAM-SHA3-256",
-        "SCRAM-SHA3-512"
+        "SCRAM-SHA-256"
       })
   void validateSaslMechanisms(String mechanism) throws IOException, GeneralSecurityException {
     testMechanism(mechanism, faker.backToTheFuture().character(), faker.backToTheFuture().quote().toCharArray());

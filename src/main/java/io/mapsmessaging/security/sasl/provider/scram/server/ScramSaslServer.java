@@ -32,7 +32,10 @@ import javax.security.sasl.SaslServer;
 
 public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
+  private final String mechanismName;
+
   public ScramSaslServer(String algorithm, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
+    mechanismName = "SCRAM-" + algorithm.toUpperCase();
     Mac mac = CryptoHelper.findMac(algorithm);
     if (mac != null) {
       context.setMac(mac);
@@ -46,7 +49,7 @@ public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   @Override
   public String getMechanismName() {
-    return "SCRAM";
+    return mechanismName;
   }
 
   @Override
@@ -56,12 +59,17 @@ public class ScramSaslServer extends BaseScramSasl implements SaslServer {
 
   @Override
   public String getAuthorizationID() {
-    return context.getUsername();
+    requireComplete();
+    return context.getAuthorizedId();
   }
 
   @Override
   public Object getNegotiatedProperty(String propName) {
-    return "auth-conf";
+    requireComplete();
+    if (javax.security.sasl.Sasl.QOP.equals(propName)) {
+      return "auth";
+    }
+    return null;
   }
 
 }

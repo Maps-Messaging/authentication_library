@@ -36,3 +36,8 @@
 - `clientSecret`: Client secret.
 - `authToken`: Authentication token.
 - `cacheTime`: Duration for caching.
+
+## Auth0 JWT JAAS
+
+- `auth0Domain`: Auth0 domain.
+- `audience`: Required API audience for accepted access tokens.
