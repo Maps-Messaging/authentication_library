@@ -28,6 +28,8 @@ import javax.crypto.Mac;
 
 public class CryptoHelper {
 
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
   private CryptoHelper() {
     // This is a helper class and does not have any instance methods
   }
@@ -39,7 +41,7 @@ public class CryptoHelper {
 
   public static byte[] generateRandomBytes(int size) {
     byte[] value = new byte[size];
-    new SecureRandom().nextBytes(value);
+    SECURE_RANDOM.nextBytes(value);
     return value;
   }
 
