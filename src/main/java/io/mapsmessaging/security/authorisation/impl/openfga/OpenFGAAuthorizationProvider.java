@@ -47,6 +47,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
   private static final System.Logger LOGGER =
       System.getLogger(OpenFGAAuthorizationProvider.class.getName());
+  private static final String DENY_PREFIX = "deny_";
 
   private final OpenFgaClient openFgaClient;
   @Getter
@@ -272,7 +273,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     String user = userType + ":" + identity.getId();       // e.g. "user:<uuid>"
     String object = toObject(protectedResource);           // "resource:tenant/ns/path"
 
-    String denyRelation = "deny_" + base;
+    String denyRelation = DENY_PREFIX + base;
     String allowRelation = "allow_" + base;
 
     ClientBatchCheckItem denyRequest = new ClientBatchCheckItem()
@@ -503,7 +504,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
-    String perm = "deny_"+permission.getName().toLowerCase();
+    String perm = DENY_PREFIX + permission.getName().toLowerCase();
     applyAccess(grantee, perm, protectedResource);
   }
 
@@ -537,7 +538,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
       return;
     }
     revoke(grantee, "allow_"+permission.getName().toLowerCase(), protectedResource);
-    revoke(grantee, "deny_"+permission.getName().toLowerCase(), protectedResource);
+    revoke(grantee, DENY_PREFIX + permission.getName().toLowerCase(), protectedResource);
   }
 
   private void revoke(Grantee grantee, String perm,  ProtectedResource protectedResource) {
