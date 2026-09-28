@@ -81,7 +81,7 @@ public class PlainSaslServer implements SaslServer {
       validatePassword(authenticationId, suppliedPassword);
       authorizationId = authorize(authenticationId, requestedAuthorizationId.isEmpty() ? authenticationId : requestedAuthorizationId);
       complete = true;
-      return null;
+      return new byte[0];
     } finally {
       Arrays.fill(suppliedPassword, '\0');
     }
