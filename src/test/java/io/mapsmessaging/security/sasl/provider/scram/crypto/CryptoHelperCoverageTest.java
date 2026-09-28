@@ -18,8 +18,11 @@ class CryptoHelperCoverageTest {
   }
 
   @Test
-  void retriesDigestWithoutDashAndPropagatesUnknownAlgorithm() throws Exception {
-    assertEquals("SHA-256", CryptoHelper.findDigest("SHA256").getAlgorithm());
+  void acceptsDigestAliasAndPropagatesUnknownAlgorithm() throws Exception {
+    byte[] input = "maps".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    assertArrayEquals(
+        java.security.MessageDigest.getInstance("SHA-256").digest(input),
+        CryptoHelper.findDigest("SHA256").digest(input));
     assertThrows(
         NoSuchAlgorithmException.class,
         () -> CryptoHelper.findDigest("definitely-not-a-real-digest"));
