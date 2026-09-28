@@ -46,6 +46,8 @@ import lombok.Value;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
   private static final String ACL_SECRET_KEY_ALIAS = "acl.state.key";
+  private static final System.Logger LOGGER =
+      System.getLogger(AclAuthorizationProvider.class.getName());
 
   private final Map<ResourceKey, AccessControlList> accessControlListMap;
   private final Map<Long, Permission> permissions;
@@ -164,84 +166,114 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
                                       ProtectedResource protectedResource) {
     ResourceTraversal traversal = factory.create(protectedResource);
     long requestedAccess = permission.getMask();
-    ProtectedResource currentResource;
+
     while (traversal.hasMore()) {
-      currentResource = traversal.current();
-      AccessControlList accessControlList = findAccessControlList(currentResource);
-      if (accessControlList != null) {
-        AclAccessResult result = accessControlList.evaluateAccess(identity, requestedAccess);
-        Access access = result.getAccess();
-        if (access != Access.UNKNOWN) {
-          boolean allowed = (access == Access.ALLOW);
-
-          DecisionReason reason;
-          if (allowed) {
-            if (currentResource.equals(protectedResource)) {
-              reason = result.isGroupDecision()
-                  ? DecisionReason.ALLOW_EXPLICIT_GROUP
-                  : DecisionReason.ALLOW_EXPLICIT_IDENTITY;
-            } else {
-              reason = DecisionReason.ALLOW_INHERITED_RESOURCE;
-            }
-          } else {
-            if (currentResource.equals(protectedResource)) {
-              reason = result.isGroupDecision()
-                  ? DecisionReason.DENY_EXPLICIT_GROUP
-                  : DecisionReason.DENY_EXPLICIT_IDENTITY;
-            } else {
-              reason = DecisionReason.DENY_INHERITED_RESOURCE;
-            }
-          }
-
-          List<Grant> contributingGrants = List.of();
-          List<Group> contributingGroups = List.of();
-
-          AclEntry aclEntry = result.getAclEntry();
-          UUID decidingId = result.getDecidingAuthId();
-
-          if (aclEntry != null && decidingId != null) {
-            boolean grantAllow = (aclEntry.getAllow() & requestedAccess) != 0L;
-            Grantee grantee = aclEntry.isGroup()
-                ? new Grantee(GranteeType.GROUP, decidingId)
-                : new Grantee(GranteeType.USER, decidingId);
-
-            ProtectedResource decisionResource =
-                new ProtectedResource(
-                    currentResource.getResourceType(),
-                    currentResource.getResourceId(),
-                    currentResource.getTenant());
-
-            Grant grant = new Grant(grantee, permission, decisionResource, grantAllow);
-            contributingGrants = List.of(grant);
-
-            if (result.isGroupDecision()) {
-              Group group = findGroupById(identity, decidingId);
-              if (group != null) {
-                contributingGroups = List.of(group);
-              }
-            }
-          }
-
-          String detailMessage = "Decision=" + access
-              + ", resource=" + currentResource
-              + ", requestedPermission=" + permission.getName();
-
-          return AccessDecision.builder()
-              .identity(identity)
-              .permission(permission)
-              .protectedResource(protectedResource)
-              .allowed(allowed)
-              .decisionReason(reason)
-              .contributingGrants(contributingGrants)
-              .contributingGroups(contributingGroups)
-              .detailMessage(detailMessage)
-              .build();
-        }
+      ProtectedResource currentResource = traversal.current();
+      AccessDecision decision =
+          evaluateAccessAtResource(identity, permission, protectedResource, currentResource, requestedAccess);
+      if (decision != null) {
+        return decision;
       }
       traversal.moveToParent();
     }
 
-    // No ACL matched, default deny
+    return defaultDecision(identity, permission, protectedResource);
+  }
+
+  private AccessDecision evaluateAccessAtResource(
+      Identity identity,
+      Permission permission,
+      ProtectedResource requestedResource,
+      ProtectedResource currentResource,
+      long requestedAccess) {
+
+    AccessControlList accessControlList = findAccessControlList(currentResource);
+    if (accessControlList == null) {
+      return null;
+    }
+
+    AclAccessResult result = accessControlList.evaluateAccess(identity, requestedAccess);
+    Access access = result.getAccess();
+    if (access == Access.UNKNOWN) {
+      return null;
+    }
+
+    boolean allowed = access == Access.ALLOW;
+    DecisionReason reason =
+        resolveDecisionReason(allowed, currentResource.equals(requestedResource), result.isGroupDecision());
+
+    DecisionContributors contributors =
+        buildContributors(identity, permission, currentResource, requestedAccess, result);
+
+    String detailMessage = "Decision=" + access
+        + ", resource=" + currentResource
+        + ", requestedPermission=" + permission.getName();
+
+    return AccessDecision.builder()
+        .identity(identity)
+        .permission(permission)
+        .protectedResource(requestedResource)
+        .allowed(allowed)
+        .decisionReason(reason)
+        .contributingGrants(contributors.grants())
+        .contributingGroups(contributors.groups())
+        .detailMessage(detailMessage)
+        .build();
+  }
+
+  private DecisionReason resolveDecisionReason(
+      boolean allowed,
+      boolean exactResource,
+      boolean groupDecision) {
+
+    if (!exactResource) {
+      return allowed ? DecisionReason.ALLOW_INHERITED_RESOURCE : DecisionReason.DENY_INHERITED_RESOURCE;
+    }
+    if (groupDecision) {
+      return allowed ? DecisionReason.ALLOW_EXPLICIT_GROUP : DecisionReason.DENY_EXPLICIT_GROUP;
+    }
+    return allowed ? DecisionReason.ALLOW_EXPLICIT_IDENTITY : DecisionReason.DENY_EXPLICIT_IDENTITY;
+  }
+
+  private DecisionContributors buildContributors(
+      Identity identity,
+      Permission permission,
+      ProtectedResource currentResource,
+      long requestedAccess,
+      AclAccessResult result) {
+
+    AclEntry aclEntry = result.getAclEntry();
+    UUID decidingId = result.getDecidingAuthId();
+    if (aclEntry == null || decidingId == null) {
+      return new DecisionContributors(List.of(), List.of());
+    }
+
+    boolean grantAllow = (aclEntry.getAllow() & requestedAccess) != 0L;
+    Grantee grantee = aclEntry.isGroup()
+        ? new Grantee(GranteeType.GROUP, decidingId)
+        : new Grantee(GranteeType.USER, decidingId);
+
+    ProtectedResource decisionResource =
+        new ProtectedResource(
+            currentResource.getResourceType(),
+            currentResource.getResourceId(),
+            currentResource.getTenant());
+
+    Grant grant = new Grant(grantee, permission, decisionResource, grantAllow);
+    if (!result.isGroupDecision()) {
+      return new DecisionContributors(List.of(grant), List.of());
+    }
+
+    Group group = findGroupById(identity, decidingId);
+    return new DecisionContributors(
+        List.of(grant),
+        group == null ? List.of() : List.of(group));
+  }
+
+  private AccessDecision defaultDecision(
+      Identity identity,
+      Permission permission,
+      ProtectedResource protectedResource) {
     return AccessDecision.builder()
         .identity(identity)
         .permission(permission)
@@ -252,6 +284,9 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
         .contributingGroups(List.of())
         .detailMessage("No ACL entry matched, default deny")
         .build();
+  }
+
+  private record DecisionContributors(List<Grant> grants, List<Group> groups) {
   }
 
   public EffectiveAccess explainEffectiveAccess(Identity identity,
@@ -379,7 +414,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
 
   @Override
   public void registerResource(ProtectedResource protectedResource, ResourceCreationContext resourceCreationContext) {
-    AccessControlList accessControlList = getOrCreateAccessControlList(protectedResource);
+    getOrCreateAccessControlList(protectedResource);
     writeState();
   }
 
@@ -489,7 +524,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     try {
       saveState.saveState(data);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOGGER.log(System.Logger.Level.ERROR, "Unable to persist ACL authorization state", e);
     }
   }
 
