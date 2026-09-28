@@ -64,6 +64,7 @@ public class BufferCipher {
   private static final int AES_KEY_SIZE = 256;
   private static final int AES_BLOCK_SIZE = 16;
   private static final int HEADER_SIZE = 4;
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   private final CertificateManager certManager;
 
@@ -118,9 +119,8 @@ public class BufferCipher {
   }
 
   private byte[] generateIV() {
-    SecureRandom random = new SecureRandom();
     byte[] iv = new byte[AES_BLOCK_SIZE]; // AES block size in bytes
-    random.nextBytes(iv);
+    SECURE_RANDOM.nextBytes(iv);
     return iv;
   }
 

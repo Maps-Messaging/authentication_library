@@ -33,6 +33,8 @@ import lombok.Getter;
 @Getter
 public class JwtPrincipal implements Principal {
 
+  private static final ZoneId SYSTEM_ZONE = ZoneId.systemDefault();
+
   private final LocalDateTime expires;
   private final LocalDateTime issued;
   private final Map<String, Claim> claims;
@@ -49,12 +51,12 @@ public class JwtPrincipal implements Principal {
 
   private static LocalDateTime convertDateToLocalDateTime(Date date) {
     return date.toInstant()
-        .atZone(ZoneId.systemDefault()) // Replace with desired time zone if needed
+        .atZone(SYSTEM_ZONE)
         .toLocalDateTime();
   }
 
   public boolean isActive() {
-    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now(SYSTEM_ZONE);
     return !issued.isAfter(now) && expires.isAfter(now);
   }
 
@@ -63,6 +65,6 @@ public class JwtPrincipal implements Principal {
   }
 
   public boolean hasExpired() {
-    return !expires.isAfter(LocalDateTime.now());
+    return !expires.isAfter(LocalDateTime.now(SYSTEM_ZONE));
   }
 }

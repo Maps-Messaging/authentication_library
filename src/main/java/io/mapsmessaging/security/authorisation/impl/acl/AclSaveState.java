@@ -37,6 +37,8 @@ import javax.crypto.spec.GCMParameterSpec;
 
 public class AclSaveState {
 
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
   private final String filepath;
   private final SecretKey encryptionKey;
 
@@ -68,8 +70,7 @@ public class AclSaveState {
 
   private byte[] encryptAesGcm(byte[] input) throws GeneralSecurityException {
     byte[] initializationVector = new byte[12];
-    SecureRandom secureRandom = new SecureRandom();
-    secureRandom.nextBytes(initializationVector);
+    SECURE_RANDOM.nextBytes(initializationVector);
 
     Cipher cipher = Cipher.getInstance(StateConfig.ENCRYPTION_METHOD);
     GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH_BITS, initializationVector);

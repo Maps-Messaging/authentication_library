@@ -48,8 +48,10 @@ public class UnixAuth implements IdentityLookup {
     if (passwordPath != null) {
       userDetailsManager = new PasswordFileManager(passwordPath);
     }
-    for(IdentityEntry identityEntry:passwordFileIdentities.getEntries()){
-      groupFileManager.loadGroups(identityEntry);
+    if (groupFileManager != null) {
+      for (IdentityEntry identityEntry : passwordFileIdentities.getEntries()) {
+        groupFileManager.loadGroups(identityEntry);
+      }
     }
   }
 

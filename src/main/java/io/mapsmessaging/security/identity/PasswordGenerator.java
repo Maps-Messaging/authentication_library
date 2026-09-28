@@ -27,23 +27,22 @@ import java.util.stream.IntStream;
 public class PasswordGenerator {
 
   private static final String SALT_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   public static String generateSalt(int saltLength) {
     return generateRandom(saltLength, SALT_CHARACTERS);
   }
 
   private static String generateRandom(int passwordLength, String chars) {
-    SecureRandom random = new SecureRandom();
     return IntStream.range(0, passwordLength)
-        .map(i -> chars.charAt(random.nextInt(chars.length())))
+        .map(i -> chars.charAt(SECURE_RANDOM.nextInt(chars.length())))
         .mapToObj(c -> String.valueOf((char) c))
         .collect(Collectors.joining());
   }
 
   public static byte[] generateSaltBytes(int passwordLength) {
-    SecureRandom random = new SecureRandom();
     byte[] buf = new byte[passwordLength];
-    random.nextBytes(buf);
+    SECURE_RANDOM.nextBytes(buf);
     return buf;
   }
 

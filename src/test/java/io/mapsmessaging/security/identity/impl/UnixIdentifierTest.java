@@ -93,6 +93,17 @@ class UnixIdentifierTest {
 
 
   @Test
+  void allowsShadowAndPasswordFilesWithoutGroupFile() {
+    UnixAuth lookup = new UnixAuth(
+        "./src/test/resources/nix/shadow",
+        "./src/test/resources/nix/passwd",
+        null);
+
+    Assertions.assertFalse(lookup.getEntries().isEmpty());
+    Assertions.assertNotNull(lookup.findEntry("test"));
+  }
+
+  @Test
   void noUser() {
     Map<String, Object> map = new LinkedHashMap<>();
     map.put("configDirectory", "./src/test/resources/nix");
