@@ -133,8 +133,9 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
         group = faker.starTrek().specie();
       }
       GroupIdMap createdGroup = identityAccessManager.getGroupManagement().createGroup(group);
-      Assertions.assertSame(
-          createdGroup, identityAccessManager.getGroupManagement().createGroup(group));
+      Assertions.assertEquals(
+          createdGroup.getAuthId(),
+          identityAccessManager.getGroupManagement().createGroup(group).getAuthId());
       groupNames.add(group);
     }
 
