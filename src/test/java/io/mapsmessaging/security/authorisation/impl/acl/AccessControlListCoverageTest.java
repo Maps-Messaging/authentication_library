@@ -97,10 +97,9 @@ class AccessControlListCoverageTest {
     assertEquals(Access.UNKNOWN, result.getAccess());
     assertNull(result.getDecidingAuthId());
 
-    UUID id = UUID.randomUUID();
-    AccessControlList configured =
-        acl.create(List.of(id + ":user:1:0"));
+    AccessControlList configured = acl.create(List.of());
     assertNotNull(configured);
+    assertTrue(configured.getAclEntries().isEmpty());
   }
 
   private static Identity identity(UUID id, List<Group> groups) {
