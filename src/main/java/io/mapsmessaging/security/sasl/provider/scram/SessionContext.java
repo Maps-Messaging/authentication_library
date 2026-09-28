@@ -54,7 +54,7 @@ public class SessionContext {
   private char[] prepPassword;
   private Mac mac;
   private String algorithm;
-  private int keySize;
+  private int keySize = 256;
   private PasswordHandler passwordHasher;
   private String initialClientChallenge;
   private String initialServerChallenge;
