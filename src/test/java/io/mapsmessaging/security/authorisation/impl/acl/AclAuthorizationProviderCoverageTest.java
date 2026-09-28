@@ -146,12 +146,17 @@ class AclAuthorizationProviderCoverageTest {
   }
 
   private static ResourceTraversalFactory singleResourceFactory() {
-    return protectedResource -> new ResourceTraversal() {
-      private boolean available = true;
+    return new ResourceTraversalFactory() {
+      @Override
+      public ResourceTraversal create(ProtectedResource protectedResource) {
+        return new ResourceTraversal() {
+          private boolean available = true;
 
-      @Override public boolean hasMore() { return available; }
-      @Override public ProtectedResource current() { return protectedResource; }
-      @Override public void moveToParent() { available = false; }
+          @Override public boolean hasMore() { return available; }
+          @Override public ProtectedResource current() { return protectedResource; }
+          @Override public void moveToParent() { available = false; }
+        };
+      }
     };
   }
 }
