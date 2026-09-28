@@ -94,7 +94,9 @@ class BaseLoginModuleCoverageTest {
       if (callback instanceof NameCallback nameCallback) {
         nameCallback.setName(username);
       } else if (callback instanceof PasswordCallback passwordCallback) {
-        passwordCallback.setPassword(password);
+        if (password != null) {
+          passwordCallback.setPassword(password);
+        }
       } else if (callback instanceof AuthContextCallback authContextCallback) {
         authContextCallback.setAuthContext(new AuthContext("127.0.0.1", "test", "endpoint"));
       } else {
