@@ -32,16 +32,18 @@ public final class ScramString {
 
   public static String unescapeSaslName(String value) throws SaslException {
     StringBuilder result = new StringBuilder(value.length());
-    for (int i = 0; i < value.length(); i++) {
-      char current = value.charAt(i);
+    int index = 0;
+    while (index < value.length()) {
+      char current = value.charAt(index);
       if (current != '=') {
         result.append(current);
+        index++;
         continue;
       }
-      if (i + 2 >= value.length()) {
+      if (index + 2 >= value.length()) {
         throw new SaslException("Invalid SCRAM saslname escape");
       }
-      String escape = value.substring(i, i + 3);
+      String escape = value.substring(index, index + 3);
       if ("=2C".equals(escape)) {
         result.append(',');
       } else if ("=3D".equals(escape)) {
@@ -49,7 +51,7 @@ public final class ScramString {
       } else {
         throw new SaslException("Invalid SCRAM saslname escape");
       }
-      i += 2;
+      index += 3;
     }
     return result.toString();
   }
