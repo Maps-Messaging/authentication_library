@@ -107,7 +107,7 @@ public class ValidationState extends State {
     }
   }
 
-  private void authorizeContext(SessionContext context) throws IOException, SaslException {
+  private void authorizeContext(SessionContext context) throws IOException {
     try {
       authorize(context);
     } catch (UnsupportedCallbackException e) {
