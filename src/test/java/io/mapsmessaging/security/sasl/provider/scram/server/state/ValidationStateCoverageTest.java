@@ -70,7 +70,7 @@ class ValidationStateCoverageTest {
     assertTrue(state.hasInitialResponse());
   }
 
-  private static SessionContext context() {
+  private static SessionContext context() throws SaslException {
     SessionContext context = new SessionContext();
     context.setGs2Header("n,,");
     context.setClientNonce("abc");
