@@ -34,11 +34,11 @@ public class ScramSaslClient extends BaseScramSasl implements SaslClient {
 
   public ScramSaslClient(String algorithm, String authorizationId, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) {
     mechanismName = "SCRAM-" + algorithm.toUpperCase();
-    try {
-      context.setMac(CryptoHelper.findMac(algorithm));
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Unsupported SCRAM algorithm: " + algorithm, e);
+    var mac = CryptoHelper.findMac(algorithm);
+    if (mac == null) {
+      throw new IllegalArgumentException("Unsupported SCRAM algorithm: " + algorithm);
     }
+    context.setMac(mac);
     context.setState(new InitialState(authorizationId, protocol, serverName, props, cbh));
   }
 
