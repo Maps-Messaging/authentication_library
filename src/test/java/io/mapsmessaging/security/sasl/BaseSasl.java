@@ -63,7 +63,7 @@ class BaseSasl {
     byte[] response = saslClient.hasInitialResponse() ? saslClient.evaluateChallenge(new byte[0]) : new byte[0];
     while (!saslServer.isComplete()) {
       byte[] challenge = saslServer.evaluateResponse(response);
-      if (!saslServer.isComplete() && challenge != null) {
+      if (!saslClient.isComplete() && challenge != null) {
         response = saslClient.evaluateChallenge(challenge);
       }
     }
