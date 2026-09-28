@@ -62,15 +62,15 @@ public class BaseScramSasl {
     }
   }
 
-  public byte[] unwrap(byte[] incoming, int offset, int len) throws SaslException {
+  public byte[] unwrap(byte[] incoming, int offset, int len) {
     throw new IllegalStateException("SCRAM does not negotiate a security layer");
   }
 
-  public byte[] wrap(byte[] outgoing, int offset, int len) throws SaslException {
+  public byte[] wrap(byte[] outgoing, int offset, int len) {
     throw new IllegalStateException("SCRAM does not negotiate a security layer");
   }
 
-  public void dispose() throws SaslException {
+  public void dispose() {
     if (!disposed) {
       context.reset();
       disposed = true;

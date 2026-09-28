@@ -125,24 +125,8 @@ public class SslHelper {
       sslContext = SSLContext.getInstance(context);
 
       // Now check to see if there is a CRL configured, if so then construct the cert revocation during cert validation
-      TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-      String crlUrlPath = config.getProperty("crlUrl");
-      if (crlUrlPath != null && !crlUrlPath.isEmpty()) {
-        URL crlUrl = URI.create(crlUrlPath).toURL();
-        long crlInterval = config.getLongProperty("crlInterval", 24L * 60L * 60L * 1000L);
-        CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(crlUrl, crlInterval);
-        boolean crlManagerInstalled = false;
-        for (int index = 0; index < trustManagers.length; index++) {
-          if (trustManagers[index] instanceof X509TrustManager trustManager) {
-            trustManagers[index] = new CrlTrustManager(trustManager, certificateRevocationManager);
-            crlManagerInstalled = true;
-            break;
-          }
-        }
-        if (!crlManagerInstalled) {
-          throw new KeyManagementException("CRL configured but no X509 trust manager is available");
-        }
-      }
+      TrustManager[] trustManagers =
+          configureTrustManagers(trustManagerFactory.getTrustManagers(), config);
 
       sslContext.init(keyManagers, trustManagers, new SecureRandom());
       logger.log(SSL_SERVER_SSL_CONTEXT_COMPLETE);
@@ -157,6 +141,28 @@ public class SslHelper {
       throw new IOException(e);
     }
     return sslContext;
+  }
+
+  private static TrustManager[] configureTrustManagers(
+      TrustManager[] trustManagers, ConfigurationProperties config)
+      throws IOException, KeyManagementException {
+    String crlUrlPath = config.getProperty("crlUrl");
+    if (crlUrlPath == null || crlUrlPath.isEmpty()) {
+      return trustManagers;
+    }
+
+    URL crlUrl = URI.create(crlUrlPath).toURL();
+    long crlInterval = config.getLongProperty("crlInterval", 24L * 60L * 60L * 1000L);
+    CertificateRevocationManager certificateRevocationManager =
+        new CertificateRevocationManager(crlUrl, crlInterval);
+
+    for (int index = 0; index < trustManagers.length; index++) {
+      if (trustManagers[index] instanceof X509TrustManager trustManager) {
+        trustManagers[index] = new CrlTrustManager(trustManager, certificateRevocationManager);
+        return trustManagers;
+      }
+    }
+    throw new KeyManagementException("CRL configured but no X509 trust manager is available");
   }
 
   public static SSLEngine createSSLEngine(SSLContext sslContext, ConfigurationProperties tls) {
