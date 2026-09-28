@@ -73,6 +73,7 @@ class ValidationStateCoverageTest {
   private static SessionContext context() {
     SessionContext context = new SessionContext();
     context.setGs2Header("n,,");
+    context.setClientNonce("abc");
     context.setServerNonce("abcX");
     return context;
   }
