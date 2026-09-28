@@ -95,11 +95,7 @@ public class ValidationState extends State {
       if (!context.isAuthenticationIdentityValid() || !MessageDigest.isEqual(expectedProof, proof)) {
         throw new SaslException("Invalid username or password");
       }
-      try {
-        authorize(context);
-      } catch (UnsupportedCallbackException e) {
-        throw new SaslException("SCRAM authorization callback is not supported", e);
-      }
+      authorizeContext(context);
       context.computeServerSignature(context.getPrepPassword(), authString);
     } catch (GeneralSecurityException e) {
       throw new SaslException("Unable to validate SCRAM proof", e);
@@ -108,6 +104,14 @@ public class ValidationState extends State {
       if (expectedProof != null) {
         Arrays.fill(expectedProof, (byte) 0);
       }
+    }
+  }
+
+  private void authorizeContext(SessionContext context) throws IOException, SaslException {
+    try {
+      authorize(context);
+    } catch (UnsupportedCallbackException e) {
+      throw new SaslException("SCRAM authorization callback is not supported", e);
     }
   }
 
