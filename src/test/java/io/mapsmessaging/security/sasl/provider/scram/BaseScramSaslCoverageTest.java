@@ -84,6 +84,8 @@ class BaseScramSaslCoverageTest {
     @Override public boolean isComplete() { return complete; }
     @Override public boolean hasInitialResponse() { return true; }
     @Override public ChallengeResponse produceChallenge(SessionContext context) { return response; }
-    @Override public void handleResponse(ChallengeResponse response, SessionContext context) {}
+    @Override
+    public void handleResponse(ChallengeResponse response, SessionContext context)
+        throws IOException {}
   }
 }
