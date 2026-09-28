@@ -60,7 +60,7 @@ class LdapUserCoverageTest {
 
     user.setAttributeMap(map);
 
-    assertEquals("/srv/alice", map.get("homeDirectory"));
+    assertEquals("homeDirectory: /srv/alice", map.get("homeDirectory"));
     assertEquals("Alice", map.get("description"));
     assertTrue(map.get("uidNumber").contains("1001"));
 
