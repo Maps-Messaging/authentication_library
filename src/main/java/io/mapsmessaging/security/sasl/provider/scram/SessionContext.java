@@ -40,6 +40,8 @@ import lombok.Setter;
 @SuppressWarnings("javaarchitecture:S7027")
 public class SessionContext {
 
+  private static final int SCRAM_KEY_SIZE = 256;
+
   private boolean receivedClientMessage;
   private boolean authenticationIdentityValid = true;
   private String clientNonce;
@@ -54,7 +56,7 @@ public class SessionContext {
   private char[] prepPassword;
   private Mac mac;
   private String algorithm;
-  private int keySize = 256;
+  private int keySize = SCRAM_KEY_SIZE;
   private PasswordHandler passwordHasher;
   private String initialClientChallenge;
   private String initialServerChallenge;
@@ -91,7 +93,7 @@ public class SessionContext {
     prepPassword = null;
     mac = null;
     algorithm = null;
-    keySize = 0;
+    keySize = SCRAM_KEY_SIZE;
     passwordHasher = null;
     initialClientChallenge = null;
     initialServerChallenge = null;
@@ -117,7 +119,7 @@ public class SessionContext {
     }
     this.mac = mac;
     algorithm = "SHA-256";
-    keySize = 256;
+    keySize = SCRAM_KEY_SIZE;
   }
 
   public byte[] generateSaltedPassword(char[] password, byte[] salt, int iterationCount) throws NoSuchAlgorithmException, InvalidKeySpecException {
