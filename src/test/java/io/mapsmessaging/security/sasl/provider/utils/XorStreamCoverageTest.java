@@ -14,11 +14,11 @@ class XorStreamCoverageTest {
     XorStream stream = new XorStream(new byte[]{1, 2, 3});
 
     assertArrayEquals(
-        new byte[]{11, 9, 9, 15},
+        new byte[]{11, 9, 15, 12},
         stream.xorBuffer(new byte[]{99, 10, 11, 12, 13, 98}, 1, 4));
 
     assertArrayEquals(
-        new byte[]{18, 18, 21},
+        new byte[]{22, 22, 23},
         stream.xorBuffer(new byte[]{20, 21, 22}, 0, 3));
   }
 }
