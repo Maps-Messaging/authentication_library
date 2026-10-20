@@ -19,60 +19,114 @@
  */
 
 package io.mapsmessaging.security.ssl;
+
 import java.net.Socket;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import javax.net.ssl.*;
+import java.util.Objects;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509ExtendedTrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class CrlTrustManager extends X509ExtendedTrustManager {
+
+  private final X509TrustManager trustManager;
   private final CertificateRevocationManager revocationManager;
 
   public CrlTrustManager(CertificateRevocationManager revocationManager) {
-    this.revocationManager = revocationManager;
+    this(createDefaultTrustManager(), revocationManager);
+  }
+
+  public CrlTrustManager(X509TrustManager trustManager, CertificateRevocationManager revocationManager) {
+    this.trustManager = Objects.requireNonNull(trustManager);
+    this.revocationManager = Objects.requireNonNull(revocationManager);
   }
 
   @Override
   public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+    if (trustManager instanceof X509ExtendedTrustManager extendedTrustManager) {
+      extendedTrustManager.checkClientTrusted(chain, authType, socket);
+    } else {
+      trustManager.checkClientTrusted(chain, authType);
+    }
     checkRevocation(chain);
   }
 
   @Override
   public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) throws CertificateException {
+    if (trustManager instanceof X509ExtendedTrustManager extendedTrustManager) {
+      extendedTrustManager.checkServerTrusted(chain, authType, socket);
+    } else {
+      trustManager.checkServerTrusted(chain, authType);
+    }
     checkRevocation(chain);
   }
 
   @Override
   public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
+    if (trustManager instanceof X509ExtendedTrustManager extendedTrustManager) {
+      extendedTrustManager.checkClientTrusted(chain, authType, engine);
+    } else {
+      trustManager.checkClientTrusted(chain, authType);
+    }
     checkRevocation(chain);
   }
 
   @Override
   public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) throws CertificateException {
-    checkRevocation(chain);
-  }
-
-  // Implement other required methods delegating to defaultTrustManager
-
-  private void checkRevocation(X509Certificate[] chain) throws CertificateException {
-    for (X509Certificate certificate : chain) {
-      if (revocationManager.isCertificateRevoked(certificate)) {
-        throw new CertificateException("Certificate is revoked");
-      }
+    if (trustManager instanceof X509ExtendedTrustManager extendedTrustManager) {
+      extendedTrustManager.checkServerTrusted(chain, authType, engine);
+    } else {
+      trustManager.checkServerTrusted(chain, authType);
     }
+    checkRevocation(chain);
   }
 
   @Override
   public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+    trustManager.checkClientTrusted(chain, authType);
     checkRevocation(chain);
   }
 
   @Override
   public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+    trustManager.checkServerTrusted(chain, authType);
     checkRevocation(chain);
   }
 
   @Override
   public X509Certificate[] getAcceptedIssuers() {
-    return new X509Certificate[0];
+    return trustManager.getAcceptedIssuers();
+  }
+
+  private static X509TrustManager createDefaultTrustManager() {
+    try {
+      TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+      trustManagerFactory.init((KeyStore) null);
+      for (TrustManager manager : trustManagerFactory.getTrustManagers()) {
+        if (manager instanceof X509TrustManager trustManager) {
+          return trustManager;
+        }
+      }
+      throw new IllegalStateException("No default X509 trust manager is available");
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException("Unable to initialise the default X509 trust manager", e);
+    }
+  }
+
+  private void checkRevocation(X509Certificate[] chain) throws CertificateException {
+    try {
+      for (X509Certificate certificate : chain) {
+        if (revocationManager.isCertificateRevoked(certificate)) {
+          throw new CertificateException("Certificate is revoked");
+        }
+      }
+    } catch (RuntimeException e) {
+      throw new CertificateException("Unable to validate certificate revocation status", e);
+    }
   }
 }

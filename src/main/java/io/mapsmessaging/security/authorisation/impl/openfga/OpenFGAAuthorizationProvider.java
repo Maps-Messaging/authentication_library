@@ -45,6 +45,10 @@ import lombok.NonNull;
 
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
+  private static final System.Logger LOGGER =
+      System.getLogger(OpenFGAAuthorizationProvider.class.getName());
+  private static final String DENY_PREFIX = "deny_";
+
   private final OpenFgaClient openFgaClient;
   @Getter
   private final String userType;
@@ -248,11 +252,8 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return Access.DENY;
-    } catch (ExecutionException | FgaInvalidParameterException e) {
-      e.printStackTrace();
-      return Access.DENY;
-    } catch (FgaValidationError e) {
-      e.printStackTrace();
+    } catch (ExecutionException | FgaInvalidParameterException | FgaValidationError e) {
+      LOGGER.log(System.Logger.Level.WARNING, "OpenFGA access check failed", e);
       return Access.DENY;
     }
 
@@ -272,7 +273,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     String user = userType + ":" + identity.getId();       // e.g. "user:<uuid>"
     String object = toObject(protectedResource);           // "resource:tenant/ns/path"
 
-    String denyRelation = "deny_" + base;
+    String denyRelation = DENY_PREFIX + base;
     String allowRelation = "allow_" + base;
 
     ClientBatchCheckItem denyRequest = new ClientBatchCheckItem()
@@ -296,20 +297,11 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
                                       ProtectedResource protectedResource) {
 
     if (identity == null || permission == null || protectedResource == null) {
-      return AccessDecision.builder()
-          .identity(identity)
-          .permission(permission)
-          .protectedResource(protectedResource)
-          .allowed(false)
-          .decisionReason(DecisionReason.DEFAULT_DENY)
-          .contributingGrants(List.of())
-          .contributingGroups(List.of())
-          .detailMessage("Missing identity, permission or resource")
-          .build();
+      return defaultDecision(identity, permission, protectedResource,
+          "Missing identity, permission or resource");
     }
 
     ResourceTraversal traversal = factory.create(protectedResource);
-
     while (traversal.hasMore()) {
       ProtectedResource currentResource = traversal.current();
       Access accessDecision = canAccessAtNode(identity, permission, currentResource);
@@ -317,90 +309,117 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
         traversal.moveToParent();
         continue;
       }
-
-      boolean allowed = (accessDecision == Access.ALLOW);
-
-      // Find contributing grants at this node
-      Collection<Grant> grantsAtResource = getGrantsForResource(currentResource);
-      List<Grant> contributingGrants = new ArrayList<>();
-      List<Group> contributingGroups = new ArrayList<>();
-
-      boolean hasUserGrant = false;
-      boolean hasGroupGrant = false;
-
-      for (Grant grant : grantsAtResource) {
-        if (!grant.getPermission().getName().equalsIgnoreCase(permission.getName())) {
-          continue;
-        }
-        if (grant.isAllow() != allowed) {
-          continue;
-        }
-
-        Grantee grantee = grant.getGrantee();
-        if (grantee.type() == GranteeType.USER
-            && grantee.id().equals(identity.getId())) {
-          contributingGrants.add(grant);
-          hasUserGrant = true;
-        } else if (grantee.type() == GranteeType.GROUP) {
-          Group group = findGroupById(identity, grantee.id());
-          if (group != null) {
-            contributingGrants.add(grant);
-            contributingGroups.add(group);
-            hasGroupGrant = true;
-          }
-        }
-      }
-
-      DecisionReason reason;
-      boolean isExactResource =
-          currentResource.getResourceType().equals(protectedResource.getResourceType())
-              && currentResource.getResourceId().equals(protectedResource.getResourceId())
-              && Objects.equals(currentResource.getTenant(), protectedResource.getTenant());
-
-      if (allowed) {
-        if (isExactResource) {
-          if (hasUserGrant) {
-            reason = DecisionReason.ALLOW_EXPLICIT_IDENTITY;
-          } else if (hasGroupGrant) {
-            reason = DecisionReason.ALLOW_EXPLICIT_GROUP;
-          } else {
-            reason = DecisionReason.ALLOW_EXPLICIT_IDENTITY;
-          }
-        } else {
-          reason = DecisionReason.ALLOW_INHERITED_RESOURCE;
-        }
-      } else {
-        if (isExactResource) {
-          if (hasUserGrant) {
-            reason = DecisionReason.DENY_EXPLICIT_IDENTITY;
-          } else if (hasGroupGrant) {
-            reason = DecisionReason.DENY_EXPLICIT_GROUP;
-          } else {
-            reason = DecisionReason.DENY_EXPLICIT_IDENTITY;
-          }
-        } else {
-          reason = DecisionReason.DENY_INHERITED_RESOURCE;
-        }
-      }
-
-      String detailMessage =
-          "Decision=" + accessDecision
-              + ", resource=" + toObject(currentResource)
-              + ", requestedPermission=" + permission.getName().toLowerCase();
-
-      return AccessDecision.builder()
-          .identity(identity)
-          .permission(permission)
-          .protectedResource(protectedResource)
-          .allowed(allowed)
-          .decisionReason(reason)
-          .contributingGrants(contributingGrants)
-          .contributingGroups(contributingGroups)
-          .detailMessage(detailMessage)
-          .build();
+      return buildAccessDecision(
+          identity,
+          permission,
+          protectedResource,
+          currentResource,
+          accessDecision);
     }
 
-    // No node gave a definitive answer, default deny
+    return defaultDecision(
+        identity,
+        permission,
+        protectedResource,
+        "No matching OpenFGA tuples, default deny");
+  }
+
+  private AccessDecision buildAccessDecision(
+      Identity identity,
+      Permission permission,
+      ProtectedResource requestedResource,
+      ProtectedResource currentResource,
+      Access accessDecision) {
+
+    boolean allowed = accessDecision == Access.ALLOW;
+    GrantContributors contributors =
+        findContributors(identity, permission, currentResource, allowed);
+    boolean exactResource = isExactResource(currentResource, requestedResource);
+    DecisionReason reason =
+        resolveDecisionReason(allowed, exactResource, contributors.hasUserGrant(), contributors.hasGroupGrant());
+
+    String detailMessage =
+        "Decision=" + accessDecision
+            + ", resource=" + toObject(currentResource)
+            + ", requestedPermission=" + permission.getName().toLowerCase();
+
+    return AccessDecision.builder()
+        .identity(identity)
+        .permission(permission)
+        .protectedResource(requestedResource)
+        .allowed(allowed)
+        .decisionReason(reason)
+        .contributingGrants(contributors.grants())
+        .contributingGroups(contributors.groups())
+        .detailMessage(detailMessage)
+        .build();
+  }
+
+  private GrantContributors findContributors(
+      Identity identity,
+      Permission permission,
+      ProtectedResource resource,
+      boolean allowed) {
+
+    List<Grant> contributingGrants = new ArrayList<>();
+    List<Group> contributingGroups = new ArrayList<>();
+    boolean hasUserGrant = false;
+    boolean hasGroupGrant = false;
+
+    for (Grant grant : getGrantsForResource(resource)) {
+      if (!grant.getPermission().getName().equalsIgnoreCase(permission.getName())
+          || grant.isAllow() != allowed) {
+        continue;
+      }
+
+      Grantee grantee = grant.getGrantee();
+      if (grantee.type() == GranteeType.USER && grantee.id().equals(identity.getId())) {
+        contributingGrants.add(grant);
+        hasUserGrant = true;
+      } else if (grantee.type() == GranteeType.GROUP) {
+        Group group = findGroupById(identity, grantee.id());
+        if (group != null) {
+          contributingGrants.add(grant);
+          contributingGroups.add(group);
+          hasGroupGrant = true;
+        }
+      }
+    }
+
+    return new GrantContributors(
+        contributingGrants,
+        contributingGroups,
+        hasUserGrant,
+        hasGroupGrant);
+  }
+
+  private boolean isExactResource(ProtectedResource currentResource, ProtectedResource requestedResource) {
+    return currentResource.getResourceType().equals(requestedResource.getResourceType())
+        && currentResource.getResourceId().equals(requestedResource.getResourceId())
+        && Objects.equals(currentResource.getTenant(), requestedResource.getTenant());
+  }
+
+  private DecisionReason resolveDecisionReason(
+      boolean allowed,
+      boolean exactResource,
+      boolean hasUserGrant,
+      boolean hasGroupGrant) {
+
+    if (!exactResource) {
+      return allowed ? DecisionReason.ALLOW_INHERITED_RESOURCE : DecisionReason.DENY_INHERITED_RESOURCE;
+    }
+    if (hasGroupGrant && !hasUserGrant) {
+      return allowed ? DecisionReason.ALLOW_EXPLICIT_GROUP : DecisionReason.DENY_EXPLICIT_GROUP;
+    }
+    return allowed ? DecisionReason.ALLOW_EXPLICIT_IDENTITY : DecisionReason.DENY_EXPLICIT_IDENTITY;
+  }
+
+  private AccessDecision defaultDecision(
+      Identity identity,
+      Permission permission,
+      ProtectedResource protectedResource,
+      String detailMessage) {
+
     return AccessDecision.builder()
         .identity(identity)
         .permission(permission)
@@ -409,8 +428,15 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
         .decisionReason(DecisionReason.DEFAULT_DENY)
         .contributingGrants(List.of())
         .contributingGroups(List.of())
-        .detailMessage("No matching OpenFGA tuples, default deny")
+        .detailMessage(detailMessage)
         .build();
+  }
+
+  private record GrantContributors(
+      List<Grant> grants,
+      List<Group> groups,
+      boolean hasUserGrant,
+      boolean hasGroupGrant) {
   }
 
   @Override
@@ -478,7 +504,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
-    String perm = "deny_"+permission.getName().toLowerCase();
+    String perm = DENY_PREFIX + permission.getName().toLowerCase();
     applyAccess(grantee, perm, protectedResource);
   }
 
@@ -512,7 +538,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
       return;
     }
     revoke(grantee, "allow_"+permission.getName().toLowerCase(), protectedResource);
-    revoke(grantee, "deny"+permission.getName().toLowerCase(), protectedResource);
+    revoke(grantee, DENY_PREFIX + permission.getName().toLowerCase(), protectedResource);
   }
 
   private void revoke(Grantee grantee, String perm,  ProtectedResource protectedResource) {
@@ -574,16 +600,12 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
   @Override
   public void registerResource(ProtectedResource protectedResource,
                                ResourceCreationContext resourceCreationContext) {
-
-    if (protectedResource == null || resourceCreationContext == null) {
-    }
-
-   }
+    // OpenFGA resources are materialised by relationship tuples, so there is nothing to persist here.
+  }
 
   @Override
   public void deleteResource(ProtectedResource protectedResource) {
-    if (protectedResource == null) {
-    }
+    // OpenFGA resource cleanup is handled by tuple revocation rather than a standalone resource record.
   }
 
   // =============================================================================================
@@ -685,7 +707,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      executionException.printStackTrace();
+      LOGGER.log(System.Logger.Level.WARNING, "OpenFGA read failed", executionException);
     }
     return null;
   }

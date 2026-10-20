@@ -78,7 +78,7 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     cipherConfig.put("path", "test.jks");
     cipherConfig.put("passphrase", "8 5Tr0Ng C3rt!f1c8t3 P855sw0rd!!!!");
 
-    String[] mechanisms = new String[] {"SCRAM-SHA-512", "SCRAM-SHA-256", "DIGEST-MD5", "CRAM-MD5"};
+    String[] mechanisms = new String[] {"SCRAM-SHA-256"};
     for (String sasl : mechanisms) {
       arguments.add(arguments("Apache-Basic-Auth", apacheConfig, sasl));
       arguments.add(arguments("Encrypted-Auth", baseConfig, sasl));
@@ -109,6 +109,19 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
     }
     Assertions.assertEquals(0, identityAccessManager.getUserManagement().getAllUsers().size());
     Assertions.assertEquals(0, identityAccessManager.getGroupManagement().getAllGroups().size());
+    Assertions.assertNull(identityAccessManager.getUserManagement().getUser("__missing_user__"));
+    Assertions.assertFalse(identityAccessManager.getUserManagement().deleteUser("__missing_user__"));
+    Assertions.assertFalse(
+        identityAccessManager.getUserManagement().updateUserPassword(
+            "__missing_user__", "unused".toCharArray()));
+    Assertions.assertNull(identityAccessManager.getGroupManagement().getGroup("__missing_group__"));
+    Assertions.assertFalse(identityAccessManager.getGroupManagement().deleteGroup("__missing_group__"));
+    Assertions.assertFalse(
+        identityAccessManager.getGroupManagement().addUserToGroup(
+            "__missing_user__", "__missing_group__"));
+    Assertions.assertFalse(
+        identityAccessManager.getGroupManagement().removeUserFromGroup(
+            "__missing_user__", "__missing_group__"));
 
     Faker faker = new Faker();
     Random random = new Random(System.currentTimeMillis());
@@ -119,7 +132,10 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       while (identityAccessManager.getGroupManagement().getGroup(group) != null) {
         group = faker.starTrek().specie();
       }
-      identityAccessManager.getGroupManagement().createGroup(group);
+      GroupIdMap createdGroup = identityAccessManager.getGroupManagement().createGroup(group);
+      Assertions.assertEquals(
+          createdGroup.getAuthId(),
+          identityAccessManager.getGroupManagement().createGroup(group).getAuthId());
       groupNames.add(group);
     }
 
@@ -153,7 +169,13 @@ public class IdentityAccessManagerBaseTest extends BaseSecurityTest {
       char[] password = PasswordGenerator.generateSalt(10 + Math.abs(random.nextInt(20))).toCharArray();
       identityAccessManager.getUserManagement().createUser(username, password);
       String group = groupNames.get(Math.abs(random.nextInt(groupNames.size())));
-      identityAccessManager.getGroupManagement().addUserToGroup(username, group);
+      Assertions.assertTrue(identityAccessManager.getGroupManagement().addUserToGroup(username, group));
+      Assertions.assertFalse(identityAccessManager.getGroupManagement().addUserToGroup(username, group));
+      Assertions.assertFalse(
+          identityAccessManager.getGroupManagement().addUserToGroup(username, "__missing_group__"));
+      Assertions.assertFalse(
+          identityAccessManager.getGroupManagement().removeUserFromGroup(
+              username, "__missing_group__"));
       Assertions.assertEquals(username, identityAccessManager.getUserManagement().getUser(username).getUsername());
       Assertions.assertNotNull(identityAccessManager.getUserManagement().getUser(username).getId());
       Assertions.assertTrue(identityAccessManager.getUserManagement().validateUser(username, password, context));

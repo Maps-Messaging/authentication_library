@@ -24,27 +24,73 @@ import io.mapsmessaging.security.sasl.provider.plain.PlainSaslServer;
 import io.mapsmessaging.security.sasl.provider.scram.server.ScramSaslServer;
 import java.util.Map;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 import javax.security.sasl.SaslServer;
 import javax.security.sasl.SaslServerFactory;
 
 public class MapsSaslServerFactory implements SaslServerFactory {
 
+  private static final String SCRAM_SHA_256 = "SCRAM-SHA-256";
+  private static final String PLAIN = "PLAIN";
+
   @Override
   public SaslServer createSaslServer(String mechanism, String protocol, String serverName, Map<String, ?> props, CallbackHandler cbh) throws SaslException {
-    String mech = mechanism.toLowerCase().trim();
-    if (mech.startsWith("scram")) {
-      String algorithm = mech.substring("scram-".length());
-      return new ScramSaslServer(algorithm, protocol, serverName, props, cbh);
+    if (cbh == null) {
+      return null;
     }
-    if (mech.startsWith("plain")) {
+    if (SCRAM_SHA_256.equals(mechanism) && isScramAllowed(props)) {
+      return new ScramSaslServer("SHA-256", protocol, serverName, props, cbh);
+    }
+    if (PLAIN.equals(mechanism) && isPlainAllowed(props)) {
       return new PlainSaslServer(cbh);
     }
-    throw new SaslException("Unknown mechanism " + mechanism);
+    return null;
   }
 
   @Override
   public String[] getMechanismNames(Map<String, ?> props) {
-    return new String[]{"SCRAM"};
+    if (isScramAllowed(props) && isPlainAllowed(props)) {
+      return new String[] {SCRAM_SHA_256, PLAIN};
+    }
+    if (isScramAllowed(props)) {
+      return new String[] {SCRAM_SHA_256};
+    }
+    if (isPlainAllowed(props)) {
+      return new String[] {PLAIN};
+    }
+    return new String[0];
+  }
+
+  private boolean isPlainAllowed(Map<String, ?> props) {
+    return supportsAuthQop(props)
+        && !isRequired(props, Sasl.POLICY_NOPLAINTEXT)
+        && !isRequired(props, Sasl.POLICY_NOACTIVE)
+        && !isRequired(props, Sasl.POLICY_NODICTIONARY)
+        && !isRequired(props, Sasl.POLICY_FORWARD_SECRECY)
+        && !isRequired(props, Sasl.POLICY_PASS_CREDENTIALS);
+  }
+
+  private boolean isScramAllowed(Map<String, ?> props) {
+    return supportsAuthQop(props)
+        && !isRequired(props, Sasl.POLICY_NODICTIONARY)
+        && !isRequired(props, Sasl.POLICY_FORWARD_SECRECY)
+        && !isRequired(props, Sasl.POLICY_PASS_CREDENTIALS);
+  }
+
+  private boolean supportsAuthQop(Map<String, ?> props) {
+    if (props == null || props.get(Sasl.QOP) == null) {
+      return true;
+    }
+    for (String qop : String.valueOf(props.get(Sasl.QOP)).split(",")) {
+      if ("auth".equals(qop.trim())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isRequired(Map<String, ?> props, String property) {
+    return props != null && Boolean.parseBoolean(String.valueOf(props.get(property)));
   }
 }

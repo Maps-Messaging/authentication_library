@@ -34,12 +34,12 @@ public class PlainPasswordHasher extends PasswordHasher {
   }
 
   public PlainPasswordHasher(char[] pw) {
-    int ind = ArrayHelper.indexOf(pw, '$', 1);
-    if (ind != -1) {
-      pw = ArrayHelper.substring(pw, ind + 1);
-    }
-    password = new PasswordBuffer(Arrays.copyOf(pw, pw.length));
-    // Clear the original password array to avoid lingering sensitive data
+    char[] prefix = (getName() + "$").toCharArray();
+    int passwordStart = ArrayHelper.startsWithIgnoreCase(pw, prefix) ? prefix.length : 0;
+    char[] plainPassword = Arrays.copyOfRange(pw, passwordStart, pw.length);
+    password = new PasswordBuffer(plainPassword);
+    // Clear the original input and temporary copy after storing the password.
+    ArrayHelper.clearCharArray(plainPassword);
     ArrayHelper.clearCharArray(pw);
   }
 

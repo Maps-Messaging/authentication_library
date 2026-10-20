@@ -23,6 +23,8 @@ package io.mapsmessaging.security.certificates.keystore;
 import io.mapsmessaging.configuration.ConfigurationProperties;
 import io.mapsmessaging.security.certificates.BaseKeyStoreManager;
 import io.mapsmessaging.security.certificates.CertificateManager;
+import io.mapsmessaging.security.certificates.SecretKeyManager;
+import javax.crypto.SecretKey;
 import io.mapsmessaging.security.storage.StorageFactory;
 import io.mapsmessaging.security.storage.Store;
 import java.io.ByteArrayInputStream;
@@ -34,7 +36,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-public class KeyStoreManager extends BaseKeyStoreManager {
+public class KeyStoreManager extends BaseKeyStoreManager implements SecretKeyManager {
 
   protected static final String KEYSTORE_TYPE = "type";
   protected static final String KEYSTORE_PATH = "path";
@@ -137,6 +139,59 @@ public class KeyStoreManager extends BaseKeyStoreManager {
     } catch (KeyStoreException e) {
       throw new CertificateException("Exception saving private key", e);
     }
+  }
+
+  @Override
+  public synchronized SecretKey getSecretKey(String alias, char[] entryPassword)
+      throws GeneralSecurityException {
+    requireAlias(alias);
+    if (entryPassword == null) throw new KeyStoreException("Missing key entry password");
+    KeyStore.Entry entry = keyStore.getEntry(alias, new KeyStore.PasswordProtection(entryPassword));
+    if (!(entry instanceof KeyStore.SecretKeyEntry secretEntry)) {
+      throw new KeyStoreException("No symmetric key available for alias");
+    }
+    return secretEntry.getSecretKey();
+  }
+
+  @Override
+  public synchronized void addSecretKey(String alias, char[] entryPassword, SecretKey secret)
+      throws GeneralSecurityException {
+    requireAlias(alias);
+    if (entryPassword == null || secret == null) {
+      throw new KeyStoreException("Key and entry password required");
+    }
+    if (keyStore.containsAlias(alias)) {
+      throw new KeyStoreException("Alias already exists");
+    }
+    keyStore.setEntry(alias, new KeyStore.SecretKeyEntry(secret),
+        new KeyStore.PasswordProtection(entryPassword));
+    try {
+      saveKeyStore();
+    } catch (CertificateException failure) {
+      // Save failed: prevent the in-memory state from masquerading as durable.
+      try { keyStore.deleteEntry(alias); } catch (KeyStoreException suppressed) {
+        failure.addSuppressed(suppressed);
+      }
+      throw new KeyStoreException("Unable to persist secret key", failure);
+    }
+  }
+
+  @Override
+  public synchronized void deleteSecretKey(String alias) throws GeneralSecurityException {
+    requireAlias(alias);
+    if (!keyStore.entryInstanceOf(alias, KeyStore.SecretKeyEntry.class)) {
+      throw new KeyStoreException("Secret key alias not found");
+    }
+    keyStore.deleteEntry(alias);
+    try {
+      saveKeyStore();
+    } catch (CertificateException failure) {
+      throw new KeyStoreException("Secret key removal could not be committed", failure);
+    }
+  }
+
+  private static void requireAlias(String alias) throws KeyStoreException {
+    if (alias == null || alias.isBlank()) throw new KeyStoreException("Invalid key alias");
   }
 
   @Override

@@ -205,7 +205,13 @@ public class CognitoAuth extends CachingIdentityLookup<CognitoIdentityEntry> {
 
     AdminCreateUserResponse response = cognitoClient.adminCreateUser(request);
     if (response.sdkHttpResponse().isSuccessful()) {
-      CognitoIdentityEntry entry = new CognitoIdentityEntry(this, username, "");
+      String subject =
+          response.user().attributes().stream()
+              .filter(attribute -> attribute.name().equals("sub"))
+              .map(AttributeType::value)
+              .findFirst()
+              .orElse(null);
+      CognitoIdentityEntry entry = new CognitoIdentityEntry(this, username, subject);
       identityEntryMap.put(username, entry);
       identityEntries.add(entry);
       return true;

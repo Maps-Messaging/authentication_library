@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -20,20 +20,21 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
-
 import com.sun.security.auth.UserPrincipal;
 import io.mapsmessaging.logging.Logger;
 import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.access.AuthContext;
-import java.io.IOException;
-import java.security.Principal;
-import java.util.Map;
-import java.util.Set;
+
 import javax.security.auth.Subject;
 import javax.security.auth.callback.*;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Map;
+import java.util.Set;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_OUT;
 
 public abstract class BaseLoginModule implements LoginModule {
 
@@ -108,7 +109,7 @@ public abstract class BaseLoginModule implements LoginModule {
               + "from the user");
     }
     succeeded = true;
-    return true;
+    return succeeded;
   }
 
   public boolean abort() throws LoginException {

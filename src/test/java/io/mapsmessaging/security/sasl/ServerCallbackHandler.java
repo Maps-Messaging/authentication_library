@@ -50,7 +50,11 @@ public class ServerCallbackHandler implements CallbackHandler {
     for (Callback cb : cbs) {
       if (cb instanceof AuthorizeCallback) {
         AuthorizeCallback ac = (AuthorizeCallback) cb;
-        ac.setAuthorized(true);
+        boolean authorized = ac.getAuthenticationID().equals(ac.getAuthorizationID());
+        ac.setAuthorized(authorized);
+        if (authorized) {
+          ac.setAuthorizedID(ac.getAuthorizationID());
+        }
       } else if (cb instanceof NameCallback) {
         NameCallback nc = (NameCallback) cb;
         String username = nc.getDefaultName();

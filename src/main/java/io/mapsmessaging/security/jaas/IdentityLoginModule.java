@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@
 
 package io.mapsmessaging.security.jaas;
 
-import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
-
 import io.mapsmessaging.security.access.AuthContext;
 import io.mapsmessaging.security.access.monitor.AuthenticationMonitor;
 import io.mapsmessaging.security.access.monitor.AuthenticationMonitorConfig;
@@ -29,14 +27,17 @@ import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.IdentityLookup;
 import io.mapsmessaging.security.identity.IdentityLookupFactory;
 import io.mapsmessaging.security.identity.principals.AuthHandlerPrincipal;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Principal;
 import java.util.Map;
 import java.util.Set;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.LoginException;
+
+import static io.mapsmessaging.security.logging.AuthLogMessages.USER_LOGGED_IN;
 
 public class IdentityLoginModule extends BaseLoginModule {
 
@@ -110,20 +111,21 @@ public class IdentityLoginModule extends BaseLoginModule {
 
   @Override
   public boolean commit() {
-    if (!succeeded) {
-      return false;
-    } else {
+    if(succeeded){
       IdentityEntry identityEntry = identityLookup.findEntry(username);
-      Subject subject1 = identityEntry.getSubject();
-      Set<Principal> principalSet = subject.getPrincipals();
-      principalSet.addAll(subject1.getPrincipals());
-      principalSet.add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
-      principalSet.add(userPrincipal);
+      if(identityEntry != null) {
+        Subject subject1 = identityEntry.getSubject();
+        Set<Principal> principalSet = subject.getPrincipals();
+        principalSet.addAll(subject1.getPrincipals());
+        principalSet.add(new AuthHandlerPrincipal("Identity:" + identityLookup.getName()));
+        principalSet.add(userPrincipal);
 
-      subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
-      subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
-      commitSucceeded = true;
-      return true;
+        subject.getPrivateCredentials().addAll(subject1.getPrivateCredentials());
+        subject.getPublicCredentials().addAll(subject1.getPublicCredentials());
+        commitSucceeded = true;
+        return true;
+      }
     }
+    return false;
   }
 }
