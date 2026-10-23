@@ -29,6 +29,8 @@ To quickly integrate this library into your Java project, follow these steps:
 
 For detailed usage instructions and examples, refer to the [Usage Guide](Config.md).
 
+For persistent Ed25519 server identities and explicit peer-key pinning, see [Transport identities](docs/transport-identities.md).
+
 ## Supported Identity Backends
 
 The library supports a variety of identity backends, enabling flexible integration with different systems. For each
