@@ -1,6 +1,6 @@
 /*
  * Copyright [ 2020 - 2024 ] Matthew Buckton
- *  Copyright [ 2024 - 2025 ] MapsMessaging B.V.
+ *  Copyright [ 2024 - 2026 ] MapsMessaging B.V.
  *
  *  Licensed under the Apache License, Version 2.0 with the Commons Clause
  *  (the "License"); you may not use this file except in compliance with the License.
@@ -62,7 +62,11 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
 public class CertificateUtils {
 
+  private static final String X_509 = "X.509";
+
   /** Creates a transport identity certificate, with a positive validity in whole seconds. */
+  // Certificate generation is infrequent; keep SecureRandom local.
+  @SuppressWarnings("java:S2119")
   public static CertificateWithPrivateKey generateEd25519Identity(X500Principal subject, Duration validity)
       throws GeneralSecurityException, OperatorCreationException, IOException {
     if (subject == null || validity == null || validity.isNegative() || validity.isZero() || validity.getNano() != 0) {
@@ -75,16 +79,17 @@ public class CertificateUtils {
     generator.initialize(NamedParameterSpec.ED25519, random);
     KeyPair keyPair = generator.generateKeyPair();
     BigInteger serialNumber;
+
     do {
       serialNumber = new BigInteger(159, random);
     } while (serialNumber.signum() == 0);
-    X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
-        subject, serialNumber, Date.from(notBefore), notAfter, subject, keyPair.getPublic());
+
+    X509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(subject, serialNumber, Date.from(notBefore), notAfter, subject, keyPair.getPublic());
     builder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
     builder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature));
     ContentSigner signer = new JcaContentSignerBuilder("Ed25519").build(keyPair.getPrivate());
     byte[] encoded = builder.build(signer).getEncoded();
-    Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(encoded));
+    Certificate certificate = CertificateFactory.getInstance(X_509).generateCertificate(new ByteArrayInputStream(encoded));
     return new CertificateWithPrivateKey(certificate, keyPair.getPrivate());
   }
 
@@ -97,7 +102,7 @@ public class CertificateUtils {
   }
 
   static PublicKey ed25519PublicKey(Certificate certificate) throws CertificateException {
-    if (certificate == null || !"X.509".equalsIgnoreCase(certificate.getType())) {
+    if (certificate == null || !X_509.equalsIgnoreCase(certificate.getType())) {
       throw new CertificateException("An X.509 Ed25519 certificate is required");
     }
     PublicKey publicKey = certificate.getPublicKey();
@@ -130,42 +135,26 @@ public class CertificateUtils {
     long notBefore = System.currentTimeMillis();
     long notAfter = notBefore + (1000L * 3600L * 24 * 365);
 
-    ASN1Encodable[] encodableAltNames =
-        new ASN1Encodable[] {new GeneralName(GeneralName.dNSName, host)};
-    KeyPurposeId[] purposes =
-        new KeyPurposeId[] {KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth};
+    ASN1Encodable[] encodableAltNames = {new GeneralName(GeneralName.dNSName, host)};
+    KeyPurposeId[] purposes = {KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth};
 
-    X509v3CertificateBuilder certBuilder =
-        new JcaX509v3CertificateBuilder(
-            subject,
-            BigInteger.ONE,
-            new Date(notBefore),
-            new Date(notAfter),
-            subject,
-            keyPair.getPublic());
-
+    X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(subject, BigInteger.ONE, new Date(notBefore), new Date(notAfter), subject, keyPair.getPublic());
     certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
-    certBuilder.addExtension(
-        Extension.keyUsage,
-        true,
-        new KeyUsage(KeyUsage.digitalSignature + KeyUsage.keyEncipherment));
+    certBuilder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.digitalSignature + KeyUsage.keyEncipherment));
     certBuilder.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(purposes));
-    certBuilder.addExtension(
-        Extension.subjectAlternativeName, false, new DERSequence(encodableAltNames));
+    certBuilder.addExtension(Extension.subjectAlternativeName, false, new DERSequence(encodableAltNames));
 
-    final ContentSigner signer =
-        new JcaContentSignerBuilder(("SHA256withRSA")).build(keyPair.getPrivate());
-
+    final ContentSigner signer = new JcaContentSignerBuilder(("SHA256withRSA")).build(keyPair.getPrivate());
     X509CertificateHolder certHolder = certBuilder.build(signer);
 
     byte[] x509Encoded = certHolder.toASN1Structure().getEncoded();
-    java.security.cert.Certificate certificate =
-        CertificateFactory.getInstance("X.509")
-            .generateCertificate(new ByteArrayInputStream(x509Encoded));
+    java.security.cert.Certificate certificate = CertificateFactory.getInstance(X_509).generateCertificate(new ByteArrayInputStream(x509Encoded));
     PrivateKey privateKey = keyPair.getPrivate();
     return new CertificateWithPrivateKey(certificate, privateKey);
   }
 
+  // Certificate generation is infrequent; keep SecureRandom local.
+  @SuppressWarnings("java:S2119")
   private static KeyPair generateKeyPair() {
     try {
       KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");

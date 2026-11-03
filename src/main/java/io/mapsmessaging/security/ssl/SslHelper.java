@@ -125,8 +125,7 @@ public class SslHelper {
       sslContext = SSLContext.getInstance(context);
 
       // Now check to see if there is a CRL configured, if so then construct the cert revocation during cert validation
-      TrustManager[] trustManagers =
-          configureTrustManagers(trustManagerFactory.getTrustManagers(), config);
+      TrustManager[] trustManagers = configureTrustManagers(trustManagerFactory.getTrustManagers(), config);
 
       sslContext.init(keyManagers, trustManagers, new SecureRandom());
       logger.log(SSL_SERVER_SSL_CONTEXT_COMPLETE);
@@ -143,9 +142,7 @@ public class SslHelper {
     return sslContext;
   }
 
-  private static TrustManager[] configureTrustManagers(
-      TrustManager[] trustManagers, ConfigurationProperties config)
-      throws IOException, KeyManagementException {
+  private static TrustManager[] configureTrustManagers(TrustManager[] trustManagers, ConfigurationProperties config) throws IOException, KeyManagementException {
     String crlUrlPath = config.getProperty("crlUrl");
     if (crlUrlPath == null || crlUrlPath.isEmpty()) {
       return trustManagers;
@@ -153,8 +150,7 @@ public class SslHelper {
 
     URL crlUrl = URI.create(crlUrlPath).toURL();
     long crlInterval = config.getLongProperty("crlInterval", 24L * 60L * 60L * 1000L);
-    CertificateRevocationManager certificateRevocationManager =
-        new CertificateRevocationManager(crlUrl, crlInterval);
+    CertificateRevocationManager certificateRevocationManager = new CertificateRevocationManager(crlUrl, crlInterval);
 
     for (int index = 0; index < trustManagers.length; index++) {
       if (trustManagers[index] instanceof X509TrustManager trustManager) {
