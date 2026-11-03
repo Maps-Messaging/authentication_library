@@ -21,11 +21,16 @@
 package io.mapsmessaging.security.authorisation.impl.acl;
 
 import static io.mapsmessaging.security.certificates.CertificateUtils.generateSelfSignedCertificateSecret;
+import static io.mapsmessaging.security.logging.AuthLogMessages.ACL_INITIALISATION_FAILED;
+import static io.mapsmessaging.security.logging.AuthLogMessages.ACL_STATE_PARSE_FAILED;
+import static io.mapsmessaging.security.logging.AuthLogMessages.ACL_STATE_PERSIST_FAILED;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
@@ -46,8 +51,7 @@ import lombok.Value;
 
 public class AclAuthorizationProvider implements AuthorizationProvider {
   private static final String ACL_SECRET_KEY_ALIAS = "acl.state.key";
-  private static final System.Logger LOGGER =
-      System.getLogger(AclAuthorizationProvider.class.getName());
+  private final Logger logger = LoggerFactory.getLogger(AclAuthorizationProvider.class);
 
   private final Map<ResourceKey, AccessControlList> accessControlListMap;
   private final Map<Long, Permission> permissions;
@@ -104,7 +108,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
       String aclLoad = aclLoadState.loadState();
       return new AclAuthorizationProvider(aclLoad, permissions, aclSaveState, factory);
     } catch (IOException|GeneralSecurityException e) {
-      // ToDo:: Log This as fatal!
+      logger.log(ACL_INITIALISATION_FAILED, e);
       throw new IOException(e);
     }
   }
@@ -524,7 +528,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     try {
       saveState.saveState(data);
     } catch (Exception e) {
-      LOGGER.log(System.Logger.Level.ERROR, "Unable to persist ACL authorization state", e);
+      logger.log(ACL_STATE_PERSIST_FAILED, e);
     }
   }
 
@@ -545,7 +549,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
         return;
       }
     } catch (JsonSyntaxException e) {
-      // ToDo: Log a FATAL ERROR!!!!!
+      logger.log(ACL_STATE_PARSE_FAILED, e);
       return;
     }
 

@@ -27,6 +27,15 @@ import lombok.Getter;
 
 public enum AuthLogMessages implements LogMessage {
 
+  // <editor-fold desc="Authorisation messages">
+  ACL_INITIALISATION_FAILED(LEVEL.FATAL, AuthCategory.AUTHORISATION, "Unable to initialise ACL authorization provider"),
+  ACL_STATE_PARSE_FAILED(LEVEL.FATAL, AuthCategory.AUTHORISATION, "Unable to parse ACL authorization state"),
+  ACL_STATE_PERSIST_FAILED(LEVEL.ERROR, AuthCategory.AUTHORISATION, "Unable to persist ACL authorization state"),
+  OPENFGA_ACCESS_CHECK_FAILED(LEVEL.WARN, AuthCategory.AUTHORISATION, "OpenFGA access check failed"),
+  OPENFGA_READ_FAILED(LEVEL.WARN, AuthCategory.AUTHORISATION, "OpenFGA read failed"),
+  OPENFGA_WRITE_FAILED(LEVEL.WARN, AuthCategory.AUTHORISATION, "OpenFGA write failed"),
+  // </editor-fold>
+
   //-------------------------------------------------------------------------------------------------------------
 // <editor-fold desc="Authentication monitor messages">
   AUTH_FAILURE(LEVEL.WARN, AuthCategory.AUTHENTICATION, "AUTH_FAILURE username={} failures={} ip={}"),

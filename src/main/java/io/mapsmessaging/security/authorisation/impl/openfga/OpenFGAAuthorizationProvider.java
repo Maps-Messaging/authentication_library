@@ -20,6 +20,10 @@
 
 package io.mapsmessaging.security.authorisation.impl.openfga;
 
+import static io.mapsmessaging.security.logging.AuthLogMessages.OPENFGA_ACCESS_CHECK_FAILED;
+import static io.mapsmessaging.security.logging.AuthLogMessages.OPENFGA_READ_FAILED;
+import static io.mapsmessaging.security.logging.AuthLogMessages.OPENFGA_WRITE_FAILED;
+
 import dev.openfga.sdk.api.client.OpenFgaClient;
 import dev.openfga.sdk.api.client.model.*;
 import dev.openfga.sdk.api.configuration.ClientBatchCheckOptions;
@@ -30,6 +34,8 @@ import dev.openfga.sdk.api.model.TupleKey;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.errors.FgaValidationError;
 import io.mapsmessaging.configuration.ConfigurationProperties;
+import io.mapsmessaging.logging.Logger;
+import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.access.Group;
 import io.mapsmessaging.security.access.Identity;
 import io.mapsmessaging.security.authorisation.*;
@@ -45,8 +51,7 @@ import lombok.NonNull;
 
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
-  private static final System.Logger LOGGER =
-      System.getLogger(OpenFGAAuthorizationProvider.class.getName());
+  private final Logger logger = LoggerFactory.getLogger(OpenFGAAuthorizationProvider.class);
   private static final String DENY_PREFIX = "deny_";
 
   private final OpenFgaClient openFgaClient;
@@ -253,7 +258,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
       Thread.currentThread().interrupt();
       return Access.DENY;
     } catch (ExecutionException | FgaInvalidParameterException | FgaValidationError e) {
-      LOGGER.log(System.Logger.Level.WARNING, "OpenFGA access check failed", e);
+      logger.log(OPENFGA_ACCESS_CHECK_FAILED, e);
       return Access.DENY;
     }
 
@@ -707,7 +712,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      LOGGER.log(System.Logger.Level.WARNING, "OpenFGA read failed", executionException);
+      logger.log(OPENFGA_READ_FAILED, executionException);
     }
     return null;
   }
@@ -724,7 +729,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     } catch (InterruptedException interruptedException) {
       Thread.currentThread().interrupt();
     } catch (ExecutionException | FgaInvalidParameterException executionException) {
-      // ToDo: log this or surface upstream when you care
+      logger.log(OPENFGA_WRITE_FAILED, executionException);
     }
   }
 
