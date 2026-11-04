@@ -22,6 +22,7 @@ package io.mapsmessaging.security.authorisation;
 
 public class TestResourceTraversalFactory implements ResourceTraversalFactory {
 
+  @Override
   public ResourceTraversal create(ProtectedResource resource){
     return new NamespaceTraversal(resource);
   }

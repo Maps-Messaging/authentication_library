@@ -60,6 +60,8 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 
+// Bouncy Castle certificate builders require java.util.Date at their API boundary.
+@SuppressWarnings("java:S2143")
 public class CertificateUtils {
 
   private static final String X_509 = "X.509";

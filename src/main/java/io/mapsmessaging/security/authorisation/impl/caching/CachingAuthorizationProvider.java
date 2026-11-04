@@ -138,10 +138,12 @@ public class CachingAuthorizationProvider implements AuthorizationProvider {
     return false;
   }
 
+  @Override
   public AccessDecision explainAccess(Identity identity, Permission permission, ProtectedResource protectedResource) {
     return delegate.explainAccess(identity, permission, protectedResource);
   }
 
+  @Override
   public EffectiveAccess explainEffectiveAccess(Identity identity, ProtectedResource protectedResource) {
     return delegate.explainEffectiveAccess(identity, protectedResource);
   }

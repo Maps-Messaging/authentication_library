@@ -30,7 +30,9 @@ import java.util.UUID;
 
 public class OpenAuthorizationProvider implements AuthorizationProvider {
 
-  public OpenAuthorizationProvider() {}
+  public OpenAuthorizationProvider() {
+    // The open provider has no configuration or state to initialize.
+  }
 
   @Override
   public String getName() {
@@ -38,7 +40,9 @@ public class OpenAuthorizationProvider implements AuthorizationProvider {
   }
 
   @Override
-  public void reset(){}
+  public void reset() {
+    // The open provider has no authorization state to reset.
+  }
 
   @Override
   public AuthorizationProvider create(ConfigurationProperties config, Permission[]  permissions, ResourceTraversalFactory factory) {

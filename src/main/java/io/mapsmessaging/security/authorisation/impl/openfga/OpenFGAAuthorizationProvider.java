@@ -52,6 +52,7 @@ import lombok.NonNull;
 public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
 
   private final Logger logger = LoggerFactory.getLogger(OpenFGAAuthorizationProvider.class);
+  private static final String ALLOW_PREFIX = "allow_";
   private static final String DENY_PREFIX = "deny_";
 
   private final OpenFgaClient openFgaClient;
@@ -279,7 +280,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     String object = toObject(protectedResource);           // "resource:tenant/ns/path"
 
     String denyRelation = DENY_PREFIX + base;
-    String allowRelation = "allow_" + base;
+    String allowRelation = ALLOW_PREFIX + base;
 
     ClientBatchCheckItem denyRequest = new ClientBatchCheckItem()
         .user(user)
@@ -497,7 +498,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
-    String perm = "allow_"+permission.getName().toLowerCase();
+    String perm = ALLOW_PREFIX+permission.getName().toLowerCase();
     applyAccess(grantee, perm, protectedResource);
   }
 
@@ -542,7 +543,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
     if (grantee == null || permission == null || protectedResource == null) {
       return;
     }
-    revoke(grantee, "allow_"+permission.getName().toLowerCase(), protectedResource);
+    revoke(grantee, ALLOW_PREFIX+permission.getName().toLowerCase(), protectedResource);
     revoke(grantee, DENY_PREFIX + permission.getName().toLowerCase(), protectedResource);
   }
 
@@ -679,7 +680,7 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
           continue;
         }
         String perm = key.getRelation();
-        boolean allow = perm.startsWith("allow_");
+        boolean allow = perm.startsWith(ALLOW_PREFIX);
         perm = perm.substring(perm.indexOf("_")+1);
 
         Permission permission = readHelper.toPermission(perm);

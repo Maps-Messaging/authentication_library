@@ -31,8 +31,7 @@ public abstract class JwtIdentityEntry extends IdentityEntry {
   @Override
   protected Set<Principal> getPrincipals() {
     Set<Principal> principals = super.getPrincipals();
-    if (passwordHasher instanceof JwtPasswordHasher) {
-      JwtPasswordHasher jwtPasswordParser = (JwtPasswordHasher) passwordHasher;
+    if (passwordHasher instanceof JwtPasswordHasher jwtPasswordParser) {
       if (jwtPasswordParser.getJwt() != null) {
         DecodedJWT jwt = jwtPasswordParser.getJwt();
         principals.add(new JwtPrincipal(jwt));

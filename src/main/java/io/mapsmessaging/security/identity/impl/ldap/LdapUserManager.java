@@ -142,8 +142,8 @@ public class LdapUserManager {
         Attribute password = attrs.get(passwordName);
         if (password != null) {
           Object v = password.get();
-          if (v instanceof byte[]) {
-            char[] passwordArray = checkOrAppend(ArrayHelper.byteArrayToCharArray((byte[])v));
+          if (v instanceof byte[] byteArray) {
+            char[] passwordArray = checkOrAppend(ArrayHelper.byteArrayToCharArray(byteArray));
             LdapUser ldapUser = new LdapUser(userString, passwordArray, attrs);
             loadGroups(ldapUser, directoryContext, username);
             userMap.put(ldapUser.getUsername(), ldapUser);

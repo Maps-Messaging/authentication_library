@@ -106,9 +106,9 @@ public class Identity extends PersistentObject {
   }
 
   private Group readGroup(InputStream inputStream) throws IOException {
-    UUID id = UUID.fromString(readString(inputStream));
+    UUID groupId = UUID.fromString(readString(inputStream));
     String name = readString(inputStream);
-    return new Group(id, new GroupEntry(name,new TreeSet<>() ));
+    return new Group(groupId, new GroupEntry(name,new TreeSet<>() ));
   }
 
 

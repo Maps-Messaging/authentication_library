@@ -165,6 +165,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     return false; // default deny
   }
 
+  @Override
   public AccessDecision explainAccess(Identity identity,
                                       Permission permission,
                                       ProtectedResource protectedResource) {
@@ -253,9 +254,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
     }
 
     boolean grantAllow = (aclEntry.getAllow() & requestedAccess) != 0L;
-    Grantee grantee = aclEntry.isGroup()
-        ? new Grantee(GranteeType.GROUP, decidingId)
-        : new Grantee(GranteeType.USER, decidingId);
+    Grantee grantee = new Grantee(aclEntry.isGroup() ? GranteeType.GROUP : GranteeType.USER, decidingId);
 
     ProtectedResource decisionResource =
         new ProtectedResource(
@@ -293,6 +292,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   private record DecisionContributors(List<Grant> grants, List<Group> groups) {
   }
 
+  @Override
   public EffectiveAccess explainEffectiveAccess(Identity identity,
                                                 ProtectedResource protectedResource) {
     Set<Permission> allowedPermissions = new HashSet<>();
@@ -349,6 +349,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
   }
 
 
+  @Override
   public void denyAccess(Grantee grantee,
                           Permission permission,
                           ProtectedResource protectedResource) {
@@ -552,9 +553,6 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
       logger.log(ACL_STATE_PARSE_FAILED, e);
       return;
     }
-
-    // Optional: check version here if you ever change the format
-    // int version = authorizationState.getVersion();
 
     List<AuthorizationStateEntry> entries = authorizationState.getEntries();
     if (entries == null) {

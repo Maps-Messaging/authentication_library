@@ -56,8 +56,8 @@ public abstract class BaseKeyStoreManager implements CertificateManager {
   public PrivateKey getKey(String alias, char[] keyPassword) throws CertificateException {
     try {
       Key key = keyStore.getKey(alias, keyPassword);
-      if (key instanceof PrivateKey) {
-        return (PrivateKey) key;
+      if (key instanceof PrivateKey privateKey) {
+        return privateKey;
       } else {
         throw new KeyStoreException("No private key found for alias: " + alias);
       }

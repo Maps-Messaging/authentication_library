@@ -20,8 +20,6 @@
 
 package io.mapsmessaging.security.identity.impl.base;
 
-import io.mapsmessaging.logging.Logger;
-import io.mapsmessaging.logging.LoggerFactory;
 import io.mapsmessaging.security.identity.IdentityEntry;
 import io.mapsmessaging.security.identity.NoSuchUserFoundException;
 import io.mapsmessaging.security.passwords.PasswordBuffer;
@@ -34,7 +32,6 @@ import java.util.Map;
 
 public abstract class FileBaseIdentities extends FileLoader {
 
-  private final Logger logger = LoggerFactory.getLogger(FileBaseIdentities.class);
   private final Map<String, IdentityEntry> usernamePasswordMap;
 
   protected FileBaseIdentities(String filepath) {

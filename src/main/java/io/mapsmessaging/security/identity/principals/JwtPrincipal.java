@@ -25,7 +25,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
@@ -42,17 +41,11 @@ public class JwtPrincipal implements Principal {
   private final String issuer;
 
   public JwtPrincipal(DecodedJWT jwt) {
-    expires = convertDateToLocalDateTime(jwt.getExpiresAt());
-    issued = convertDateToLocalDateTime(jwt.getIssuedAt());
+    expires = jwt.getExpiresAt().toInstant().atZone(SYSTEM_ZONE).toLocalDateTime();
+    issued = jwt.getIssuedAt().toInstant().atZone(SYSTEM_ZONE).toLocalDateTime();
     claims = jwt.getClaims();
     audience = jwt.getAudience();
     issuer = jwt.getIssuer();
-  }
-
-  private static LocalDateTime convertDateToLocalDateTime(Date date) {
-    return date.toInstant()
-        .atZone(SYSTEM_ZONE)
-        .toLocalDateTime();
   }
 
   public boolean isActive() {
