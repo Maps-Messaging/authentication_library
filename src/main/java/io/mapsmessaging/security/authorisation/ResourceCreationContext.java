@@ -22,19 +22,9 @@ package io.mapsmessaging.security.authorisation;
 
 import io.mapsmessaging.security.access.Identity;
 
-public final class ResourceCreationContext {
-
-  private final Identity ownerIdentity;
-  private final ProtectedResource parentProtectedResource;
-  private final ResourceInitialGrantPolicy initialGrantPolicy;
-
-  public ResourceCreationContext(Identity ownerIdentity,
-                                 ProtectedResource parentProtectedResource,
-                                 ResourceInitialGrantPolicy initialGrantPolicy) {
-    this.ownerIdentity = ownerIdentity;
-    this.parentProtectedResource = parentProtectedResource;
-    this.initialGrantPolicy = initialGrantPolicy;
-  }
+public record ResourceCreationContext(Identity ownerIdentity,
+                                      ProtectedResource parentProtectedResource,
+                                      ResourceInitialGrantPolicy initialGrantPolicy) {
 
   public Identity getOwnerIdentity() {
     return ownerIdentity;

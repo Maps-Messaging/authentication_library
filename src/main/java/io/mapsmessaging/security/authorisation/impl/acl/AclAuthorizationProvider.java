@@ -39,6 +39,7 @@ import io.mapsmessaging.security.certificates.CertificateManager;
 import io.mapsmessaging.security.certificates.CertificateManagerFactory;
 import io.mapsmessaging.security.certificates.CertificateWithPrivateKey;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.util.*;
@@ -98,10 +99,7 @@ public class AclAuthorizationProvider implements AuthorizationProvider {
       String keyPassword = certificateConfig.getProperty("passphrase");
       SecretKey secretKey = loadOrCreateAclKey(certificateManager, keyPassword.toCharArray());
       String filePath = config.getProperty("configDirectory", ".");
-      if(!filePath.endsWith("/")) {
-        filePath = filePath + "/";
-      }
-      filePath = filePath + ".acl_enc.dat";
+      filePath = Path.of(filePath, ".acl_enc.dat").toString();
       AclLoadState aclLoadState = new AclLoadState(filePath, secretKey);
       AclSaveState aclSaveState = new AclSaveState(filePath, secretKey);
 

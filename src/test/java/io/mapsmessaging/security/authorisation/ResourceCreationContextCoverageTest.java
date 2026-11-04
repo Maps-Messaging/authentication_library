@@ -30,6 +30,19 @@ class ResourceCreationContextCoverageTest {
   }
 
   @Test
+  void recordHasValueEqualityAndRetainsNullableComponents() {
+    ResourceCreationContext first = new ResourceCreationContext(null, null, ResourceInitialGrantPolicy.NONE);
+    ResourceCreationContext second = new ResourceCreationContext(null, null, ResourceInitialGrantPolicy.NONE);
+
+    assertEquals(first, second);
+    assertEquals(first.hashCode(), second.hashCode());
+    assertNull(first.ownerIdentity());
+    assertNull(first.parentProtectedResource());
+    assertEquals(first.getInitialGrantPolicy(), first.initialGrantPolicy());
+    assertNotEquals(first, new ResourceCreationContext(null, null, null));
+  }
+
+  @Test
   void enumValuesRemainCompleteAndResolvable() {
     assertArrayEquals(
         new ResourceInitialGrantPolicy[] {
