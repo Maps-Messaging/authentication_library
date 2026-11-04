@@ -30,6 +30,7 @@ import dev.openfga.sdk.api.configuration.ClientBatchCheckOptions;
 import dev.openfga.sdk.api.configuration.ClientConfiguration;
 import dev.openfga.sdk.api.configuration.ClientReadOptions;
 import dev.openfga.sdk.api.configuration.ClientWriteOptions;
+import dev.openfga.sdk.api.model.Tuple;
 import dev.openfga.sdk.api.model.TupleKey;
 import dev.openfga.sdk.errors.FgaInvalidParameterException;
 import dev.openfga.sdk.errors.FgaValidationError;
@@ -673,33 +674,36 @@ public class OpenFGAAuthorizationProvider implements AuthorizationProvider {
       if(response == null) {
         break;
       }
-      for (var tuple : response.getTuples()) {
-        TupleKey key = tuple.getKey();
-        Grantee grantee = readHelper.parseUserToGrantee(key.getUser());
-        if (grantee == null) {
-          continue;
+      for (Tuple tuple : response.getTuples()) {
+        Grant grant = readGrant(tuple.getKey());
+        if (grant != null) {
+          result.add(grant);
         }
-        String perm = key.getRelation();
-        boolean allow = perm.startsWith(ALLOW_PREFIX);
-        perm = perm.substring(perm.indexOf("_")+1);
-
-        Permission permission = readHelper.toPermission(perm);
-        if (permission == null) {
-          continue;
-        }
-
-        ProtectedResource resource = readHelper.fromObject(key.getObject());
-        if (resource == null) {
-          continue;
-        }
-
-        result.add(new Grant(grantee, permission, resource, allow));
       }
 
       continuationToken = response.getContinuationToken();
     } while (continuationToken != null && !continuationToken.isEmpty());
 
     return result;
+  }
+
+  private Grant readGrant(TupleKey key) {
+    Grantee grantee = readHelper.parseUserToGrantee(key.getUser());
+    if (grantee == null) {
+      return null;
+    }
+    String relation = key.getRelation();
+    boolean allow = relation.startsWith(ALLOW_PREFIX);
+    String permissionName = relation.substring(relation.indexOf("_") + 1);
+    Permission permission = readHelper.toPermission(permissionName);
+    if (permission == null) {
+      return null;
+    }
+    ProtectedResource resource = readHelper.fromObject(key.getObject());
+    if (resource == null) {
+      return null;
+    }
+    return new Grant(grantee, permission, resource, allow);
   }
 
   // =============================================================================================
