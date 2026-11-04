@@ -1,0 +1,15 @@
+{
+  "authorisationProvider": "OpenFGA",
+  "authorisation": {
+    "openfga": {
+      "uris": "http://localhost:8080",
+      "storeId": "REPLACE_WITH_STORE_ID",
+      "modelId": "REPLACE_WITH_MODEL_ID",
+      "userType": "user",
+      "groupType": "group",
+      "tenantSeparator": ":",
+      "groupMemberRelation": "member",
+      "connectionTimeout": 10
+    }
+  }
+}

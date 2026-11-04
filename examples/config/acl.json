@@ -1,0 +1,10 @@
+{
+  "authorisationProvider": "ACL",
+  "configDirectory": "./local-security/policy",
+  "certificateStore": {
+    "type": "PKCS12",
+    "path": "./local-security/acl-keys.p12",
+    "store_passphrase": "REPLACE_WITH_STORE_PASSWORD",
+    "passphrase": "REPLACE_WITH_KEY_PASSWORD"
+  }
+}

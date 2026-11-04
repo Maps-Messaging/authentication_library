@@ -1,0 +1,18 @@
+{
+  "keyStore": {
+    "type": "PKCS12",
+    "path": "./local-security/server.p12",
+    "store_passphrase": "REPLACE_WITH_STORE_PASSWORD",
+    "passphrase": "REPLACE_WITH_KEY_PASSWORD",
+    "managerFactory": "SunX509",
+    "alias": "server"
+  },
+  "trustStore": {
+    "type": "PKCS12",
+    "path": "./local-security/trust.p12",
+    "store_passphrase": "REPLACE_WITH_TRUST_PASSWORD",
+    "managerFactory": "PKIX"
+  },
+  "clientCertificateRequired": true,
+  "clientCertificateWanted": false
+}

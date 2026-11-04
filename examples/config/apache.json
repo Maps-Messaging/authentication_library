@@ -1,0 +1,5 @@
+{
+  "identityName": "Apache-Basic-Auth",
+  "passwordFile": "./examples/config/apache/.htpassword",
+  "groupFile": "./examples/config/apache/.htgroups"
+}
